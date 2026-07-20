@@ -28,6 +28,24 @@ local PROFILES: { [string]: Profile } = {
 
 local DEFAULT: Profile = { pitch = 1, speed = 1 }
 
+-- Roblox text-to-speech is a cloud service billed to a universe. In an
+-- unpublished place (universeId 0) every request comes back empty with
+-- `remainingQuota: null`, so speech is silent through no fault of the code.
+-- Warn once, clearly, rather than spamming a line per spoken sentence.
+local warnedUnavailable = false
+local function warnUnavailable(detail: string)
+	if warnedUnavailable then
+		return
+	end
+	warnedUnavailable = true
+	warn(
+		"[Voice] Text-to-speech returned no audio (" .. detail .. "). "
+			.. "Roblox TTS requires a PUBLISHED experience — in an unpublished place it "
+			.. "always fails. Publish via File > Publish to Roblox, then reopen the place "
+			.. "from Roblox rather than the local file. Dialogue still works silently until then."
+	)
+end
+
 -- One TTS rig per model, built lazily and reused.
 local rigs: { [Model]: AudioTextToSpeech } = {}
 setmetatable(rigs :: any, { __mode = "k" })
@@ -103,8 +121,13 @@ function Voice.speak(model: Model, speaker: string, text: string)
 			return
 		end
 		if status ~= Enum.AssetFetchStatus.Success then
-			warn(`[Voice] {speaker}: speech did not load (status {tostring(status)}). `
-				.. "Text-to-speech may need enabling for this experience.")
+			warnUnavailable(`status {tostring(status)}`)
+			return
+		end
+		-- LoadAsync can report Success while the cloud fetch still yields nothing,
+		-- so confirm audio actually arrived before trying to play it.
+		if not tts.IsLoaded then
+			warnUnavailable("no audio returned")
 			return
 		end
 		if tts.Parent then

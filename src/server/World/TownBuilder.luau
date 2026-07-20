@@ -273,8 +273,6 @@ function TownBuilder.build(parentFolder: Instance)
 	-- Streets: main road plaza->town hall, and two east-west side streets.
 	-- (The plaza part itself is built by VillageBuilder; roads tuck under it.)
 	road(town, 0, 93, 10, 27)
-	road(town, 0, 75, 160, 6, 0.14)
-	road(town, 0, 135, 160, 6, 0.14)
 
 	well(town, 0, 50)
 
@@ -462,17 +460,13 @@ function TownBuilder.build(parentFolder: Instance)
 	for _, x in { -7, 7 } do
 		part({ Name = "HallBanner", Size = Vector3.new(2.4, 7, 0.2), Position = Vector3.new(x, 11.5, 132.2), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = hall
 	end
-	-- Stairs along the east wall up to the records balcony (rise toward +Z)
-	local wedgePart = Instance.new("WedgePart")
-	wedgePart.Name = "HallStairRamp"
-	wedgePart.Anchored = true
-	wedgePart.Size = Vector3.new(3.2, 7, 9.6)
-	wedgePart.CFrame = CFrame.new(16.8, 4.5, 119.4) * CFrame.Angles(0, math.pi, 0)
-	wedgePart.Color = Color3.fromRGB(133, 100, 67)
-	wedgePart.Material = Enum.Material.WoodPlanks
-	wedgePart.TopSurface = Enum.SurfaceType.Smooth
-	wedgePart.BottomSurface = Enum.SurfaceType.Smooth
-	wedgePart.Parent = hall
+	-- Stepped stairs along the east wall up to the records balcony
+	PartUtil.steppedStairs(hall, Vector3.new(16.8, 1.05, 114.6), Vector3.zAxis, 7, 9.6, 3.2, {
+		stepColor = Color3.fromRGB(133, 100, 67),
+		stepMaterial = Enum.Material.WoodPlanks,
+		railColor = Color3.fromRGB(96, 62, 38),
+		railSides = { -Vector3.xAxis }, -- open west side
+	})
 	-- Balcony plate over the dais end
 	part({ Name = "BalconyPlate", Size = Vector3.new(36.5, 0.5, 7.9), Position = Vector3.new(0, 7.75, 128.2), Color = Color3.fromRGB(133, 100, 67), Material = Enum.Material.WoodPlanks }).Parent = hall
 	-- Railing along the balcony edge, leaving the stair arrival gap on the east
@@ -540,20 +534,88 @@ function TownBuilder.build(parentFolder: Instance)
 		})
 	end
 
-	local rowZs = { 30, 60, 90, 120, 150, 180 }
-	for _, z in rowZs do
-		if z ~= 30 and z ~= 60 then -- the bigger guild halls own the z 30-73 band
-			townhouse(-42, z, 90) -- west inner row, facing east
-			townhouse(42, z, -90) -- east inner row, facing west
+	-- Organic placement: houses front onto two gently curving lanes running
+	-- northwest and northeast from the plaza, a few flank the main road north
+	-- of the town hall, and a crescent closes the north end. Rotations vary so
+	-- nothing reads as a grid.
+	local PLOTS = {
+		-- west lane, outer side (facing the lane, roughly east)
+		{ -54, 80, 75 },
+		{ -74, 104, 70 },
+		{ -88, 130, 60 },
+		{ -96, 158, 55 },
+		-- west lane, inner side (facing roughly west)
+		{ -38, 104, 255 },
+		{ -56, 128, 250 },
+		{ -68, 152, 245 },
+		-- east lane, outer side
+		{ 54, 80, -75 },
+		{ 74, 104, -70 },
+		{ 88, 130, -60 },
+		{ 96, 158, -55 },
+		-- east lane, inner side
+		{ 38, 104, 105 },
+		{ 56, 128, 110 },
+		{ 68, 152, 115 },
+		-- flanking the north road
+		{ -24, 162, 80 },
+		{ 24, 174, -80 },
+		{ -28, 192, 100 },
+		{ 26, 200, -100 },
+		-- north crescent
+		{ -64, 220, 165 },
+		{ -30, 231, 170 },
+		{ 30, 231, 190 },
+		{ 64, 220, 195 },
+	}
+	for _, plot in PLOTS do
+		townhouse(plot[1], plot[2], plot[3])
+	end
+
+	-- Curved dirt lanes the houses front onto (segment heights alternate so
+	-- overlapping joints never share a top plane)
+	local function curvedLane(points: { Vector3 }, width: number)
+		for i = 1, #points - 1 do
+			local a, b = points[i], points[i + 1]
+			local delta = b - a
+			local length = delta.Magnitude
+			local laneAngle = math.atan2(delta.Z, delta.X)
+			local thickness = 0.16 + (i % 2) * 0.05
+			part({
+				Name = "Lane",
+				Size = Vector3.new(length + 3, thickness, width),
+				CFrame = CFrame.new((a + b) / 2 + Vector3.new(0, thickness / 2, 0)) * CFrame.Angles(0, -laneAngle, 0),
+				Color = Color3.fromRGB(150, 125, 95),
+				Material = Enum.Material.Ground,
+			}).Parent = town
 		end
-		townhouse(-76, z, 90) -- west outer row
-		townhouse(76, z, -90) -- east outer row
 	end
-	-- North row leaves the x ±6 road corridor clear (the north road to the
-	-- forest gate runs between them)
-	for _, x in { -80, -50, -20, 20, 50, 80 } do
-		townhouse(x, 210, 180) -- north row, facing south
-	end
+	curvedLane({
+		Vector3.new(-30, 0, 74),
+		Vector3.new(-40, 0, 86),
+		Vector3.new(-52, 0, 100),
+		Vector3.new(-64, 0, 116),
+		Vector3.new(-76, 0, 136),
+		Vector3.new(-84, 0, 158),
+		Vector3.new(-88, 0, 176),
+	}, 7)
+	curvedLane({
+		Vector3.new(30, 0, 74),
+		Vector3.new(40, 0, 86),
+		Vector3.new(52, 0, 100),
+		Vector3.new(64, 0, 116),
+		Vector3.new(76, 0, 136),
+		Vector3.new(84, 0, 158),
+		Vector3.new(88, 0, 176),
+	}, 7)
+	curvedLane({
+		Vector3.new(-70, 0, 208),
+		Vector3.new(-44, 0, 222),
+		Vector3.new(-16, 0, 230),
+		Vector3.new(16, 0, 230),
+		Vector3.new(44, 0, 222),
+		Vector3.new(70, 0, 208),
+	}, 6)
 
 	town.Parent = parentFolder
 	return town

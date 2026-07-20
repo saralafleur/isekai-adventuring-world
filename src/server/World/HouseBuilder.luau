@@ -1,19 +1,19 @@
 --!strict
--- Parametric timber-frame house generator with REAL interiors: every story has
--- a floor plate, stairs connect stories (walkable ramp + stringers + railing),
--- and rooms are furnished for purpose (living/kitchen below, bedrooms above).
--- Front doors are open — every building can be walked into.
+-- Parametric timber-frame house generator with REAL interiors.
+--   * 9-foot ceilings: default story height is 10 studs
+--   * stepped staircases (solid risers, railings) connect stories through
+--     stairwell openings in the floor plates
+--   * upper floors are a hallway + separate bedrooms behind framed doorways,
+--     each bedroom furnished from a different variant
+--   * front doors are open — every building can be walked into
 --
 -- Houses build in local coordinates (centered on origin, door facing local +Z,
 -- ground at y=0) then pivot to their world position/rotation.
 --
--- Z-fighting rules baked in (learned on the Rowan cottage):
---  * no two surfaces ever share a plane; overlaps or offsets of >= 0.1
---  * frame pieces overlap INTO openings so wall cut-faces are buried
---  * eave-side walls stop below the roof slope; eave plates stay inside slabs
---  * gable wedges: full rise, depth trimmed so tips end inside the eave plates
---  * nothing floats: furniture sits on floors, wall fixtures embed into walls,
---    hanging lights connect to the ceiling by a chain that reaches it
+-- Z-fighting rules baked in: no two surfaces ever share a plane; frame/trim
+-- pieces overlap INTO openings so cut faces are buried; eave-side walls stop
+-- below the roof slope; nothing floats — furniture sits on floors, wall
+-- fixtures embed into walls, hanging lights connect to the ceiling.
 
 local PartUtil = require(script.Parent.PartUtil)
 local part = PartUtil.part
@@ -33,8 +33,8 @@ export type HouseConfig = {
 	stoneGround: boolean?,
 	doorWidth: number?,
 	doorHeight: number?,
-	interior: ("home" | "storage" | "none")?, -- default "home"
-	seed: number?, -- deterministic furnishing variation
+	interior: ("home" | "storage" | "none")?,
+	seed: number?,
 }
 
 local DEFAULT_PLASTER = Color3.fromRGB(232, 224, 205)
@@ -43,7 +43,9 @@ local DEFAULT_ROOF = Color3.fromRGB(112, 66, 48)
 local STONE_COLOR = Color3.fromRGB(130, 126, 120)
 local DARK_WOOD = Color3.fromRGB(96, 62, 38)
 local FLOOR_WOOD = Color3.fromRGB(133, 100, 67)
+local PARTITION_COLOR = Color3.fromRGB(222, 212, 190)
 local WALL_T = 1
+local STORY_H = 10 -- default: ~9ft ceiling + floor structure
 
 local BLANKET_COLORS = {
 	Color3.fromRGB(90, 110, 150),
@@ -169,9 +171,8 @@ local function spreadCenters(length: number, n: number): { number }
 	return centers
 end
 
--- Hanging lantern whose chain actually reaches the given ceiling y.
 local function hangingLantern(parent: Instance, x: number, z: number, ceilingY: number, brightness: number, range: number)
-	local lanternY = ceilingY - 2.2
+	local lanternY = ceilingY - 2.4
 	part({
 		Name = "LanternChain",
 		Size = Vector3.new(0.18, ceilingY - lanternY + 0.4, 0.18),
@@ -196,74 +197,75 @@ local function hangingLantern(parent: Instance, x: number, z: number, ceilingY: 
 	lamp.Parent = parent
 end
 
+-- Wall-mounted candle sconce (bracket embeds into the wall at wallX plane,
+-- facing +X into the room when sideSign is 1)
+local function sconce(parent: Instance, wallX: number, y: number, z: number, sideSign: number)
+	part({
+		Name = "SconceBracket",
+		Size = Vector3.new(0.7, 0.25, 0.25),
+		Position = Vector3.new(wallX + sideSign * 0.25, y, z),
+		Color = Color3.fromRGB(70, 68, 66),
+		Material = Enum.Material.Metal,
+		CanCollide = false,
+	}).Parent = parent
+	local flame = part({
+		Name = "SconceFlame",
+		Size = Vector3.new(0.22, 0.4, 0.22),
+		Position = Vector3.new(wallX + sideSign * 0.55, y + 0.3, z),
+		Color = Color3.fromRGB(255, 200, 90),
+		Material = Enum.Material.Neon,
+		CanCollide = false,
+	})
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(255, 200, 110)
+	light.Brightness = 0.7
+	light.Range = 10
+	light.Parent = flame
+	flame.Parent = parent
+end
+
 -- ------------------------------------------------------------------ stairs
 
 type StairInfo = {
-	-- the rectangular hole the floor plate above must leave open
 	holeX0: number,
 	holeX1: number,
 	holeZ0: number,
 	holeZ1: number,
+	topZ: number,
 }
 
--- Straight stair run along the west (-X) wall, climbing from front (+Z)
--- toward the back (-Z). Returns the stairwell hole for the plate above.
-local function buildStairs(parent: Instance, halfW: number, baseY: number, storyH: number, beamColor: Color3): StairInfo
+-- Stepped stair run along the west (-X) wall, climbing front (+Z) -> back (-Z).
+local function buildStairs(parent: Instance, halfW: number, halfD: number, baseY: number, storyH: number, beamColor: Color3): StairInfo
 	local runLength = storyH * 1.3
-	local stairW = 3.2
-	local cx = -halfW + 0.6 + stairW / 2
-	local zBottom = runLength / 2 + 1 -- front end of the run
+	local stairW = 3.6
+	local cx = -halfW + 0.7 + stairW / 2
+	local zBottom = math.min(halfD - 1.5, runLength / 2 + 1.5)
 	local zTop = zBottom - runLength
 
-	-- Walkable ramp (wedge rises toward -Z)
-	wedge({
-		Name = "StairRamp",
-		Size = Vector3.new(stairW, storyH, runLength),
-		CFrame = CFrame.new(cx, baseY + storyH / 2, zBottom - runLength / 2),
-		Color = FLOOR_WOOD,
-		Material = Enum.Material.WoodPlanks,
-	}).Parent = parent
-	-- Stringer along the open (east) side
-	wedge({
-		Name = "StairStringer",
-		Size = Vector3.new(0.4, storyH + 0.5, runLength + 0.8),
-		CFrame = CFrame.new(cx + stairW / 2 + 0.1, baseY + (storyH + 0.5) / 2 - 0.25, zBottom - runLength / 2),
-		Color = beamColor,
-		Material = Enum.Material.Wood,
-	}).Parent = parent
-	-- Handrail on the open side: posts at bottom/middle/top + sloped rail
-	local railX = cx + stairW / 2 + 0.1
-	for i = 0, 2 do
-		local t = i / 2
-		local z = zBottom - runLength * t
-		local baseHeight = baseY + storyH * t
-		part({
-			Name = "StairPost",
-			Size = Vector3.new(0.35, 3.2, 0.35),
-			Position = Vector3.new(railX, baseHeight + 1.6, z),
-			Color = beamColor,
-			Material = Enum.Material.Wood,
-		}).Parent = parent
-	end
-	local railLength = math.sqrt(runLength * runLength + storyH * storyH)
-	local angle = math.atan(storyH / runLength)
-	part({
-		Name = "StairRail",
-		Size = Vector3.new(0.3, 0.3, railLength),
-		CFrame = CFrame.new(railX, baseY + storyH / 2 + 2.9, zBottom - runLength / 2) * CFrame.Angles(-angle, 0, 0),
-		Color = DARK_WOOD,
-		Material = Enum.Material.Wood,
-	}).Parent = parent
+	PartUtil.steppedStairs(
+		parent,
+		Vector3.new(cx, baseY + 0.05, zBottom),
+		-Vector3.zAxis,
+		storyH,
+		runLength,
+		stairW,
+		{
+			stepColor = FLOOR_WOOD,
+			stepMaterial = Enum.Material.WoodPlanks,
+			railColor = DARK_WOOD,
+			railSides = { Vector3.xAxis }, -- open side toward the room
+		}
+	)
 
 	return {
 		holeX0 = -halfW + 0.4,
 		holeX1 = cx + stairW / 2 + 0.4,
-		holeZ0 = zTop - 1,
-		holeZ1 = zTop + runLength * 0.55,
+		holeZ0 = zTop - 0.3,
+		holeZ1 = zTop + runLength * 0.5,
+		topZ = zTop,
 	}
 end
 
--- Upper floor plate with a stairwell hole, plus a guard railing around it.
 local function buildFloorPlate(
 	parent: Instance,
 	halfW: number,
@@ -290,10 +292,9 @@ local function buildFloorPlate(
 	local x0, x1 = -halfW + 0.4, halfW - 0.4
 	local z0, z1 = -halfD + 0.4, halfD - 0.4
 	if hole then
-		slab(hole.holeX1, x1, z0, z1) -- main area east of the stairwell
-		slab(x0, hole.holeX1, hole.holeZ1, z1) -- west strip in front of the hole
-		slab(x0, hole.holeX1, z0, hole.holeZ0) -- west strip behind the hole
-		-- Guard railing along the hole's east edge and front edge
+		slab(hole.holeX1, x1, z0, z1)
+		slab(x0, hole.holeX1, hole.holeZ1, z1)
+		slab(x0, hole.holeX1, z0, hole.holeZ0)
 		local railY = plateTopY + 1.5
 		part({
 			Name = "GuardRail",
@@ -316,11 +317,10 @@ local function buildFloorPlate(
 	end
 end
 
--- ------------------------------------------------------------------ furnishings
+-- ------------------------------------------------------------- ground floor
 
 local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number, seed: number)
 	local rug = RUG_COLORS[seed % #RUG_COLORS + 1]
-	-- Rug in the middle of the open (east) side
 	part({
 		Name = "Rug",
 		Size = Vector3.new(6.5, 0.12, 5),
@@ -330,7 +330,6 @@ local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY
 		CanCollide = false,
 	}).Parent = parent
 
-	-- Dining table + stools
 	local tx = halfW * 0.25
 	part({ Name = "TableTop", Size = Vector3.new(5, 0.45, 3), Position = Vector3.new(tx, floorY + 2.6, -1), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
 	for _, offset in { Vector3.new(-2, 0, -1.2), Vector3.new(2, 0, -1.2), Vector3.new(-2, 0, 1.2), Vector3.new(2, 0, 1.2) } do
@@ -347,54 +346,175 @@ local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY
 	end
 	part({ Name = "TableBowl", Size = Vector3.new(0.9, 0.3, 0.9), Position = Vector3.new(tx - 0.8, floorY + 2.97, -1.4), Color = Color3.fromRGB(150, 120, 90), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
 
-	-- Sideboard cabinet in the back-east corner (clear of windows)
 	local cabX = halfW - 2.2
 	local cabZ = -halfD + 1.7
 	part({ Name = "Cabinet", Size = Vector3.new(3, 4.5, 1.8), Position = Vector3.new(cabX, floorY + 2.25, cabZ), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
 	part({ Name = "CabinetJug", Size = Vector3.new(0.6, 0.9, 0.6), Position = Vector3.new(cabX - 0.5, floorY + 4.95, cabZ), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
-	part({ Name = "CabinetPlate", Size = Vector3.new(0.8, 0.15, 0.8), Position = Vector3.new(cabX + 0.7, floorY + 4.58, cabZ), Color = Color3.fromRGB(200, 195, 185), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
 
-	-- Bench along the west wall behind the stairs' entry (front-west corner)
 	part({ Name = "WallBench", Size = Vector3.new(1.2, 1.5, 4), Position = Vector3.new(halfW - 1.35, floorY + 0.75, halfD - 3.4), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
 
-	hangingLantern(parent, halfW * 0.2, -halfD / 2, ceilingY, 1.2, 18)
+	hangingLantern(parent, halfW * 0.2, -halfD / 2, ceilingY, 1.2, 20)
 end
 
-local function bedroom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number, seed: number, bedCount: number)
-	local blanket = BLANKET_COLORS[seed % #BLANKET_COLORS + 1]
-	for i = 1, bedCount do
-		-- Beds along the back wall, spaced eastward (stair landing owns the west)
-		local bx = -halfW + 6.5 + (i - 1) * 6
-		if bx + 2.3 > halfW - 0.8 then
-			break
-		end
-		local bz = -halfD + 4.2
-		part({ Name = "BedFrame", Size = Vector3.new(4.2, 0.9, 7), Position = Vector3.new(bx, floorY + 0.45, bz), Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
-		part({ Name = "BedMattress", Size = Vector3.new(3.8, 1.1, 6.6), Position = Vector3.new(bx, floorY + 1.15, bz), Color = Color3.fromRGB(225, 218, 200), Material = Enum.Material.Fabric }).Parent = parent
-		part({ Name = "BedPillow", Size = Vector3.new(2.6, 0.5, 1.5), Position = Vector3.new(bx, floorY + 1.9, bz - 2.3), Color = Color3.fromRGB(240, 235, 220), Material = Enum.Material.Fabric }).Parent = parent
-		part({ Name = "BedBlanket", Size = Vector3.new(3.9, 0.22, 3.8), Position = Vector3.new(bx, floorY + 1.78, bz + 1.2), Color = blanket, Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
-		part({ Name = "BedChest", Size = Vector3.new(2.2, 1.3, 1.2), Position = Vector3.new(bx, floorY + 0.65, bz + 4.2), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
-	end
+-- --------------------------------------------------- upper floors: bedrooms
 
-	-- Wardrobe against the east wall
+-- Partition wall along the x = px plane with framed door openings.
+local function partitionWallX(parent: Instance, px: number, z0: number, z1: number, baseY: number, topY: number, doorZs: { number }, beamColor: Color3)
+	local doorW = 3.2
+	local doorH = 7.5
+	local openings: { Opening } = {}
+	for _, dz in doorZs do
+		table.insert(openings, { center = dz - z0, width = doorW, y0 = baseY, y1 = baseY + doorH })
+	end
+	local length = z1 - z0
+	table.sort(openings, function(a, b)
+		return a.center < b.center
+	end)
+	local function panel(fromOffset: number, toOffset: number, y0: number, y1: number)
+		local segLength = toOffset - fromOffset
+		if segLength <= 0.05 or (y1 - y0) <= 0.05 then
+			return
+		end
+		part({
+			Name = "Partition",
+			Size = Vector3.new(0.45, y1 - y0, segLength),
+			Position = Vector3.new(px, (y0 + y1) / 2, z0 + (fromOffset + toOffset) / 2),
+			Color = PARTITION_COLOR,
+			Material = Enum.Material.Plaster,
+		}).Parent = parent
+	end
+	local cursor = 0
+	for _, opening in openings do
+		local left = opening.center - opening.width / 2
+		local right = opening.center + opening.width / 2
+		panel(cursor, left, baseY, topY)
+		panel(left, right, opening.y1, topY)
+		cursor = right
+	end
+	panel(cursor, length, baseY, topY)
+	-- Door trim: posts + lintel, proud of the thin partition on both sides
+	for _, dz in doorZs do
+		for _, side in { -1, 1 } do
+			part({
+				Name = "DoorTrim",
+				Size = Vector3.new(0.75, doorH + 0.4, 0.45),
+				Position = Vector3.new(px, baseY + (doorH + 0.4) / 2 - 0.1, dz + side * (doorW / 2 + 0.05)),
+				Color = beamColor,
+				Material = Enum.Material.Wood,
+			}).Parent = parent
+		end
+		part({
+			Name = "DoorLintelTrim",
+			Size = Vector3.new(0.75, 0.5, doorW + 1.3),
+			Position = Vector3.new(px, baseY + doorH + 0.15, dz),
+			Color = beamColor,
+			Material = Enum.Material.Wood,
+		}).Parent = parent
+	end
+end
+
+-- Solid partition along the z = pz plane (between bedrooms).
+local function partitionWallZ(parent: Instance, pz: number, x0: number, x1: number, baseY: number, topY: number)
 	part({
-		Name = "Wardrobe",
-		Size = Vector3.new(1.7, 5.5, 3.2),
-		Position = Vector3.new(halfW - 1.3, floorY + 2.75, 0),
-		Color = DARK_WOOD,
-		Material = Enum.Material.WoodPlanks,
+		Name = "Partition",
+		Size = Vector3.new(x1 - x0, topY - baseY, 0.45),
+		Position = Vector3.new((x0 + x1) / 2, (baseY + topY) / 2, pz),
+		Color = PARTITION_COLOR,
+		Material = Enum.Material.Plaster,
 	}).Parent = parent
+end
+
+-- One furnished bedroom in the region x [x0,x1], z [z0,z1]; variant changes
+-- the furniture mix so no two rooms feel identical.
+local function furnishBedroom(parent: Instance, x0: number, x1: number, z0: number, z1: number, floorY: number, variant: number, halfW: number)
+	local cx = (x0 + x1) / 2
+	local cz = (z0 + z1) / 2
+	local blanket = BLANKET_COLORS[variant % #BLANKET_COLORS + 1]
+	-- Bed along the outer (east) wall
+	local bedX = x1 - 2.6
+	local bedZ = cz
+	part({ Name = "BedFrame", Size = Vector3.new(4.2, 0.9, 6.6), Position = Vector3.new(bedX, floorY + 0.45, bedZ), Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "BedMattress", Size = Vector3.new(3.8, 1.1, 6.2), Position = Vector3.new(bedX, floorY + 1.15, bedZ), Color = Color3.fromRGB(225, 218, 200), Material = Enum.Material.Fabric }).Parent = parent
+	part({ Name = "BedPillow", Size = Vector3.new(2.6, 0.5, 1.4), Position = Vector3.new(bedX, floorY + 1.9, bedZ - 2.1), Color = Color3.fromRGB(240, 235, 220), Material = Enum.Material.Fabric }).Parent = parent
+	part({ Name = "BedBlanket", Size = Vector3.new(3.9, 0.22, 3.5), Position = Vector3.new(bedX, floorY + 1.78, bedZ + 1.1), Color = blanket, Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
 
 	part({
 		Name = "Rug",
-		Size = Vector3.new(4.5, 0.12, 3.5),
-		Position = Vector3.new(0, floorY + 0.06, 2),
-		Color = RUG_COLORS[(seed + 1) % #RUG_COLORS + 1],
+		Size = Vector3.new(3.6, 0.12, 2.8),
+		Position = Vector3.new(cx - 1.5, floorY + 0.06, cz),
+		Color = RUG_COLORS[(variant + 1) % #RUG_COLORS + 1],
 		Material = Enum.Material.Fabric,
 		CanCollide = false,
 	}).Parent = parent
 
-	hangingLantern(parent, 0, -halfD / 2, ceilingY, 1, 15)
+	local m = variant % 3
+	if m == 0 then
+		-- chest at the bed's foot + wall shelf
+		part({ Name = "BedChest", Size = Vector3.new(2.2, 1.3, 1.2), Position = Vector3.new(bedX, floorY + 0.65, z1 - 1.2), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+		part({ Name = "WallShelf", Size = Vector3.new(0.9, 0.35, 3), Position = Vector3.new(halfW - 0.85, floorY + 5.4, cz), Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
+		part({ Name = "ShelfPot", Size = Vector3.new(0.6, 0.8, 0.6), Position = Vector3.new(halfW - 0.85, floorY + 5.98, cz - 0.8), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
+	elseif m == 1 then
+		-- wardrobe + bedside table with a candle
+		part({ Name = "Wardrobe", Size = Vector3.new(1.7, 5.5, 3), Position = Vector3.new(x0 + 1.3, floorY + 2.75, z1 - 1.9), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+		part({ Name = "BedsideTable", Size = Vector3.new(1.3, 2.1, 1.3), Position = Vector3.new(bedX, floorY + 1.05, bedZ - 3.6), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.Wood }).Parent = parent
+		part({ Name = "BedsideCandle", Size = Vector3.new(0.25, 0.6, 0.25), Position = Vector3.new(bedX, floorY + 2.45, bedZ - 3.6), Color = Color3.fromRGB(230, 220, 200), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
+		local flame = part({
+			Name = "CandleFlame",
+			Size = Vector3.new(0.16, 0.26, 0.16),
+			Position = Vector3.new(bedX, floorY + 2.88, bedZ - 3.6),
+			Color = Color3.fromRGB(255, 200, 90),
+			Material = Enum.Material.Neon,
+			CanCollide = false,
+		})
+		local light = Instance.new("PointLight")
+		light.Color = Color3.fromRGB(255, 200, 110)
+		light.Brightness = 0.5
+		light.Range = 8
+		light.Parent = flame
+		flame.Parent = parent
+	else
+		-- writing desk + stool
+		part({ Name = "DeskTop", Size = Vector3.new(3.2, 0.4, 1.8), Position = Vector3.new(x0 + 2.2, floorY + 2.5, z0 + 1.4), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+		for _, offset in { Vector3.new(-1.3, 0, -0.6), Vector3.new(1.3, 0, -0.6), Vector3.new(-1.3, 0, 0.6), Vector3.new(1.3, 0, 0.6) } do
+			part({ Name = "DeskLeg", Size = Vector3.new(0.3, 2.2, 0.3), Position = Vector3.new(x0 + 2.2, floorY + 1.2, z0 + 1.4) + offset, Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
+		end
+		part({ Name = "DeskPaper", Size = Vector3.new(1, 0.08, 0.8), Position = Vector3.new(x0 + 2.2, floorY + 2.74, z0 + 1.4), Color = Color3.fromRGB(228, 214, 180), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
+		part({ Name = "DeskStool", Size = Vector3.new(1.2, 1.4, 1.2), Position = Vector3.new(x0 + 2.2, floorY + 0.7, z0 + 2.9), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.Wood }).Parent = parent
+	end
+end
+
+-- Upper story: hallway along the stairwell + two bedrooms behind doors.
+local function hallwayAndBedrooms(
+	parent: Instance,
+	halfW: number,
+	halfD: number,
+	baseY: number,
+	topY: number,
+	hole: StairInfo,
+	beamColor: Color3,
+	seed: number
+)
+	local hallX = hole.holeX1 + 3.4 -- partition plane; walkway between stairwell and it
+	local doorZs = { halfD / 2, -halfD / 2 }
+	partitionWallX(parent, hallX, -halfD + 0.4, halfD - 0.4, baseY, topY, doorZs, beamColor)
+	partitionWallZ(parent, 0, hallX + 0.25, halfW - 0.4, baseY, topY)
+
+	-- Hallway runner + sconces beside each door (on the hallway side)
+	part({
+		Name = "HallRunner",
+		Size = Vector3.new(2, 0.1, (halfD - 1) * 2),
+		Position = Vector3.new(hallX - 1.4, baseY + 0.05, 0),
+		Color = Color3.fromRGB(110, 70, 60),
+		Material = Enum.Material.Fabric,
+		CanCollide = false,
+	}).Parent = parent
+	for _, dz in doorZs do
+		sconce(parent, hallX - 0.2, baseY + 6.2, dz + 2.6, -1)
+	end
+
+	-- Bedrooms: front (z > 0) and back (z < 0), different variants
+	furnishBedroom(parent, hallX + 0.5, halfW - 0.5, 0.3, halfD - 0.5, baseY, seed, halfW)
+	furnishBedroom(parent, hallX + 0.5, halfW - 0.5, -halfD + 0.5, -0.3, baseY, seed + 1, halfW)
 end
 
 local function storageRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number)
@@ -427,12 +547,12 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	local w = config.width
 	local d = config.depth
 	local stories = config.stories
-	local storyH = config.storyHeight or 7
+	local storyH = config.storyHeight or STORY_H
 	local plaster = config.plasterColor or DEFAULT_PLASTER
 	local beamColor = config.beamColor or DEFAULT_BEAM
 	local roofColor = config.roofColor or DEFAULT_ROOF
 	local doorW = config.doorWidth or 4
-	local doorH = math.min(config.doorHeight or 6, storyH - 1)
+	local doorH = math.min(config.doorHeight or 7.5, storyH - 1)
 	local interiorKind = config.interior or "home"
 	local seed = config.seed or 0
 
@@ -473,8 +593,8 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		local isStone = config.stoneGround == true and s == 1
 		local wallColor = if isStone then STONE_COLOR else plaster
 		local wallMaterial = if isStone then Enum.Material.Cobblestone else Enum.Material.Plaster
-		local winY0 = baseY + 2.5
-		local winY1 = baseY + 5.5
+		local winY0 = baseY + 3
+		local winY1 = baseY + 6.8
 		local winCount = math.max(1, math.floor(w / 9))
 		local sideWinCount = math.max(1, math.floor(d / 12))
 
@@ -551,7 +671,6 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		end
 	end
 
-	-- Open doorway: frame + step, no slab
 	local doorFrameInset = 0.2
 	part({ Name = "DoorPost", Size = Vector3.new(0.8, doorH + 1, 1.6), Position = Vector3.new(-doorW / 2 - 0.2 + doorFrameInset, (doorH + 1) / 2 + 0.6, halfD), Color = beamColor, Material = Enum.Material.Wood }).Parent = model
 	part({ Name = "DoorPost", Size = Vector3.new(0.8, doorH + 1, 1.6), Position = Vector3.new(doorW / 2 + 0.2 - doorFrameInset, (doorH + 1) / 2 + 0.6, halfD), Color = beamColor, Material = Enum.Material.Wood }).Parent = model
@@ -560,7 +679,6 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	doorStep.Parent = model
 	game:GetService("CollectionService"):AddTag(doorStep, "HouseDoor")
 
-	-- Roof
 	local rise = math.clamp(d * 0.4, 4, 7)
 	local overhang = 1.5
 	local lift = 0.6
@@ -612,7 +730,6 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 
 	-- ------------------------------------------------------ interior
 	if interiorKind ~= "none" then
-		-- Collar rafters under the top of the walls (also anchor the top-floor lantern)
 		for _, z in { -halfD / 2, halfD / 2 } do
 			part({
 				Name = "CollarRafter",
@@ -635,13 +752,13 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 					buildFloorPlate(model, halfW, halfD, 1 + (s - 1) * storyH, hole, beamColor)
 				end
 				if s < stories then
-					hole = buildStairs(model, halfW, 1 + (s - 1) * storyH, storyH, beamColor)
+					hole = buildStairs(model, halfW, halfD, 1 + (s - 1) * storyH, storyH, beamColor)
 				end
 				if s == 1 then
 					livingRoom(model, halfW, halfD, floorY, ceilingY, seed + s)
-				else
-					local bedCount = math.max(1, math.floor((w - 6) / 6))
-					bedroom(model, halfW, halfD, 1 + (s - 1) * storyH, ceilingY, seed + s, bedCount)
+				elseif hole then
+					hallwayAndBedrooms(model, halfW, halfD, 1 + (s - 1) * storyH, ceilingY, hole, beamColor, seed + s * 2)
+					hangingLantern(model, hole.holeX1 + 2, halfD / 2, ceilingY, 0.9, 14)
 				end
 			end
 		end

@@ -12,7 +12,6 @@ local HouseBuilder = require(script.Parent.HouseBuilder)
 local AvatarFactory = require(script.Parent.Parent.NPC.AvatarFactory)
 
 local part = PartUtil.part
-local wedge = PartUtil.wedge
 
 local BEAM_COLOR = Color3.fromRGB(74, 52, 34)
 local DARK_WOOD = Color3.fromRGB(96, 62, 38)
@@ -86,39 +85,14 @@ local function rectTable(parent: Instance, x: number, z: number, withBenches: bo
 	end
 end
 
--- Straight stair run rising WESTWARD (toward -X) along a south wall.
+-- Stepped stair run rising WESTWARD (toward -X) along a south wall.
 local function stairsWestward(parent: Instance, xBottom: number, z: number, storyH: number)
-	local runLength = storyH * 1.3
-	local xTop = xBottom - runLength
-	wedge({
-		Name = "StairRamp",
-		Size = Vector3.new(3.2, storyH, runLength),
-		-- wedge rises toward local -Z; rotate +90 about Y so it rises toward -X
-		CFrame = CFrame.new((xBottom + xTop) / 2, 1 + storyH / 2, z) * CFrame.Angles(0, math.rad(90), 0),
-		Color = FLOOR_WOOD,
-		Material = Enum.Material.WoodPlanks,
-	}).Parent = parent
-	-- Rail on the open (north) side
-	local railZ = z + 1.7
-	for i = 0, 2 do
-		local t = i / 2
-		part({
-			Name = "StairPost",
-			Size = Vector3.new(0.35, 3.2, 0.35),
-			Position = Vector3.new(xBottom - runLength * t, 1 + storyH * t + 1.6, railZ),
-			Color = BEAM_COLOR,
-			Material = Enum.Material.Wood,
-		}).Parent = parent
-	end
-	local railLength = math.sqrt(runLength * runLength + storyH * storyH)
-	local angle = math.atan(storyH / runLength)
-	part({
-		Name = "StairRail",
-		Size = Vector3.new(railLength, 0.3, 0.3),
-		CFrame = CFrame.new((xBottom + xTop) / 2, 1 + storyH / 2 + 2.9, railZ) * CFrame.Angles(0, 0, angle),
-		Color = DARK_WOOD,
-		Material = Enum.Material.Wood,
-	}).Parent = parent
+	PartUtil.steppedStairs(parent, Vector3.new(xBottom, 1.05, z), -Vector3.xAxis, storyH, storyH * 1.3, 3.2, {
+		stepColor = FLOOR_WOOD,
+		stepMaterial = Enum.Material.WoodPlanks,
+		railColor = DARK_WOOD,
+		railSides = { Vector3.zAxis }, -- open north side
+	})
 end
 
 local function serviceCounter(parent: Instance, x: number, z0: number, z1: number)
@@ -314,7 +288,7 @@ local function buildAdventurersGuild(guilds: Folder)
 	-- ---------------- upper floor: lodging
 	-- Floor plate at y 9 with stairwell hole over the stair top
 	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 29.6), Position = Vector3.new(-52, 8.75, 57.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(9.7, 0.5, 4), Position = Vector3.new(-59.65, 8.75, 40.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(10.6, 0.5, 4), Position = Vector3.new(-59.0, 8.75, 40.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
 	guardRailZ(guilds, 42.8, -54.8, -42.9, 9)
 	guardRailX(guilds, -54.8, 38.7, 42.6, 9)
 
@@ -474,7 +448,7 @@ local function buildMerchantsGuild(guilds: Folder)
 
 	-- ---------------- upper floor: offices
 	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 27.4), Position = Vector3.new(52, 8.75, 56.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(10.3, 0.5, 3.4), Position = Vector3.new(44.85, 8.75, 41.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(11.1, 0.5, 3.4), Position = Vector3.new(45.25, 8.75, 41.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
 	guardRailZ(guilds, 42.9, 50, 62.7, 9)
 	guardRailX(guilds, 50, 39.7, 42.9, 9)
 

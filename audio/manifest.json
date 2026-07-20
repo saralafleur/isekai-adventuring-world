@@ -1,0 +1,121 @@
+[
+  {
+    "key": "MiraBreakfast__greeting__1",
+    "file": "audio/lines/MiraBreakfast__greeting__1.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "There you are. I was beginning to think you planned to sleep through the festival."
+  },
+  {
+    "key": "MiraBreakfast__kael_dream__1",
+    "file": "audio/lines/MiraBreakfast__kael_dream__1.mp3",
+    "speaker": "Kael",
+    "voice": "Junior",
+    "text": "I had the dream again."
+  },
+  {
+    "key": "MiraBreakfast__mira_city__1",
+    "file": "audio/lines/MiraBreakfast__mira_city__1.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "The city of glass?"
+  },
+  {
+    "key": "MiraBreakfast__kael_rain__1",
+    "file": "audio/lines/MiraBreakfast__kael_rain__1.mp3",
+    "speaker": "Kael",
+    "voice": "Junior",
+    "text": "And the rain."
+  },
+  {
+    "key": "MiraBreakfast__daren_breakfast__1",
+    "file": "audio/lines/MiraBreakfast__daren_breakfast__1.mp3",
+    "speaker": "Daren",
+    "voice": "Daniel",
+    "text": "Dreams feel important until breakfast."
+  },
+  {
+    "key": "MiraBreakfast__mira_cure__1",
+    "file": "audio/lines/MiraBreakfast__mira_cure__1.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "Your father believes food is the cure for everything."
+  },
+  {
+    "key": "MiraBreakfast__daren_usually__1",
+    "file": "audio/lines/MiraBreakfast__daren_usually__1.mp3",
+    "speaker": "Daren",
+    "voice": "Daniel",
+    "text": "It usually is."
+  },
+  {
+    "key": "MiraBreakfast__quest_ask__1",
+    "file": "audio/lines/MiraBreakfast__quest_ask__1.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "Kael, the festival won't wait for daydreams. I need supplies before noon."
+  },
+  {
+    "key": "MiraBreakfast__quest_ask__2",
+    "file": "audio/lines/MiraBreakfast__quest_ask__2.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "Gather five sunroot from the garden, three eggs from the pen, and take the basket to the baker."
+  },
+  {
+    "key": "MiraQuestActive__reminder__1",
+    "file": "audio/lines/MiraQuestActive__reminder__1.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "Sunroot from the garden, eggs from the pen, and the basket goes to the baker."
+  },
+  {
+    "key": "MiraQuestActive__reminder__2",
+    "file": "audio/lines/MiraQuestActive__reminder__2.mp3",
+    "speaker": "Mira",
+    "voice": "Samantha",
+    "text": "And mind General Cluck. That bird has opinions."
+  },
+  {
+    "key": "DarenBracer__ask__1",
+    "file": "audio/lines/DarenBracer__ask__1.mp3",
+    "speaker": "Kael",
+    "voice": "Junior",
+    "text": "Father, what's that bracer you keep repairing?"
+  },
+  {
+    "key": "DarenBracer__answer__1",
+    "file": "audio/lines/DarenBracer__answer__1.mp3",
+    "speaker": "Daren",
+    "voice": "Daniel",
+    "text": "Old militia equipment. Nothing more."
+  },
+  {
+    "key": "Baker__greeting__1",
+    "file": "audio/lines/Baker__greeting__1.mp3",
+    "speaker": "Baker Hobb",
+    "voice": "Ralph",
+    "text": "Ah, the Rowan boy! Is that Mira's festival basket?"
+  },
+  {
+    "key": "Baker__greeting__2",
+    "file": "audio/lines/Baker__greeting__2.mp3",
+    "speaker": "Baker Hobb",
+    "voice": "Ralph",
+    "text": "Wonderful. The harvest loaves will be ready before the music starts."
+  },
+  {
+    "key": "Baker__thanks__1",
+    "file": "audio/lines/Baker__thanks__1.mp3",
+    "speaker": "Baker Hobb",
+    "voice": "Ralph",
+    "text": "Here, take a fresh loaf for your trouble. Enjoy the festival!"
+  },
+  {
+    "key": "BakerNoBasket__greeting__1",
+    "file": "audio/lines/BakerNoBasket__greeting__1.mp3",
+    "speaker": "Baker Hobb",
+    "voice": "Ralph",
+    "text": "Morning, lad! Busy day ahead. Come back if you've got something for me."
+  }
+]

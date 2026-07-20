@@ -47,7 +47,8 @@ local function speakLine(player: Player, treeId: unknown, nodeId: unknown, lineI
 	end
 	local model = speakerModel(player, node.speaker)
 	if model then
-		Voice.speak(model, node.speaker, line)
+		-- key must match scripts/generate-voice-lines.py's naming
+		Voice.speak(model, node.speaker, line, `{treeId}__{nodeId}__{lineIndex}`)
 	end
 end
 

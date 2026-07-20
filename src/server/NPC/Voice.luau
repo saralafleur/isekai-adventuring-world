@@ -8,6 +8,8 @@
 -- here, so leaving VoiceId empty uses the default voice and the profile
 -- below shapes it. Set `voiceId` in a profile once you know a specific id.
 
+local VoiceLines = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Data.VoiceLines)
+
 local Voice = {}
 
 export type Profile = { pitch: number, speed: number, volume: number?, voiceId: string? }
@@ -41,8 +43,9 @@ local function warnUnavailable(detail: string)
 	warn(
 		"[Voice] Text-to-speech returned no audio (" .. detail .. "). "
 			.. "Roblox TTS requires a PUBLISHED experience — in an unpublished place it "
-			.. "always fails. Publish via File > Publish to Roblox, then reopen the place "
-			.. "from Roblox rather than the local file. Dialogue still works silently until then."
+			.. "always fails. Prefer the pre-recorded clips: generate with "
+			.. "scripts/generate-voice-lines.py, upload audio/lines/*.mp3, and put the asset "
+			.. "ids in src/shared/Data/VoiceLines.luau. Dialogue works silently until then."
 	)
 end
 
@@ -87,9 +90,50 @@ local function rigFor(model: Model): AudioTextToSpeech?
 	return tts
 end
 
--- Speaks `text` from `model`, in `speaker`'s voice. Non-blocking; a new line
--- interrupts the previous one so dialogue keeps pace with the player clicking.
-function Voice.speak(model: Model, speaker: string, text: string)
+-- Pre-recorded clips are the primary path: they cost nothing per play, need no
+-- quota, and work in an unpublished place. One Sound per model, reused.
+local clips: { [Model]: Sound } = {}
+setmetatable(clips :: any, { __mode = "k" })
+
+local function playClip(model: Model, assetId: number): boolean
+	local head = model:FindFirstChild("Head") or model.PrimaryPart
+	if not head or not head:IsA("BasePart") then
+		return false
+	end
+	local existing = clips[model]
+	local sound: Sound
+	if existing and existing.Parent then
+		sound = existing
+	else
+		sound = Instance.new("Sound")
+		sound.Name = "VoiceClip"
+		sound.RollOffMaxDistance = 70
+		sound.RollOffMinDistance = 8
+		sound.Volume = 3
+		sound.Parent = head
+		clips[model] = sound
+	end
+	-- the clip is already voiced by its own speaker, so it plays unaltered
+	sound.SoundId = `rbxassetid://{assetId}`
+	sound:Play()
+	return true
+end
+
+-- Speaks `text` from `model` in `speaker`'s voice. `lineKey` selects a
+-- pre-recorded clip when one has been uploaded. Non-blocking; a new line
+-- interrupts the previous so dialogue keeps pace with the player clicking.
+function Voice.speak(model: Model, speaker: string, text: string, lineKey: string?)
+	-- stop whatever this character was saying
+	local playing = clips[model]
+	if playing and playing.IsPlaying then
+		playing:Stop()
+	end
+
+	local assetId = if lineKey then VoiceLines[lineKey] else nil
+	if assetId and assetId > 0 and playClip(model, assetId) then
+		return
+	end
+
 	local tts = rigFor(model)
 	if not tts then
 		return
@@ -142,6 +186,10 @@ function Voice.speak(model: Model, speaker: string, text: string)
 end
 
 function Voice.stop(model: Model)
+	local clip = clips[model]
+	if clip and clip.IsPlaying then
+		clip:Stop()
+	end
 	local tts = rigs[model]
 	if tts and tts.IsPlaying then
 		pcall(function()

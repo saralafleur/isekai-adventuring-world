@@ -69,10 +69,14 @@ function PartUtil.steppedStairs(
 		step.Parent = parent
 	end
 
+	-- The rail starts partway up the run: a rail spanning 100% of it seals the
+	-- mouth, because every run in this project hugs a wall on its other side,
+	-- leaving the short end as the only way on.
+	local RAIL_START = 0.22
 	local railSides: { Vector3 } = opts.railSides or {}
 	for _, side in railSides do
 		local offset = side * (width / 2 - 0.16)
-		for _, t in { 0.05, 0.5, 0.95 } do
+		for _, t in { RAIL_START, (RAIL_START + 1) / 2, 0.95 } do
 			local post = Instance.new("Part")
 			post.Name = "StairPost"
 			post.Anchored = true
@@ -82,8 +86,11 @@ function PartUtil.steppedStairs(
 			post.Material = Enum.Material.Wood
 			post.Parent = parent
 		end
-		local railLength = math.sqrt(run * run + rise * rise) + 0.6
-		local mid = bottomCenter + dir * (run / 2) + offset + Vector3.new(0, rise / 2 + 2.95, 0)
+		local railSpan = 1 - RAIL_START
+		local railLength = math.sqrt(run * run + rise * rise) * railSpan + 0.6
+		local midT = (RAIL_START + 1) / 2
+		-- +riseInc/2 keeps the bar >= 2.5 above every tread, not just the backs
+		local mid = bottomCenter + dir * (run * midT) + offset + Vector3.new(0, rise * midT + 3.0 + riseInc / 2, 0)
 		local rail = Instance.new("Part")
 		rail.Name = "StairRail"
 		rail.Anchored = true

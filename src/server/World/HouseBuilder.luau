@@ -258,7 +258,7 @@ local function buildStairs(
 ): StairInfo
 	local stairW = 4.2
 	local cx = if eastSide then halfW - 0.7 - stairW / 2 else -halfW + 0.7 + stairW / 2
-	local nearEdge = halfD - 1.5
+	local nearEdge = halfD - 4.5 -- approach space in front of the bottom step
 	local farEdge = -halfD + 0.4
 	local maxRun = (nearEdge - farEdge) - LANDING_DEPTH
 	local runLength = math.max(6, math.min(storyH * 1.3, maxRun))
@@ -548,6 +548,7 @@ local function hallwayAndBedrooms(
 	baseY: number,
 	topY: number,
 	hole: StairInfo,
+	nextHole: StairInfo?,
 	beamColor: Color3,
 	seed: number
 )
@@ -557,6 +558,13 @@ local function hallwayAndBedrooms(
 	local eastStairs = hole.eastSide
 	local hallX = if eastStairs then hole.holeX0 - 4.6 else hole.holeX1 + 4.6
 	local roomInner = if eastStairs then -halfW + 0.5 else halfW - 0.5
+	-- On a middle story another run rises off this floor on the opposite side;
+	-- the rooms must stop short of its stairwell.
+	if nextHole then
+		roomInner = if eastStairs
+			then math.max(roomInner, nextHole.holeX1 + 0.5)
+			else math.min(roomInner, nextHole.holeX0 - 0.5)
+	end
 	local doorZs = { halfD / 2, -halfD / 2 }
 	partitionWallX(parent, hallX, -halfD + 0.4, halfD - 0.4, baseY, topY, doorZs, beamColor)
 	partitionWallZ(parent, 0, math.min(hallX, roomInner) + 0.25, math.max(hallX, roomInner) - 0.25, baseY, topY)
@@ -978,8 +986,9 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 			for s = 1, stories do
 				local floorY = 1 + (s - 1) * storyH + (if s == 1 then 0.1 else 0.05)
 				local ceilingY = if s < stories then 1 + s * storyH - 0.5 else wallTop
+				local holeBelow = hole -- the opening in THIS floor's plate
 				if s > 1 then
-					buildFloorPlate(model, halfW, halfD, 1 + (s - 1) * storyH, hole, beamColor)
+					buildFloorPlate(model, halfW, halfD, 1 + (s - 1) * storyH, holeBelow, beamColor)
 				end
 				if s < stories then
 					hole = buildStairs(model, halfW, halfD, 1 + (s - 1) * storyH, storyH, beamColor, s % 2 == 0)
@@ -990,9 +999,11 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 					else
 						livingRoom(model, halfW, halfD, floorY, ceilingY, seed + s, stories == 1)
 					end
-				elseif hole then
-					hallwayAndBedrooms(model, halfW, halfD, 1 + (s - 1) * storyH, ceilingY, hole, beamColor, seed + s * 2)
-					hangingLantern(model, hole.holeX1 + 2, halfD / 2, ceilingY, 0.9, 14)
+				elseif holeBelow then
+					local nextHole = if s < stories then hole else nil
+					hallwayAndBedrooms(model, halfW, halfD, 1 + (s - 1) * storyH, ceilingY, holeBelow, nextHole, beamColor, seed + s * 2)
+					local lanternX = if holeBelow.eastSide then holeBelow.holeX0 - 2 else holeBelow.holeX1 + 2
+					hangingLantern(model, math.clamp(lanternX, -halfW + 2, halfW - 2), halfD / 2, ceilingY, 0.9, 14)
 				end
 			end
 		end

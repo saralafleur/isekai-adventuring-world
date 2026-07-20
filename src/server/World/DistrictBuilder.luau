@@ -154,7 +154,7 @@ local function buildShoppingStreet(district: Folder)
 			position = Vector3.new(spec.x, 0, spec.z),
 			rotation = spec.rotation,
 			width = 26,
-			depth = 20,
+			depth = 24,
 			stories = 2,
 			plasterColor = spec.plaster,
 			roofColor = Color3.fromRGB(95, 70, 56),

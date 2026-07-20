@@ -465,7 +465,7 @@ function TownBuilder.build(parentFolder: Instance)
 		part({ Name = "HallBanner", Size = Vector3.new(2.4, 7, 0.2), Position = Vector3.new(x, 20.5, 132.4), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = hall
 	end
 	-- Stepped stairs along the east wall up to the records balcony
-	PartUtil.steppedStairs(hall, Vector3.new(16.8, 1.05, 110.0), Vector3.zAxis, 12.95, 14.2, 4.2, {
+	PartUtil.steppedStairs(hall, Vector3.new(16.0, 1.05, 112.5), Vector3.zAxis, 12.95, 11.6, 4.2, {
 		stepColor = Color3.fromRGB(133, 100, 67),
 		stepMaterial = Enum.Material.WoodPlanks,
 		railColor = Color3.fromRGB(96, 62, 38),
@@ -474,8 +474,8 @@ function TownBuilder.build(parentFolder: Instance)
 	-- Balcony plate over the dais end
 	part({ Name = "BalconyPlate", Size = Vector3.new(37.2, 0.5, 8.6), Position = Vector3.new(0, 13.75, 128.4), Color = Color3.fromRGB(133, 100, 67), Material = Enum.Material.WoodPlanks }).Parent = hall
 	-- Railing along the balcony edge, leaving the stair arrival gap on the east
-	part({ Name = "BalconyRail", Size = Vector3.new(33, 0.3, 0.3), Position = Vector3.new(-1.6, 16.7, 124.4), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.Wood }).Parent = hall
-	for _, x in { -17.9, -12, -6, 0, 6, 12, 14.6 } do
+	part({ Name = "BalconyRail", Size = Vector3.new(31.6, 0.3, 0.3), Position = Vector3.new(-2.3, 16.7, 124.4), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.Wood }).Parent = hall
+	for _, x in { -17.9, -12, -6, 0, 6, 11, 13.4 } do
 		part({ Name = "BalconyPost", Size = Vector3.new(0.3, 2.8, 0.3), Position = Vector3.new(x, 15.4, 124.4), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
 	end
 	-- Records desk and shelf on the balcony

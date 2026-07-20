@@ -240,7 +240,7 @@ local function buildAdventurersGuild(guilds: Folder)
 	-- Tavern tables (benches for the big ones, stools for the small)
 	rectTable(guilds, -50, 60, true)
 	rectTable(guilds, -55, 50, false)
-	rectTable(guilds, -47, 45, true)
+	rectTable(guilds, -47, 48, true)
 	rectTable(guilds, -57, 48, false)
 
 	-- Fireplace on the south wall (west of the stairs)
@@ -285,14 +285,14 @@ local function buildAdventurersGuild(guilds: Folder)
 	hangingLantern(guilds, -58, 46, 12.5, 1.2, 20)
 
 	-- Stairs up along the south wall (bottom at east, rising west)
-	stairsWestward(guilds, -43, 40.4, 11.95)
+	stairsWestward(guilds, -40.5, 40.4, 11.95)
 
 	-- ---------------- upper floor: lodging
 	-- Floor plate at y 9 with stairwell hole over the stair top
 	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 30.7), Position = Vector3.new(-52, 12.75, 57.25), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(6.5, 0.5, 4.5), Position = Vector3.new(-61.35, 12.75, 39.65), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	guardRailZ(guilds, 42.8, -58.0, -42.9, 13)
-	guardRailX(guilds, -58.0, 37.8, 38.6, 13)
+	part({ Name = "FloorPlate", Size = Vector3.new(4.4, 0.5, 4.5), Position = Vector3.new(-62.4, 12.75, 39.65), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	guardRailZ(guilds, 41.75, -60.2, -39.4, 13)
+	guardRailX(guilds, -60.2, 37.5, 41.75, 13)
 
 	-- Beds for traveling adventurers
 	local blankets = { Color3.fromRGB(150, 60, 60), Color3.fromRGB(80, 100, 140), Color3.fromRGB(96, 128, 88), Color3.fromRGB(150, 120, 80) }
@@ -448,13 +448,13 @@ local function buildMerchantsGuild(guilds: Folder)
 	hangingLantern(guilds, 58, 46, 12.5, 1.2, 20)
 
 	-- Stairs up along the south wall
-	stairsWestward(guilds, 61.5, 41.2, 11.95)
+	stairsWestward(guilds, 60.5, 43.4, 11.95)
 
 	-- ---------------- upper floor: offices
-	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 28.3), Position = Vector3.new(52, 12.75, 56.45), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(6.8, 0.5, 3.0), Position = Vector3.new(42.6, 12.75, 40.8), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	guardRailZ(guilds, 42.9, 47.0, 62.7, 13)
-	guardRailX(guilds, 47.0, 42.9, 43.2, 13)
+	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 25.3), Position = Vector3.new(52, 12.75, 57.95), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(5.6, 0.5, 5.6), Position = Vector3.new(42.2, 12.75, 42.1), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	guardRailZ(guilds, 45.45, 45.0, 64.4, 13)
+	guardRailX(guilds, 45.0, 39.6, 45.45, 13)
 
 	-- Office furnishings
 	for _, z in { 62, 50 } do
@@ -473,14 +473,14 @@ local function buildMerchantsGuild(guilds: Folder)
 		part({
 			Name = "OfficePartition",
 			Size = Vector3.new(seg[2] - seg[1], 12, 0.45),
-			Position = Vector3.new((seg[1] + seg[2]) / 2, 19, 56),
+			Position = Vector3.new((seg[1] + seg[2]) / 2, 19, 58),
 			Color = Color3.fromRGB(222, 212, 190),
 			Material = Enum.Material.Plaster,
 		}).Parent = guilds
 	end
-	part({ Name = "OfficeDoorLintel", Size = Vector3.new(4.6, 3.5, 0.45), Position = Vector3.new(49.5, 23.75, 56), Color = Color3.fromRGB(222, 212, 190), Material = Enum.Material.Plaster }).Parent = guilds
+	part({ Name = "OfficeDoorLintel", Size = Vector3.new(4.6, 3.5, 0.45), Position = Vector3.new(49.5, 23.75, 58), Color = Color3.fromRGB(222, 212, 190), Material = Enum.Material.Plaster }).Parent = guilds
 	for _, dx in { -2.3, 2.3 } do
-		part({ Name = "OfficeDoorTrim", Size = Vector3.new(0.6, 9.4, 0.75), Position = Vector3.new(49.5 + dx, 17.7, 56), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = guilds
+		part({ Name = "OfficeDoorTrim", Size = Vector3.new(0.6, 9.4, 0.75), Position = Vector3.new(49.5 + dx, 17.7, 58), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = guilds
 	end
 
 	for _, z in { 48, 62 } do

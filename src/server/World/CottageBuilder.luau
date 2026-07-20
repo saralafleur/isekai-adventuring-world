@@ -141,23 +141,13 @@ local function cornerPostsAndPlates(parent: Instance)
 			Material = Enum.Material.Wood,
 		}).Parent = parent
 	end
-	-- Horizontal plates (top and mid) on each face, slightly proud of the plaster
-	local faces = {
-		{ size = Vector3.new(31, 0.6, 1.4), pos = Vector3.new(0, 0, -52) },
-		{ size = Vector3.new(31, 0.6, 1.4), pos = Vector3.new(0, 0, -28) },
-		{ size = Vector3.new(1.4, 0.6, 25), pos = Vector3.new(-15, 0, -40) },
-		{ size = Vector3.new(1.4, 0.6, 25), pos = Vector3.new(15, 0, -40) },
-	}
-	-- Top plates only — a mid-height plate would cut across the window and door openings
-	for _, face in faces do
-		part({
-			Name = "Beam",
-			Size = face.size,
-			Position = Vector3.new(face.pos.X, WALL_TOP - 0.3, face.pos.Z),
-			Color = BEAM_COLOR,
-			Material = Enum.Material.Wood,
-		}).Parent = parent
-	end
+	-- Eave plates on the north/south faces: tall enough to reach up under the
+	-- lifted roof slabs so no gap (or wall top) shows at the eaves. The east/west
+	-- faces get a slim top plate under the gable triangles.
+	part({ Name = "EavePlate", Size = Vector3.new(31, 1.4, 1.4), Position = Vector3.new(0, WALL_TOP + 0.1, -52), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "EavePlate", Size = Vector3.new(31, 1.4, 1.4), Position = Vector3.new(0, WALL_TOP + 0.1, -28), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "Beam", Size = Vector3.new(1.4, 0.6, 25), Position = Vector3.new(-15, WALL_TOP - 0.3, -40), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "Beam", Size = Vector3.new(1.4, 0.6, 25), Position = Vector3.new(15, WALL_TOP - 0.3, -40), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
 end
 
 local function roof(parent: Instance)
@@ -165,7 +155,9 @@ local function roof(parent: Instance)
 	local run = HALF_DEPTH + OVERHANG
 	local drop = math.tan(angle) * run
 	local slabLength = math.sqrt(run * run + drop * drop)
-	local ridgeY = WALL_TOP + RISE
+	-- Lifted 0.6 above the geometric ridge so the slab underside clears the wall
+	-- tops at the eaves (they'd otherwise pierce the roof plane)
+	local ridgeY = WALL_TOP + RISE + 0.6
 	local eaveY = ridgeY - drop
 
 	-- South slab (descends toward +Z), north slab mirrored
@@ -191,11 +183,10 @@ local function roof(parent: Instance)
 		Material = Enum.Material.Wood,
 	}).Parent = parent
 
-	-- Gable triangles (east/west ends): two wedges per end.
-	-- Slightly undersized so the sloped tops sit below the roof slabs' underside
-	-- instead of sharing their plane (which z-fights).
-	local gableRise = RISE - 0.6
-	local gableDepth = HALF_DEPTH - 0.9
+	-- Gable triangles (east/west ends): two wedges per end. Full size — the roof
+	-- lift above gives their sloped tops uniform clearance under the slabs.
+	local gableRise = RISE
+	local gableDepth = HALF_DEPTH
 	for _, x in { -14.75, 14.75 } do
 		for _, side in { 1, -1 } do
 			local wedge = Instance.new("WedgePart")

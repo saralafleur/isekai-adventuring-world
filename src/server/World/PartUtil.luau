@@ -69,7 +69,7 @@ function PartUtil.steppedStairs(
 		step.Parent = parent
 	end
 
-	local railSides = opts.railSides or ({} :: { Vector3 })
+	local railSides: { Vector3 } = opts.railSides or {}
 	for _, side in railSides do
 		local offset = side * (width / 2 + 0.18)
 		for _, t in { 0.05, 0.5, 0.95 } do

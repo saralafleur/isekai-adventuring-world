@@ -73,19 +73,21 @@ local function browseSpots(): { Vector3 }
 	return list
 end
 
+local AvatarFactory = require(script.Parent.AvatarFactory)
+
+local BODY_KINDS: { AvatarFactory.BodyKind } = { "masc", "fem" }
+local BODY_SHAPES: { AvatarFactory.BodyShape } = { "heavy", "average", "average", "thin" }
+
 local function buildTraveler(): Traveler?
 	local outfit = OUTFITS[rng:NextInteger(1, #OUTFITS)]
-	local description = Instance.new("HumanoidDescription")
-	description.Shirt = outfit.shirt
-	description.Pants = outfit.pants
-	description.BodyTypeScale = 0.15
-	local skin = SKINS[rng:NextInteger(1, #SKINS)]
-	description.HeadColor = skin
-	description.TorsoColor = skin
-	description.LeftArmColor = skin
-	description.RightArmColor = skin
-	description.LeftLegColor = skin
-	description.RightLegColor = skin
+	local description = AvatarFactory.describe({
+		shirtId = outfit.shirt,
+		pantsId = outfit.pants,
+		skin = SKINS[rng:NextInteger(1, #SKINS)],
+		heightScale = rng:NextNumber(0.94, 1.06),
+		body = BODY_KINDS[rng:NextInteger(1, #BODY_KINDS)],
+		shape = BODY_SHAPES[rng:NextInteger(1, #BODY_SHAPES)],
+	})
 
 	local ok, model = pcall(function()
 		return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)

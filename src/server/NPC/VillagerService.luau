@@ -94,25 +94,20 @@ local function attachHammer(model: Model)
 	head.Parent = model
 end
 
+local AvatarFactory = require(script.Parent.AvatarFactory)
+
 local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
-	local description = Instance.new("HumanoidDescription")
-	description.Shirt = persona.shirtId
-	description.Pants = persona.pantsId
-	description.HeightScale = persona.heightScale
-	description.WidthScale = persona.widthScale
-	description.BodyTypeScale = 0.15
-	if persona.hairId then
-		description.HairAccessory = tostring(persona.hairId)
-	end
-	if persona.hatId then
-		description.HatAccessory = tostring(persona.hatId)
-	end
-	description.HeadColor = persona.skin
-	description.TorsoColor = persona.skin
-	description.LeftArmColor = persona.skin
-	description.RightArmColor = persona.skin
-	description.LeftLegColor = persona.skin
-	description.RightLegColor = persona.skin
+	local description = AvatarFactory.describe({
+		shirtId = persona.shirtId,
+		pantsId = persona.pantsId,
+		skin = persona.skin,
+		heightScale = persona.heightScale,
+		widthScale = persona.widthScale,
+		hairId = persona.hairId,
+		hatId = persona.hatId,
+		body = persona.body,
+		shape = persona.shape,
+	})
 
 	local ok, model = pcall(function()
 		return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)

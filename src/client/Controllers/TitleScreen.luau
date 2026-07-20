@@ -1,5 +1,5 @@
 --!strict
--- Title / loading screen: "IKAIKA — in an Adventuring World".
+-- Title / loading screen: "ISEKAI — in an Adventuring World".
 -- Dusk-sky gradient, glowing sun, layered mountain silhouettes, drifting
 -- embers, shimmering gold title. Click to begin -> fades to black and hands
 -- off to the monologue.
@@ -126,7 +126,7 @@ function TitleScreen.play()
 	title.Position = UDim2.fromScale(0.5, 0.34)
 	title.Size = UDim2.new(0.9, 0, 0, 130)
 	title.BackgroundTransparency = 1
-	title.Text = "IKAIKA"
+	title.Text = "ISEKAI"
 	title.Font = Enum.Font.LuckiestGuy
 	title.TextScaled = true
 	title.TextColor3 = Color3.fromRGB(255, 220, 130)

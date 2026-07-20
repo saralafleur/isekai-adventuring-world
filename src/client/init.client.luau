@@ -3,6 +3,7 @@ local DialogueUI = require(script.Controllers.DialogueUI)
 local QuestTracker = require(script.Controllers.QuestTracker)
 local Notifier = require(script.Controllers.Notifier)
 local ShopUI = require(script.Controllers.ShopUI)
+local MusicController = require(script.Controllers.MusicController)
 local TitleScreen = require(script.Controllers.TitleScreen)
 local IntroSequence = require(script.Controllers.IntroSequence)
 local FlybyCinematic = require(script.Controllers.FlybyCinematic)
@@ -11,11 +12,14 @@ Notifier.init()
 QuestTracker.init()
 DialogueUI.init()
 ShopUI.init()
+MusicController.init()
 
 -- Opening flow: title screen -> monologue over black -> village flyby that
--- descends to the cottage -> control handed to the player
+-- glides back into the player's head (first person) -> control handed over
+MusicController.playTitle()
 TitleScreen.play()
 local blackGui = IntroSequence.play(true)
 FlybyCinematic.play(blackGui)
+MusicController.toVillage()
 
-print("[Client] Ikaika in an Adventuring World — client ready")
+print("[Client] Isekai in an Adventuring World — client ready")

@@ -1,40 +1,45 @@
 --!strict
--- Drives the 15 ambient villagers: block-figure rigs with procedural walk
--- animation, real pathfinding around buildings/fences, and endless randomized
--- routines (walk somewhere -> dwell / enter a house / work the forge -> pick
--- the next errand). Routines never repeat because each next stop is drawn
--- from the persona's weights at runtime.
+-- Drives the 15 ambient villagers as real R15 avatars: each rig is generated
+-- from a HumanoidDescription (catalog clothing + body scales), walks with
+-- Roblox's standard walk/idle animations via Humanoid:MoveTo, pathfinds around
+-- buildings/fences, and runs endless randomized routines (walk somewhere ->
+-- dwell / enter a house / work the forge -> pick the next errand). Routines
+-- never repeat because each next stop is drawn from persona weights at runtime.
 
 local CollectionService = game:GetService("CollectionService")
 local PathfindingService = game:GetService("PathfindingService")
+local PhysicsService = game:GetService("PhysicsService")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local Catalog = require(script.Parent.VillagerCatalog)
 
 type Persona = Catalog.Persona
 
-local WALK_Y = 3 -- rig root height above ground when standing
+-- Roblox's standard R15 animation assets
+local ANIM_IDS = {
+	idle = "rbxassetid://507766388",
+	walk = "rbxassetid://507777826",
+	slash = "rbxassetid://522635514", -- hammer swing
+}
+
+local VILLAGER_GROUP = "Villager"
 
 type Villager = {
 	persona: Persona,
 	model: Model,
-	torso: Part,
-	head: Part,
-	legL: Part,
-	legR: Part,
-	armL: Part,
-	armR: Part,
-	hammer: Part?,
-	parts: { Part },
+	humanoid: Humanoid,
+	root: BasePart,
+	walkTrack: AnimationTrack,
+	slashTrack: AnimationTrack,
+	originalTransparency: { [Instance]: number },
 	mode: "Idle" | "Walking" | "Hidden" | "Working" | "Routing",
-	pos: Vector3,
-	look: Vector3,
 	waypoints: { Vector3 },
 	wpIndex: number,
-	phase: number,
 	timerUntil: number,
+	repathAt: number,
+	sparkAt: number,
 	rng: Random,
-	swingT: number,
 }
 
 local VillagerService = {}
@@ -45,146 +50,149 @@ local anvilSparks: ParticleEmitter? = nil
 
 -- ---------------------------------------------------------------- rig building
 
-local function makeLimb(size: Vector3, color: Color3): Part
-	local p = Instance.new("Part")
-	p.Size = size
-	p.Color = color
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanQuery = false
-	p.TopSurface = Enum.SurfaceType.Smooth
-	p.BottomSurface = Enum.SurfaceType.Smooth
-	return p
+local function makeAnimation(id: string): Animation
+	local anim = Instance.new("Animation")
+	anim.AnimationId = id
+	return anim
 end
 
-local function buildRig(persona: Persona, spawnPos: Vector3): Villager
-	local model = Instance.new("Model")
+local animIdle = makeAnimation(ANIM_IDS.idle)
+local animWalk = makeAnimation(ANIM_IDS.walk)
+local animSlash = makeAnimation(ANIM_IDS.slash)
+
+local function attachHammer(model: Model)
+	local rightHand = model:FindFirstChild("RightHand") :: BasePart?
+	if not rightHand then
+		return
+	end
+	local handle = Instance.new("Part")
+	handle.Name = "Hammer"
+	handle.Size = Vector3.new(0.35, 1.6, 0.35)
+	handle.Color = Color3.fromRGB(120, 90, 60)
+	handle.Material = Enum.Material.Wood
+	handle.CanCollide = false
+	handle.Massless = true
+	handle.CFrame = rightHand.CFrame * CFrame.new(0, -0.4, -0.6) * CFrame.Angles(math.rad(90), 0, 0)
+	local head = Instance.new("Part")
+	head.Name = "HammerHead"
+	head.Size = Vector3.new(0.9, 0.5, 0.55)
+	head.Color = Color3.fromRGB(90, 88, 86)
+	head.Material = Enum.Material.Metal
+	head.CanCollide = false
+	head.Massless = true
+	head.CFrame = handle.CFrame * CFrame.new(0, 0.85, 0)
+
+	local weld1 = Instance.new("WeldConstraint")
+	weld1.Part0 = rightHand
+	weld1.Part1 = handle
+	weld1.Parent = handle
+	local weld2 = Instance.new("WeldConstraint")
+	weld2.Part0 = handle
+	weld2.Part1 = head
+	weld2.Parent = head
+	handle.Parent = model
+	head.Parent = model
+end
+
+local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
+	local description = Instance.new("HumanoidDescription")
+	description.Shirt = persona.shirtId
+	description.Pants = persona.pantsId
+	description.HeightScale = persona.heightScale
+	description.WidthScale = persona.widthScale
+	description.BodyTypeScale = 0.15
+	description.HeadColor = persona.skin
+	description.TorsoColor = persona.skin
+	description.LeftArmColor = persona.skin
+	description.RightArmColor = persona.skin
+	description.LeftLegColor = persona.skin
+	description.RightLegColor = persona.skin
+
+	local ok, model = pcall(function()
+		return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
+	end)
+	if not ok or not model then
+		warn(`[Villagers] failed to create rig for {persona.name}: {model}`)
+		return nil
+	end
+
 	model.Name = persona.name
+	local humanoid = model:FindFirstChildOfClass("Humanoid") :: Humanoid
+	humanoid.WalkSpeed = persona.speed
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
+	humanoid.HealthDisplayDistance = 0
+	humanoid.NameDisplayDistance = 50
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
 
-	local torso = makeLimb(Vector3.new(2, 2, 1), persona.shirt)
-	torso.Name = "Torso"
-	local head = makeLimb(Vector3.new(1.5, 1.5, 1.5), persona.skin)
-	head.Name = "Head"
-	head.Shape = Enum.PartType.Ball
-	local legL = makeLimb(Vector3.new(0.8, 2, 0.8), persona.pants)
-	local legR = makeLimb(Vector3.new(0.8, 2, 0.8), persona.pants)
-	local armL = makeLimb(Vector3.new(0.6, 2, 0.6), persona.shirt)
-	local armR = makeLimb(Vector3.new(0.6, 2, 0.6), persona.shirt)
+	local root = model.PrimaryPart :: BasePart
 
-	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.fromOffset(160, 28)
-	billboard.StudsOffset = Vector3.new(0, 1.6, 0)
-	billboard.AlwaysOnTop = false
-	billboard.MaxDistance = 60
-	billboard.Parent = head
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
-	label.BackgroundTransparency = 1
-	label.Text = persona.name
-	label.TextColor3 = Color3.new(1, 1, 1)
-	label.TextStrokeTransparency = 0.4
-	label.TextScaled = true
-	label.Font = Enum.Font.Gotham
-	label.Parent = billboard
+	for _, descendant in model:GetDescendants() do
+		if descendant:IsA("BasePart") then
+			descendant.CollisionGroup = VILLAGER_GROUP
+		end
+	end
 
-	local parts = { torso, head, legL, legR, armL, armR }
-
-	local hammer: Part? = nil
 	if persona.weights.forge > 0 then
-		local h = makeLimb(Vector3.new(0.4, 1.6, 0.4), Color3.fromRGB(120, 90, 60))
-		local headPiece = makeLimb(Vector3.new(1, 0.5, 0.6), Color3.fromRGB(90, 88, 86))
-		headPiece.Name = "HammerHead"
-		headPiece.Parent = h
-		h.Name = "Hammer"
-		hammer = h
-		table.insert(parts, h)
+		attachHammer(model)
 	end
 
-	for _, p in parts do
-		p.Parent = model
+	-- Record original transparencies so hide/unhide can restore them exactly
+	local originalTransparency: { [Instance]: number } = {}
+	for _, descendant in model:GetDescendants() do
+		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
+			originalTransparency[descendant] = (descendant :: any).Transparency
+		end
 	end
-	if hammer then
-		-- hammer head follows via its own CFrame each frame; parent for cleanup only
-		(hammer:FindFirstChild("HammerHead") :: Part).Anchored = true
-	end
+
+	model:PivotTo(CFrame.new(spawnPos + Vector3.new(0, 3.2, 0)))
 	model.Parent = workspace
+	root:SetNetworkOwner(nil)
+
+	local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+	animator.Parent = humanoid
+	local idleTrack = animator:LoadAnimation(animIdle)
+	idleTrack.Priority = Enum.AnimationPriority.Idle
+	idleTrack.Looped = true
+	idleTrack:Play()
+	local walkTrack = animator:LoadAnimation(animWalk)
+	walkTrack.Priority = Enum.AnimationPriority.Movement
+	walkTrack.Looped = true
+	local slashTrack = animator:LoadAnimation(animSlash)
+	slashTrack.Priority = Enum.AnimationPriority.Action
+	slashTrack.Looped = true
 
 	return {
 		persona = persona,
 		model = model,
-		torso = torso,
-		head = head,
-		legL = legL,
-		legR = legR,
-		armL = armL,
-		armR = armR,
-		hammer = hammer,
-		parts = parts,
+		humanoid = humanoid,
+		root = root,
+		walkTrack = walkTrack,
+		slashTrack = slashTrack,
+		originalTransparency = originalTransparency,
 		mode = "Idle" :: "Idle",
-		pos = spawnPos,
-		look = Vector3.zAxis,
 		waypoints = {},
 		wpIndex = 1,
-		phase = 0,
 		timerUntil = 0,
+		repathAt = 0,
+		sparkAt = 0,
 		rng = Random.new(),
-		swingT = 0,
 	}
 end
 
--- Poses all rig parts from the villager's position, facing and animation phase.
-local function pose(v: Villager, dt: number)
-	local walking = v.mode == "Walking"
-	local swing = if walking then math.sin(v.phase) * 0.7 else 0
-	local bob = if walking then math.abs(math.cos(v.phase)) * 0.15 else math.sin(os.clock() * 1.5 + v.phase) * 0.05
-
-	local root = CFrame.lookAlong(v.pos + Vector3.new(0, bob, 0), v.look)
-
-	v.torso.CFrame = root
-	v.head.CFrame = root * CFrame.new(0, 1.75, 0)
-	v.legL.CFrame = root * CFrame.new(-0.55, -1, 0) * CFrame.Angles(swing, 0, 0) * CFrame.new(0, -1, 0)
-	v.legR.CFrame = root * CFrame.new(0.55, -1, 0) * CFrame.Angles(-swing, 0, 0) * CFrame.new(0, -1, 0)
-
-	if v.mode == "Working" then
-		-- Hammering: right arm swings hard, sparks at the bottom of the strike
-		v.swingT += dt * 5
-		local strike = math.sin(v.swingT)
-		local armAngle = -0.6 - math.max(0, strike) * 1.5
-		v.armR.CFrame = root * CFrame.new(1.15, 0.8, 0) * CFrame.Angles(armAngle, 0, 0) * CFrame.new(0, -1, 0)
-		v.armL.CFrame = root * CFrame.new(-1.15, 0.8, 0) * CFrame.Angles(-0.3, 0, 0) * CFrame.new(0, -1, 0)
-		local hammer = v.hammer
-		if hammer then
-			hammer.CFrame = v.armR.CFrame * CFrame.new(0, -1.2, -0.3) * CFrame.Angles(math.rad(90), 0, 0);
-			(hammer:FindFirstChild("HammerHead") :: Part).CFrame = hammer.CFrame * CFrame.new(0, 0.85, 0)
-		end
-		-- Spark when the strike passes its low point
-		local prev = math.sin(v.swingT - dt * 5)
-		if strike >= 0.98 and prev < 0.98 and anvilSparks then
-			anvilSparks:Emit(14)
-		end
-	else
-		v.armL.CFrame = root * CFrame.new(-1.15, 0.8, 0) * CFrame.Angles(-swing * 0.6, 0, 0) * CFrame.new(0, -1, 0)
-		v.armR.CFrame = root * CFrame.new(1.15, 0.8, 0) * CFrame.Angles(swing * 0.6, 0, 0) * CFrame.new(0, -1, 0)
-		local hammer = v.hammer
-		if hammer then
-			-- carried at the hip when not working
-			hammer.CFrame = v.torso.CFrame * CFrame.new(1.2, -0.8, 0.4) * CFrame.Angles(0, 0, math.rad(100));
-			(hammer:FindFirstChild("HammerHead") :: Part).CFrame = hammer.CFrame * CFrame.new(0, 0.85, 0)
-		end
-	end
-end
-
 local function setHidden(v: Villager, hidden: boolean)
-	for _, p in v.parts do
-		p.Transparency = if hidden then 1 else 0
-		for _, child in p:GetChildren() do
-			if child:IsA("Part") then
-				child.Transparency = if hidden then 1 else 0
-			elseif child:IsA("BillboardGui") then
-				child.Enabled = not hidden
-			end
+	for instance, original in v.originalTransparency do
+		(instance :: any).Transparency = if hidden then 1 else original
+	end
+	for _, descendant in v.model:GetDescendants() do
+		if descendant:IsA("BasePart") and (descendant.Name == "Hammer" or descendant.Name == "HammerHead") then
+			descendant.Transparency = if hidden then 1 else 0
 		end
 	end
+	v.root.Anchored = hidden
+	v.humanoid.DisplayDistanceType = if hidden
+		then Enum.HumanoidDisplayDistanceType.None
+		else Enum.HumanoidDisplayDistanceType.Viewer
 end
 
 -- ---------------------------------------------------------------- destinations
@@ -251,13 +259,13 @@ local function walkTo(v: Villager, target: Vector3, arriveMode: "enter" | "dwell
 	v.mode = "Routing"
 	task.spawn(function()
 		local path = PathfindingService:CreatePath({
-			AgentRadius = 2,
+			AgentRadius = 2.5,
 			AgentHeight = 6,
 			AgentCanJump = false,
 			WaypointSpacing = 8,
 		})
 		local ok = pcall(function()
-			path:ComputeAsync(v.pos, target)
+			path:ComputeAsync(v.root.Position, target)
 		end)
 		local waypoints: { Vector3 } = {}
 		if ok and path.Status == Enum.PathStatus.Success then
@@ -266,12 +274,14 @@ local function walkTo(v: Villager, target: Vector3, arriveMode: "enter" | "dwell
 			end
 		end
 		if #waypoints == 0 then
-			waypoints = { target } -- fallback: straight line
+			waypoints = { target }
 		end
 		v.waypoints = waypoints
 		v.wpIndex = 1
+		v.repathAt = 0
 		v.mode = "Walking"
 		v.model:SetAttribute("ArriveMode", arriveMode)
+		v.walkTrack:Play()
 	end)
 end
 
@@ -292,24 +302,27 @@ end
 
 local function onArrive(v: Villager)
 	local persona = v.persona
+	local now = os.clock()
+	v.walkTrack:Stop(0.2)
 	local arriveMode = v.model:GetAttribute("ArriveMode")
 	if arriveMode == "enter" then
 		v.mode = "Hidden"
 		setHidden(v, true)
-		v.timerUntil = os.clock() + v.rng:NextNumber(persona.hideMin, persona.hideMax)
+		v.timerUntil = now + v.rng:NextNumber(persona.hideMin, persona.hideMax)
 	elseif arriveMode == "work" then
 		v.mode = "Working"
 		-- face the anvil (east of the AnvilSpot)
-		v.look = Vector3.xAxis
-		v.swingT = 0
-		v.timerUntil = os.clock() + v.rng:NextNumber(60, 150)
+		v.root.CFrame = CFrame.lookAlong(v.root.Position, Vector3.xAxis)
+		v.slashTrack:Play(0.2)
+		v.timerUntil = now + v.rng:NextNumber(60, 150)
+		v.sparkAt = now + 0.4
 	else
 		v.mode = "Idle"
-		v.timerUntil = os.clock() + v.rng:NextNumber(persona.dwellMin, persona.dwellMax)
+		v.timerUntil = now + v.rng:NextNumber(persona.dwellMin, persona.dwellMax)
 	end
 end
 
-local function update(v: Villager, dt: number)
+local function update(v: Villager)
 	local now = os.clock()
 
 	if v.mode == "Walking" then
@@ -318,25 +331,34 @@ local function update(v: Villager, dt: number)
 			onArrive(v)
 			return
 		end
-		local goal = Vector3.new(target.X, target.Y + WALK_Y - 1.5, target.Z)
-		local delta = goal - v.pos
-		local flat = Vector3.new(delta.X, 0, delta.Z)
-		local step = v.persona.speed * dt
-		if delta.Magnitude <= step + 0.1 then
-			v.pos = goal
+		local delta = v.root.Position - target
+		local flatDistance = Vector3.new(delta.X, 0, delta.Z).Magnitude
+		if flatDistance < 3 then
 			v.wpIndex += 1
 			if v.wpIndex > #v.waypoints then
 				onArrive(v)
+			else
+				v.humanoid:MoveTo(v.waypoints[v.wpIndex])
+				v.repathAt = now + 4
 			end
-		else
-			v.pos += delta.Unit * step
-			if flat.Magnitude > 0.05 then
-				v.look = flat.Unit
-			end
-			v.phase += dt * v.persona.speed * 1.4
+		elseif now >= v.repathAt then
+			-- (re)issue MoveTo; also covers the humanoid's 8s auto-timeout
+			v.humanoid:MoveTo(target)
+			v.repathAt = now + 4
 		end
-	elseif v.mode == "Idle" or v.mode == "Working" then
+	elseif v.mode == "Idle" then
 		if now >= v.timerUntil then
+			chooseNext(v)
+		end
+	elseif v.mode == "Working" then
+		if now >= v.sparkAt then
+			v.sparkAt = now + v.slashTrack.Length
+			if anvilSparks then
+				anvilSparks:Emit(14)
+			end
+		end
+		if now >= v.timerUntil then
+			v.slashTrack:Stop(0.2)
 			chooseNext(v)
 		end
 	elseif v.mode == "Hidden" then
@@ -345,16 +367,19 @@ local function update(v: Villager, dt: number)
 			chooseNext(v)
 		end
 	end
-	-- "Routing" waits for the path computation
-
-	if v.mode ~= "Hidden" then
-		pose(v, dt)
-	end
+	-- "Routing" waits for the async path computation
 end
 
 -- ---------------------------------------------------------------- init
 
 function VillagerService.init()
+	pcall(function()
+		PhysicsService:RegisterCollisionGroup(VILLAGER_GROUP)
+	end)
+	-- Villagers pass through each other (no plaza traffic jams) but still
+	-- collide with the world (Default group)
+	PhysicsService:CollisionGroupSetCollidable(VILLAGER_GROUP, VILLAGER_GROUP, false)
+
 	collectDestinations()
 
 	local spawnSpots = {
@@ -365,23 +390,25 @@ function VillagerService.init()
 		Vector3.new(0, 0, 68),
 	}
 	for index, persona in Catalog do
-		local spot = spawnSpots[(index - 1) % #spawnSpots + 1]
-		local jitter = Vector3.new((index * 7) % 11 - 5, 0, (index * 13) % 9 - 4)
-		local spawnPos = spot + jitter + Vector3.new(0, WALK_Y - 1.5 + 0.4, 0)
-		local v = buildRig(persona, spawnPos)
-		-- stagger the first errand so they don't all move in lockstep
-		v.mode = "Idle"
-		v.timerUntil = os.clock() + index * 1.5
-		table.insert(villagers, v)
+		task.spawn(function()
+			local spot = spawnSpots[(index - 1) % #spawnSpots + 1]
+			local jitter = Vector3.new((index * 7) % 11 - 5, 0, (index * 13) % 9 - 4)
+			local v = buildRig(persona, spot + jitter)
+			if v then
+				-- stagger first errands so the crowd doesn't move in lockstep
+				v.timerUntil = os.clock() + index * 1.5
+				table.insert(villagers, v)
+			end
+		end)
 	end
 
-	RunService.Heartbeat:Connect(function(dt)
+	RunService.Heartbeat:Connect(function()
 		for _, v in villagers do
-			update(v, dt)
+			update(v)
 		end
 	end)
 
-	print(`[Server] {#villagers} villagers going about their day`)
+	print("[Server] villagers dressing up and heading out")
 end
 
 return VillagerService

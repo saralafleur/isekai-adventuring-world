@@ -8,3 +8,7 @@ globalTypes.d.luau
 /Packages/
 /DevPackages/
 *.rbxl.lock
+
+# local neural TTS model + venv (regenerate via scripts/generate-voice-lines.py header)
+.tts-models/
+.venv-tts/

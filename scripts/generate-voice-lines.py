@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 """Generate one audio file per dialogue line, cast with per-character voices.
 
+Uses Kokoro (a local 82M-parameter neural TTS, ~325MB ONNX model) when it is
+installed, which sounds dramatically better than macOS `say` — blind tests rank
+it ahead of Google WaveNet and Amazon Polly Neural. Falls back to `say` if the
+model is missing, so the script always works.
+
+  Set up Kokoro once:
+    uv venv .venv-tts --python 3.12
+    uv pip install --python .venv-tts/bin/python kokoro-onnx soundfile
+    mkdir -p .tts-models && cd .tts-models
+    curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+    curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+
+
 Reads src/shared/Data/Dialogue.luau, speaks every line with macOS `say` using
 the voice cast below, converts to mp3, and writes:
 
@@ -31,17 +44,50 @@ OUT_DIR = ROOT / "audio" / "lines"
 MANIFEST = ROOT / "audio" / "manifest.json"
 LUAU_OUT = ROOT / "src" / "shared" / "Data" / "VoiceLines.luau"
 
-# Casting. `rate` is words-per-minute (macOS default is ~175).
+KOKORO_MODEL = ROOT / ".tts-models" / "kokoro-v1.0.onnx"
+KOKORO_VOICES = ROOT / ".tts-models" / "voices-v1.0.bin"
+VENV_PY = ROOT / ".venv-tts" / "bin" / "python"
+
+# Casting. `kokoro`/`speed` drive the neural engine; `voice`/`rate` are the
+# macOS `say` fallback. Speed is a multiplier (1.0 = natural pace).
 CAST: dict[str, dict] = {
-    "Mira":        {"voice": "Samantha", "rate": 168},  # mother: warm, unhurried
-    "Daren":       {"voice": "Daniel",   "rate": 148},  # father: low, deliberate
-    "Kael":        {"voice": "Junior",   "rate": 180},  # the 14-year-old himself
-    "Baker Hobb":  {"voice": "Ralph",    "rate": 190},  # brisk and cheerful
-    "Elder Bram":  {"voice": "Albert",   "rate": 140},  # old and slow
-    "Tarin":       {"voice": "Fred",     "rate": 195},  # loud, fast, overconfident
-    "Lyra":        {"voice": "Kathy",    "rate": 172},  # clever, calm
+    # mother: warm, unhurried — af_heart is Kokoro's highest-graded voice
+    "Mira":       {"kokoro": "af_heart",  "speed": 0.95, "voice": "Samantha", "rate": 168},
+    # father: older British male, slow and deliberate
+    "Daren":      {"kokoro": "bm_george", "speed": 0.88, "voice": "Daniel",   "rate": 148},
+    # Kael, 14 — the youngest-sounding male voice available
+    "Kael":       {"kokoro": "am_puck",   "speed": 1.02, "voice": "Junior",   "rate": 180},
+    # the baker: genuinely jolly
+    "Baker Hobb": {"kokoro": "am_santa",  "speed": 1.0,  "voice": "Ralph",    "rate": 190},
+    "Elder Bram": {"kokoro": "bm_lewis",  "speed": 0.82, "voice": "Albert",   "rate": 140},
+    "Tarin":      {"kokoro": "am_liam",   "speed": 1.1,  "voice": "Fred",     "rate": 195},
+    "Lyra":       {"kokoro": "af_bella",  "speed": 1.0,  "voice": "Kathy",    "rate": 172},
 }
-FALLBACK = {"voice": "Samantha", "rate": 175}
+FALLBACK = {"kokoro": "af_sarah", "speed": 1.0, "voice": "Samantha", "rate": 175}
+
+
+def kokoro_available() -> bool:
+    return KOKORO_MODEL.exists() and KOKORO_VOICES.exists() and VENV_PY.exists()
+
+
+def synth_kokoro(jobs: list[dict]) -> None:
+    """Generate every clip in one subprocess — the model loads only once."""
+    script = """
+import json, sys
+from kokoro_onnx import Kokoro
+import soundfile as sf
+kok = Kokoro(sys.argv[1], sys.argv[2])
+for job in json.loads(sys.argv[3]):
+    samples, sr = kok.create(job["text"], voice=job["voice"], speed=job["speed"], lang="en-us")
+    sf.write(job["wav"], samples, sr)
+    print("ok", job["wav"], flush=True)
+"""
+    payload = json.dumps(jobs)
+    subprocess.run(
+        [str(VENV_PY), "-c", script, str(KOKORO_MODEL), str(KOKORO_VOICES), payload],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
 
 
 def parse_dialogue(text: str) -> list[dict]:
@@ -118,8 +164,12 @@ def main() -> int:
         return 1
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    use_kokoro = kokoro_available()
+    print("engine:", "Kokoro (neural)" if use_kokoro else "macOS say (fallback)")
+
     manifest: list[dict] = []
-    made = skipped = 0
+    pending: list[dict] = []
+    skipped = 0
 
     for entry in entries:
         cast = CAST.get(entry["speaker"], FALLBACK)
@@ -132,29 +182,48 @@ def main() -> int:
                     "key": key,
                     "file": str(mp3.relative_to(ROOT)),
                     "speaker": entry["speaker"],
-                    "voice": cast["voice"],
+                    "voice": cast["kokoro"] if use_kokoro else cast["voice"],
+                    "engine": "kokoro" if use_kokoro else "say",
                     "text": text,
                 }
             )
             if mp3.exists() and not args.force:
                 skipped += 1
                 continue
+            pending.append({"key": key, "mp3": mp3, "text": text, "cast": cast})
 
-            aiff = OUT_DIR / f"{key}.aiff"
+    if pending and use_kokoro:
+        jobs = [
+            {
+                "text": p["text"],
+                "voice": p["cast"]["kokoro"],
+                "speed": p["cast"]["speed"],
+                "wav": str(OUT_DIR / f'{p["key"]}.wav'),
+            }
+            for p in pending
+        ]
+        print(f"synthesizing {len(jobs)} clips...")
+        synth_kokoro(jobs)
+
+    for p in pending:
+        raw = OUT_DIR / (f'{p["key"]}.wav' if use_kokoro else f'{p["key"]}.aiff')
+        if not use_kokoro:
             subprocess.run(
-                ["say", "-v", cast["voice"], "-r", str(cast["rate"]), "-o", str(aiff), text],
+                ["say", "-v", p["cast"]["voice"], "-r", str(p["cast"]["rate"]),
+                 "-o", str(raw), p["text"]],
                 check=True,
             )
-            if "ffmpeg" in converter:
-                subprocess.run(
-                    [converter, "-y", "-loglevel", "error", "-i", str(aiff),
-                     "-codec:a", "libmp3lame", "-b:a", "128k", str(mp3)],
-                    check=True,
-                )
-            else:
-                subprocess.run([converter, "--quiet", "-b", "128", str(aiff), str(mp3)], check=True)
-            aiff.unlink(missing_ok=True)
-            made += 1
+        if "ffmpeg" in converter:
+            subprocess.run(
+                [converter, "-y", "-loglevel", "error", "-i", str(raw),
+                 "-codec:a", "libmp3lame", "-b:a", "160k", str(p["mp3"])],
+                check=True,
+            )
+        else:
+            subprocess.run([converter, "--quiet", "-b", "160", str(raw), str(p["mp3"])], check=True)
+        raw.unlink(missing_ok=True)
+
+    made = len(pending)
 
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n")

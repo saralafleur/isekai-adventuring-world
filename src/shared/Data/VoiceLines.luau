@@ -5,23 +5,23 @@
 -- A 0 means 'not uploaded yet'; the game just stays silent for that line.
 
 local VoiceLines: { [string]: number } = {
-	["MiraBreakfast__greeting__1"] = 95396804806274, -- Mira: There you are. I was beginning to think you planned to sle
-	["MiraBreakfast__kael_dream__1"] = 103891663032786, -- Kael: I had the dream again.
-	["MiraBreakfast__mira_city__1"] = 126724371515706, -- Mira: The city of glass?
-	["MiraBreakfast__kael_rain__1"] = 78782974645342, -- Kael: And the rain.
-	["MiraBreakfast__daren_breakfast__1"] = 118100620338997, -- Daren: Dreams feel important until breakfast.
-	["MiraBreakfast__mira_cure__1"] = 117325433009133, -- Mira: Your father believes food is the cure for everything.
-	["MiraBreakfast__daren_usually__1"] = 85143945652160, -- Daren: It usually is.
-	["MiraBreakfast__quest_ask__1"] = 98607904257889, -- Mira: Kael, the festival won't wait for daydreams. I need suppli
-	["MiraBreakfast__quest_ask__2"] = 106454926415988, -- Mira: Gather five sunroot from the garden, three eggs from the p
-	["MiraQuestActive__reminder__1"] = 140364607392261, -- Mira: Sunroot from the garden, eggs from the pen, and the basket
-	["MiraQuestActive__reminder__2"] = 75775248063263, -- Mira: And mind General Cluck. That bird has opinions.
-	["DarenBracer__ask__1"] = 123650487182379, -- Kael: Father, what's that bracer you keep repairing?
-	["DarenBracer__answer__1"] = 108996661876409, -- Daren: Old militia equipment. Nothing more.
-	["Baker__greeting__1"] = 101796002872152, -- Baker Hobb: Ah, the Rowan boy! Is that Mira's festival basket?
-	["Baker__greeting__2"] = 131110258299651, -- Baker Hobb: Wonderful. The harvest loaves will be ready before the mus
-	["Baker__thanks__1"] = 118379018798609, -- Baker Hobb: Here, take a fresh loaf for your trouble. Enjoy the festiv
-	["BakerNoBasket__greeting__1"] = 97097080438968, -- Baker Hobb: Morning, lad! Busy day ahead. Come back if you've got some
+	["MiraBreakfast__greeting__1"] = 103401603980037, -- Mira: There you are. I was beginning to think you planned to sle
+	["MiraBreakfast__kael_dream__1"] = 95920157472533, -- Kael: I had the dream again.
+	["MiraBreakfast__mira_city__1"] = 75233822967831, -- Mira: The city of glass?
+	["MiraBreakfast__kael_rain__1"] = 92285860476373, -- Kael: And the rain.
+	["MiraBreakfast__daren_breakfast__1"] = 89629111770421, -- Daren: Dreams feel important until breakfast.
+	["MiraBreakfast__mira_cure__1"] = 98851477725552, -- Mira: Your father believes food is the cure for everything.
+	["MiraBreakfast__daren_usually__1"] = 87305538775315, -- Daren: It usually is.
+	["MiraBreakfast__quest_ask__1"] = 107626271254482, -- Mira: Kael, the festival won't wait for daydreams. I need suppli
+	["MiraBreakfast__quest_ask__2"] = 97258544491720, -- Mira: Gather five sunroot from the garden, three eggs from the p
+	["MiraQuestActive__reminder__1"] = 118378602156814, -- Mira: Sunroot from the garden, eggs from the pen, and the basket
+	["MiraQuestActive__reminder__2"] = 112676204545490, -- Mira: And mind General Cluck. That bird has opinions.
+	["DarenBracer__ask__1"] = 122566345058331, -- Kael: Father, what's that bracer you keep repairing?
+	["DarenBracer__answer__1"] = 98677198634270, -- Daren: Old militia equipment. Nothing more.
+	["Baker__greeting__1"] = 114158147580734, -- Baker Hobb: Ah, the Rowan boy! Is that Mira's festival basket?
+	["Baker__greeting__2"] = 107317557386833, -- Baker Hobb: Wonderful. The harvest loaves will be ready before the mus
+	["Baker__thanks__1"] = 94383365490210, -- Baker Hobb: Here, take a fresh loaf for your trouble. Enjoy the festiv
+	["BakerNoBasket__greeting__1"] = 129299164717458, -- Baker Hobb: Morning, lad! Busy day ahead. Come back if you've got some
 }
 
 return VoiceLines

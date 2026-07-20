@@ -88,6 +88,77 @@ run's footprint, a stairwell hole, a doorway swing, or a hallway.
 
 ---
 
+## T — Stairs
+
+Stairs get their own family because they are the single most defect-prone
+structure in the game — every audit round has found a new way for them to
+trap, block, or drop a player.
+
+**T-1. The approach is open.** ≥ **4 studs** of clear floor in front of the
+bottom step, and ≥ 2 studs to either side of the run's mouth. Nothing —
+furniture, hearth, crate, barrel, wall stub — inside that approach.
+
+**T-2. The landing is real.** The floor above must extend ≥ **4.5 studs**
+past the top step, at the top step's full width, and close **flush** with it
+(no gap, no lip beyond 0.1).
+*History: the six shops' landings computed to negative depth and were
+silently discarded — you climbed into a sealed wall.*
+
+**T-3. Risers are walkable and uniform.** Individual rise ≤ **0.9 studs**,
+identical for every step in a run; tread ≥ 0.7.
+
+**T-4. Runs are wide enough.** ≥ **3.5 studs**, 4.2 standard.
+
+**T-5. Railings guard, never block.** A handrail on every open side of the
+run and every open edge of the stairwell — but **never across the arrival or
+the exit**. Rail bars sit ≥ 2.5 above their walking surface, and a rail must
+never be the only thing between the top step and the floor it serves.
+*History: both guild halls sealed their own upper floors this way.*
+
+**T-6. Headroom the whole way up.** ≥ **7 studs** of clear space above every
+step. Nothing may sit over a run — including another run.
+
+**T-7. Successive runs never share a footprint.** A story's run must not
+overlap the run below it in plan. Alternate side walls (or offset), and note
+that merely reversing the climb direction does **not** move the footprint.
+
+**T-8. The stairwell hole matches the run.** The opening in the floor above
+covers the portion of the run where headroom would otherwise fail, and no
+more — a hole that extends past that is an unguarded drop in walkable floor.
+
+**T-9. Nothing lives in the run.** No furniture, fixture or prop inside the
+run's footprint, its approach, or the stairwell hole.
+
+---
+
+## P — Paths and routes
+
+**P-1. A path never crosses a building.** No road, lane, path or spur may
+overlap any building's footprint, and it must clear the foundation skirt by
+≥ **2 studs**. Routes go *around* buildings.
+*History: the residential lanes were laid as smooth polylines with no regard
+for the plots beside them and ran straight through houses.*
+
+**P-2. Every door is served.** A building's door side connects to a path
+whose near edge is within **10 studs** of the doorstep, with clear ground
+between.
+
+**P-3. The network connects.** Every path segment reaches the rest of the
+network — no orphan strips. A player must be able to walk from any building
+door to the plaza on surfaced ground.
+
+**P-4. Wide enough to walk and pass.** Main roads ≥ 10 studs, lanes ≥ 6,
+spurs ≥ 5.
+
+**P-5. Junctions are continuous.** Where segments meet they overlap so no
+grass gap shows through, and their thicknesses differ by ≥ 0.04 so the tops
+never share a plane (see G-5).
+
+**P-6. Paths avoid obstacles, not just buildings.** Fences, fields, water,
+material piles and props are routed around as well.
+
+---
+
 ## F — Furnishing and purpose
 
 **F-1. Furnished to purpose.** A home has living space below and sleeping

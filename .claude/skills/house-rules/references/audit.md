@@ -17,7 +17,7 @@ State the scope in one line before spawning anything.
 
 ## Phase 2 — Fan out (parallel)
 
-Spawn all five specialists **in one message** so they run concurrently. Give
+Spawn all seven specialists **in one message** so they run concurrently. Give
 each the same scope and tell it to read the rulebook first:
 
 | Agent | Owns |
@@ -27,6 +27,8 @@ each the same scope and tell it to read the rulebook first:
 | `house-scale` | S-1…S-6 — ceilings, footprints, openings, furniture clearance |
 | `house-furnishing` | F-1…F-4, N-1 — purpose, variety, lighting, staffing, facing |
 | `house-exterior` | E-1…E-5 — facade, roof, signage, spacing, frontage |
+| `house-stairs` | T-1…T-9 — every staircase end to end |
+| `house-paths` | P-1…P-6 — routes around buildings, door service, network |
 
 Each returns a findings list with rule IDs, file:line evidence, concrete
 fixes, and severities.

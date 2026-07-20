@@ -26,9 +26,9 @@ function SmithyBuilder.build(parentFolder: Instance): Model
 	}).Parent = smithy
 
 	-- Three walls (west/back, north, south); east side open
-	part({ Name = "WallW", Size = Vector3.new(1, 6.2, 16), Position = Vector3.new(-50, 4.1, 2), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
-	part({ Name = "WallN", Size = Vector3.new(16, 6.2, 1), Position = Vector3.new(-42, 4.1, 10), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
-	part({ Name = "WallS", Size = Vector3.new(16, 6.2, 1), Position = Vector3.new(-42, 4.1, -6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
+	part({ Name = "WallW", Size = Vector3.new(1, 7.2, 16), Position = Vector3.new(-50, 4.05, 2), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
+	part({ Name = "WallN", Size = Vector3.new(16, 7.2, 1), Position = Vector3.new(-42, 4.05, 10), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
+	part({ Name = "WallS", Size = Vector3.new(16, 7.2, 1), Position = Vector3.new(-42, 4.05, -6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
 
 	-- Open-front posts
 	for _, z in { -5.5, 9.5 } do

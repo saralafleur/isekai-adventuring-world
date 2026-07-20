@@ -281,18 +281,18 @@ local function buildAdventurersGuild(guilds: Folder)
 		}).Parent = guilds
 	end
 
-	hangingLantern(guilds, -52, 60, 13, 1.4, 22)
-	hangingLantern(guilds, -58, 46, 13, 1.2, 20)
+	hangingLantern(guilds, -52, 60, 12.5, 1.4, 22)
+	hangingLantern(guilds, -58, 46, 12.5, 1.2, 20)
 
 	-- Stairs up along the south wall (bottom at east, rising west)
 	stairsWestward(guilds, -43, 40.4, 12)
 
 	-- ---------------- upper floor: lodging
 	-- Floor plate at y 9 with stairwell hole over the stair top
-	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 29.6), Position = Vector3.new(-52, 12.75, 57.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(5.2, 0.5, 4), Position = Vector3.new(-61.7, 12.75, 40.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	guardRailZ(guilds, 42.8, -59.4, -42.9, 13)
-	guardRailX(guilds, -59.4, 38.7, 42.6, 13)
+	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 30.6), Position = Vector3.new(-52, 12.75, 57.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(6.4, 0.5, 4.8), Position = Vector3.new(-61.3, 12.75, 40.3), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	guardRailZ(guilds, 42.8, -58.0, -42.9, 13)
+	guardRailX(guilds, -58.0, 37.8, 38.6, 13)
 
 	-- Beds for traveling adventurers
 	local blankets = { Color3.fromRGB(150, 60, 60), Color3.fromRGB(80, 100, 140), Color3.fromRGB(96, 128, 88), Color3.fromRGB(150, 120, 80) }
@@ -444,17 +444,17 @@ local function buildMerchantsGuild(guilds: Folder)
 	part({ Name = "CoinChest", Size = Vector3.new(2.4, 1.6, 1.6), Position = Vector3.new(61, 1.9, 65.5), Color = Color3.fromRGB(96, 66, 40), Material = Enum.Material.Wood }).Parent = guilds
 	part({ Name = "CoinPile", Size = Vector3.new(1.8, 0.5, 1.1), Position = Vector3.new(61, 2.95, 65.5), Color = Color3.fromRGB(230, 190, 90), Material = Enum.Material.Metal, CanCollide = false }).Parent = guilds
 
-	hangingLantern(guilds, 50, 60, 13, 1.4, 22)
-	hangingLantern(guilds, 58, 46, 13, 1.2, 20)
+	hangingLantern(guilds, 50, 60, 12.5, 1.4, 22)
+	hangingLantern(guilds, 58, 46, 12.5, 1.2, 20)
 
 	-- Stairs up along the south wall
 	stairsWestward(guilds, 61.5, 41.2, 12)
 
 	-- ---------------- upper floor: offices
-	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 27.4), Position = Vector3.new(52, 12.75, 56.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(6.0, 0.5, 3.4), Position = Vector3.new(42.7, 12.75, 41.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	guardRailZ(guilds, 42.9, 45.3, 62.7, 13)
-	guardRailX(guilds, 45.3, 39.7, 42.9, 13)
+	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 28.2), Position = Vector3.new(52, 12.75, 56.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(6.6, 0.5, 4.2), Position = Vector3.new(42.5, 12.75, 41.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	guardRailZ(guilds, 42.9, 47.0, 62.7, 13)
+	guardRailX(guilds, 47.0, 43.2, 42.9, 13)
 
 	-- Office furnishings
 	for _, z in { 62, 50 } do

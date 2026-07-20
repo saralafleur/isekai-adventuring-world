@@ -38,7 +38,7 @@ local SHOPS: { ShopSpec } = {
 	{
 		name = "GeneralGoods",
 		label = "Berta's Sundries",
-		x = 84,
+		x = 92,
 		z = 26,
 		rotation = 0,
 		wares = "parcel",

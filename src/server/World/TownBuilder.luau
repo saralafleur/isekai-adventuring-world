@@ -383,12 +383,12 @@ function TownBuilder.build(parentFolder: Instance)
 		width = 38,
 		depth = 26,
 		stories = 3,
-		storyHeight = 10,
+		storyHeight = 12,
 		stoneGround = true,
 		plasterColor = Color3.fromRGB(236, 228, 214),
 		roofColor = Color3.fromRGB(88, 78, 72),
 		doorWidth = 6,
-		doorHeight = 7,
+		doorHeight = 10,
 		interior = "none",
 		signText = "Briar Glen Town Hall",
 		signMajor = true,
@@ -398,14 +398,14 @@ function TownBuilder.build(parentFolder: Instance)
 		Name = "ClockFace",
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.4, 6, 6),
-		CFrame = CFrame.new(0, 26, 106.2) * CFrame.Angles(0, math.rad(90), 0),
+		CFrame = CFrame.new(0, 30, 106.2) * CFrame.Angles(0, math.rad(90), 0),
 		Color = Color3.fromRGB(240, 234, 216),
 		Material = Enum.Material.SmoothPlastic,
 	}).Parent = hall
 	part({
 		Name = "ClockHand",
 		Size = Vector3.new(0.3, 2.2, 0.2),
-		CFrame = CFrame.new(0, 26.8, 105.9) * CFrame.Angles(0, 0, math.rad(25)),
+		CFrame = CFrame.new(0, 30.8, 105.9) * CFrame.Angles(0, 0, math.rad(25)),
 		Color = Color3.fromRGB(40, 36, 32),
 		Material = Enum.Material.Metal,
 		CanCollide = false,
@@ -416,7 +416,7 @@ function TownBuilder.build(parentFolder: Instance)
 				Name = "CupolaPost",
 				Size = Vector3.new(0.6, 4.4, 0.6),
 				-- Bases embed into the hall roof slope; tops reach the cupola roof
-				Position = Vector3.new(px, 42.6, 120 + pz),
+				Position = Vector3.new(px, 48.4, 120 + pz),
 				Color = BEAM_COLOR,
 				Material = Enum.Material.Wood,
 			}).Parent = hall
@@ -425,7 +425,7 @@ function TownBuilder.build(parentFolder: Instance)
 	part({
 		Name = "CupolaRoof",
 		Size = Vector3.new(6.5, 0.5, 6.5),
-		Position = Vector3.new(0, 45, 120),
+		Position = Vector3.new(0, 51, 120),
 		Color = Color3.fromRGB(88, 78, 72),
 		Material = Enum.Material.RoofShingles,
 	}).Parent = hall
@@ -433,7 +433,7 @@ function TownBuilder.build(parentFolder: Instance)
 		Name = "Bell",
 		Shape = Enum.PartType.Ball,
 		Size = Vector3.new(1.8, 1.8, 1.8),
-		Position = Vector3.new(0, 43.5, 120),
+		Position = Vector3.new(0, 49.5, 120),
 		Color = Color3.fromRGB(196, 164, 88),
 		Material = Enum.Material.Metal,
 		CanCollide = false,
@@ -464,30 +464,30 @@ function TownBuilder.build(parentFolder: Instance)
 		part({ Name = "HallBanner", Size = Vector3.new(2.4, 7, 0.2), Position = Vector3.new(x, 11.5, 132.2), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = hall
 	end
 	-- Stepped stairs along the east wall up to the records balcony
-	PartUtil.steppedStairs(hall, Vector3.new(16.8, 1.05, 114.6), Vector3.zAxis, 7, 9.6, 3.2, {
+	PartUtil.steppedStairs(hall, Vector3.new(16.8, 1.05, 110.0), Vector3.zAxis, 12.95, 14.2, 4.2, {
 		stepColor = Color3.fromRGB(133, 100, 67),
 		stepMaterial = Enum.Material.WoodPlanks,
 		railColor = Color3.fromRGB(96, 62, 38),
 		railSides = { -Vector3.xAxis }, -- open west side
 	})
 	-- Balcony plate over the dais end
-	part({ Name = "BalconyPlate", Size = Vector3.new(36.5, 0.5, 7.9), Position = Vector3.new(0, 7.75, 128.2), Color = Color3.fromRGB(133, 100, 67), Material = Enum.Material.WoodPlanks }).Parent = hall
+	part({ Name = "BalconyPlate", Size = Vector3.new(37.2, 0.5, 8.6), Position = Vector3.new(0, 13.75, 128.4), Color = Color3.fromRGB(133, 100, 67), Material = Enum.Material.WoodPlanks }).Parent = hall
 	-- Railing along the balcony edge, leaving the stair arrival gap on the east
-	part({ Name = "BalconyRail", Size = Vector3.new(33, 0.3, 0.3), Position = Vector3.new(-1.6, 10.7, 124.4), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.Wood }).Parent = hall
+	part({ Name = "BalconyRail", Size = Vector3.new(33, 0.3, 0.3), Position = Vector3.new(-1.6, 16.7, 124.4), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.Wood }).Parent = hall
 	for _, x in { -17.9, -12, -6, 0, 6, 12, 14.6 } do
-		part({ Name = "BalconyPost", Size = Vector3.new(0.3, 2.8, 0.3), Position = Vector3.new(x, 9.4, 124.4), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
+		part({ Name = "BalconyPost", Size = Vector3.new(0.3, 2.8, 0.3), Position = Vector3.new(x, 15.4, 124.4), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
 	end
 	-- Records desk and shelf on the balcony
-	part({ Name = "RecordsDesk", Size = Vector3.new(3.6, 0.4, 2), Position = Vector3.new(-8, 10.2, 130.4), Color = BENCH_WOOD, Material = Enum.Material.WoodPlanks }).Parent = hall
-	part({ Name = "RecordsShelf", Size = Vector3.new(6, 4.5, 1), Position = Vector3.new(6, 10.25, 131.7), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.WoodPlanks }).Parent = hall
+	part({ Name = "RecordsDesk", Size = Vector3.new(3.6, 2.4, 2), Position = Vector3.new(-8, 15.2, 130.4), Color = BENCH_WOOD, Material = Enum.Material.WoodPlanks }).Parent = hall
+	part({ Name = "RecordsShelf", Size = Vector3.new(6, 4.5, 1), Position = Vector3.new(6, 16.25, 131.7), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.WoodPlanks }).Parent = hall
 	-- Chandeliers hanging from collar beams high in the open hall
 	for _, z in { 112, 120 } do
-		part({ Name = "HallCollarBeam", Size = Vector3.new(36, 0.5, 0.7), Position = Vector3.new(0, 30.85, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = hall
-		part({ Name = "ChandelierChain", Size = Vector3.new(0.18, 9.6, 0.18), Position = Vector3.new(0, 26.2, z), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
+		part({ Name = "HallCollarBeam", Size = Vector3.new(36, 0.5, 0.7), Position = Vector3.new(0, 36.85, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = hall
+		part({ Name = "ChandelierChain", Size = Vector3.new(0.18, 9.6, 0.18), Position = Vector3.new(0, 32.2, z), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
 		local chandelier = part({
 			Name = "Chandelier",
 			Size = Vector3.new(1.4, 1.2, 1.4),
-			Position = Vector3.new(0, 21.6, z),
+			Position = Vector3.new(0, 27.6, z),
 			Color = Color3.fromRGB(255, 214, 130),
 			Material = Enum.Material.Neon,
 			CanCollide = false,
@@ -500,11 +500,11 @@ function TownBuilder.build(parentFolder: Instance)
 		chandelier.Parent = hall
 	end
 	-- Under-balcony light over the dais
-	part({ Name = "DaisLampChain", Size = Vector3.new(0.18, 1.6, 0.18), Position = Vector3.new(0, 6.9, 129), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
+	part({ Name = "DaisLampChain", Size = Vector3.new(0.18, 1.6, 0.18), Position = Vector3.new(0, 12.9, 129), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
 	local daisLamp = part({
 		Name = "DaisLamp",
 		Size = Vector3.new(0.9, 1.1, 0.9),
-		Position = Vector3.new(0, 5.75, 129),
+		Position = Vector3.new(0, 11.75, 129),
 		Color = Color3.fromRGB(255, 214, 130),
 		Material = Enum.Material.Neon,
 		CanCollide = false,
@@ -544,16 +544,16 @@ function TownBuilder.build(parentFolder: Instance)
 	-- DistrictBuilder); the farm hamlet stays SOUTH.
 	local PLOTS = {
 		-- northwest lane, outer side
-		{ -56, 96, 65 },
-		{ -84, 132, 55 },
-		{ -98, 172, 45 },
+		{ -54, 112, 65 },
+		{ -86, 155, 55 },
+		{ -104, 203, 45 },
 		-- northeast lane, outer side
-		{ 56, 96, -65 },
-		{ 84, 132, -55 },
-		{ 98, 172, -45 },
+		{ 54, 112, -65 },
+		{ 86, 155, -55 },
+		{ 104, 203, -45 },
 		-- flanking the north road
-		{ -28, 166, 85 },
-		{ 28, 178, -85 },
+		{ -30, 168, 85 },
+		{ 30, 180, -85 },
 		-- north crescent
 		{ -56, 216, 160 },
 		{ 56, 216, 200 },
@@ -585,16 +585,18 @@ function TownBuilder.build(parentFolder: Instance)
 		Vector3.new(-26, 0, 80),
 		Vector3.new(-40, 0, 98),
 		Vector3.new(-56, 0, 120),
-		Vector3.new(-70, 0, 146),
-		Vector3.new(-78, 0, 174),
+		Vector3.new(-72, 0, 150),
+		Vector3.new(-84, 0, 182),
+		Vector3.new(-90, 0, 208),
 	}, 8)
 	-- northeast residential lane
 	curvedLane({
 		Vector3.new(26, 0, 80),
 		Vector3.new(40, 0, 98),
 		Vector3.new(56, 0, 120),
-		Vector3.new(70, 0, 146),
-		Vector3.new(78, 0, 174),
+		Vector3.new(72, 0, 150),
+		Vector3.new(84, 0, 182),
+		Vector3.new(90, 0, 208),
 	}, 8)
 	-- crescent lane behind the hall
 	curvedLane({

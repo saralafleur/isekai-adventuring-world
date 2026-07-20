@@ -238,34 +238,57 @@ type StairInfo = {
 }
 
 -- Stepped stair run along the west (-X) wall, climbing front (+Z) -> back (-Z).
-local function buildStairs(parent: Instance, halfW: number, halfD: number, baseY: number, storyH: number, beamColor: Color3): StairInfo
-	local runLength = storyH * 1.3
+local LANDING_DEPTH = 4.5
+
+-- Stepped stair run along the west (-X) wall. Odd stories climb toward -Z,
+-- even stories switch back and climb toward +Z, so an upper run never sits
+-- in the footprint of the one below it (which would fill its stairwell and
+-- kill headroom). The run is shortened on shallow footprints so a landing of
+-- LANDING_DEPTH always fits inside the far wall.
+local function buildStairs(
+	parent: Instance,
+	halfW: number,
+	halfD: number,
+	baseY: number,
+	storyH: number,
+	beamColor: Color3,
+	climbNegZ: boolean
+): StairInfo
 	local stairW = 4.2
 	local cx = -halfW + 0.7 + stairW / 2
-	local zBottom = math.min(halfD - 1.5, runLength / 2 + 1.5)
-	local zTop = zBottom - runLength
+	local nearEdge = halfD - 1.5 -- usable front limit
+	local farEdge = -halfD + 0.4 -- interior face of the back wall
+	local maxRun = (nearEdge - farEdge) - LANDING_DEPTH
+	local runLength = math.max(6, math.min(storyH * 1.3, maxRun))
 
-	PartUtil.steppedStairs(
-		parent,
-		Vector3.new(cx, baseY + 0.05, zBottom),
-		-Vector3.zAxis,
-		storyH,
-		runLength,
-		stairW,
-		{
-			stepColor = FLOOR_WOOD,
-			stepMaterial = Enum.Material.WoodPlanks,
-			railColor = DARK_WOOD,
-			railSides = { Vector3.xAxis }, -- open side toward the room
-		}
-	)
+	local zStart, zEnd, dir
+	if climbNegZ then
+		zStart = math.min(nearEdge, farEdge + LANDING_DEPTH + runLength)
+		zEnd = zStart - runLength
+		dir = -Vector3.zAxis
+	else
+		zStart = math.max(farEdge, nearEdge - LANDING_DEPTH - runLength)
+		zEnd = zStart + runLength
+		dir = Vector3.zAxis
+	end
 
+	PartUtil.steppedStairs(parent, Vector3.new(cx, baseY + 0.05, zStart), dir, storyH, runLength, stairW, {
+		stepColor = FLOOR_WOOD,
+		stepMaterial = Enum.Material.WoodPlanks,
+		railColor = DARK_WOOD,
+		railSides = { Vector3.xAxis }, -- open side toward the room
+	})
+
+	-- The floor plate above must stay open over the upper half of the run
+	-- (where a climber's head would otherwise hit it), closing flush at the top.
+	local openFrom = zEnd
+	local openTo = zEnd + (if climbNegZ then runLength * 0.5 else -runLength * 0.5)
 	return {
 		holeX0 = -halfW + 0.4,
 		holeX1 = cx + stairW / 2 + 0.4,
-		holeZ0 = zTop - 0.3,
-		holeZ1 = zTop + runLength * 0.5,
-		topZ = zTop,
+		holeZ0 = math.min(openFrom, openTo),
+		holeZ1 = math.max(openFrom, openTo),
+		topZ = zEnd,
 	}
 end
 
@@ -450,10 +473,14 @@ local function furnishBedroom(parent: Instance, x0: number, x1: number, z0: numb
 		CanCollide = false,
 	}).Parent = parent
 
+	-- Every bedroom is lit regardless of variant (wall sconce on the outer
+	-- wall); variant-specific candles are extra flavor on top of this.
+	sconce(parent, x1, floorY + 7, cz + 2.4, -1)
+
 	local m = variant % 3
 	if m == 0 then
 		-- chest at the bed's foot + wall shelf
-		part({ Name = "BedChest", Size = Vector3.new(2.2, 1.3, 1.2), Position = Vector3.new(bedX, floorY + 0.65, z1 - 1.2), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+		part({ Name = "BedChest", Size = Vector3.new(2.2, 1.3, 1.2), Position = Vector3.new(x0 + 1.6, floorY + 0.65, z1 - 1.2), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
 		part({ Name = "WallShelf", Size = Vector3.new(0.9, 0.35, 3), Position = Vector3.new(halfW - 0.85, floorY + 5.4, cz), Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
 		part({ Name = "ShelfPot", Size = Vector3.new(0.6, 0.8, 0.6), Position = Vector3.new(halfW - 0.85, floorY + 5.98, cz - 0.8), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
 	elseif m == 1 then
@@ -546,7 +573,7 @@ local function shopRoom(parent: Instance, halfW: number, halfD: number, floorY: 
 	part({ Name = "DisplayGoods", Size = Vector3.new(3.6, 0.7, 2.4), Position = Vector3.new(halfW * 0.25, floorY + 3.2, 1), Color = Color3.fromRGB(190, 160, 100), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
 	-- crates near the door
 	for i = 0, 1 do
-		part({ Name = "ShopCrate", Size = Vector3.new(1.8, 1.8, 1.8), Position = Vector3.new(-halfW + 2 + i * 2.1, floorY + 0.9, halfD - 2.2), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = parent
+		part({ Name = "ShopCrate", Size = Vector3.new(1.8, 1.8, 1.8), Position = Vector3.new(halfW - 2 - i * 2.1, floorY + 0.9, halfD - 2.2), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = parent
 	end
 	part({
 		Name = "Rug",
@@ -558,7 +585,7 @@ local function shopRoom(parent: Instance, halfW: number, halfD: number, floorY: 
 	}).Parent = parent
 	hangingLantern(parent, 0, 0, ceilingY, 1.4, 24)
 	-- browse spot in front of the counter
-	local marker = PartUtil.marker("BrowseSpot", Vector3.new(0, floorY + 0.5, -halfD + 8))
+	local marker = PartUtil.marker("BrowseSpot", Vector3.new(-2.5, floorY + 0.5, -halfD + 8))
 	marker:SetAttribute("Wares", wares)
 	marker.Parent = parent
 end
@@ -658,7 +685,7 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		end
 		segmentedWall(model, Vector3.new(-halfW, 0, halfD), Vector3.new(halfW, 0, halfD), baseY, frontTopY, frontOpenings, wallColor, wallMaterial)
 		for _, opening in frontOpenings do
-			if opening.width == 3 then
+			if opening.width == 4 then
 				windowFrame(model, Vector3.new(-halfW + opening.center, 0, halfD), 4, opening.y0, opening.y1, true, beamColor)
 			end
 		end
@@ -890,7 +917,7 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 					buildFloorPlate(model, halfW, halfD, 1 + (s - 1) * storyH, hole, beamColor)
 				end
 				if s < stories then
-					hole = buildStairs(model, halfW, halfD, 1 + (s - 1) * storyH, storyH, beamColor)
+					hole = buildStairs(model, halfW, halfD, 1 + (s - 1) * storyH, storyH, beamColor, s % 2 == 1)
 				end
 				if s == 1 then
 					if interiorKind == "shop" then

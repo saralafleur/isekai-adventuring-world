@@ -271,22 +271,20 @@ function FarmBuilder.build(parentFolder: Instance)
 		name = "ToolShed",
 		position = Vector3.new(70, 0, -50),
 		rotation = -90,
-		width = 10,
-		depth = 8,
+		width = 12,
+		depth = 10,
 		stories = 1,
-		storyHeight = 6,
+		storyHeight = 14,
 		plasterColor = Color3.fromRGB(190, 172, 140),
 	})
 	HouseBuilder.build(farm, {
 		name = "CoopShed",
 		position = Vector3.new(52, 0, -34),
 		rotation = 180,
-		width = 8,
-		depth = 8,
+		width = 10,
+		depth = 10,
 		stories = 1,
-		storyHeight = 5,
-		doorWidth = 3,
-		doorHeight = 4,
+		storyHeight = 14,
 		plasterColor = Color3.fromRGB(200, 180, 150),
 	})
 

@@ -16,6 +16,7 @@ local GatherService = require(script.Services.GatherService)
 local NpcService = require(script.Services.NpcService)
 local ShopService = require(script.Services.ShopService)
 local VillagerService = require(script.NPC.VillagerService)
+local TravelerService = require(script.NPC.TravelerService)
 
 VillageBuilder.build()
 
@@ -24,6 +25,7 @@ GatherService.init()
 NpcService.init()
 ShopService.init()
 VillagerService.init()
+TravelerService.init()
 
 local function onPlayerAdded(player: Player)
 	InventoryService.setup(player)

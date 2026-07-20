@@ -98,10 +98,10 @@ function VillageBuilder.build(): Folder
 	local village = Instance.new("Folder")
 	village.Name = "BriarGlen"
 
-	-- Ground: covers the farm hamlet (south) through the town (north)
+	-- Ground: the whole valley — farm hamlet, town, and the forest around them
 	local ground = part({
 		Name = "Ground",
-		Size = Vector3.new(700, 2, 700),
+		Size = Vector3.new(1100, 2, 1100),
 		Position = Vector3.new(0, -1, 30),
 		Color = Color3.fromRGB(106, 152, 82),
 		Material = Enum.Material.Grass,
@@ -215,61 +215,26 @@ function VillageBuilder.build(): Folder
 	end
 	path.Parent = village
 
-	-- Trees ring the settled area (buildings now occupy the old inner spots)
-	local trees = Instance.new("Folder")
-	trees.Name = "Trees"
-	local treeSpots = {
-		Vector3.new(-150, 0, -150),
-		Vector3.new(-160, 0, -60),
-		Vector3.new(-155, 0, 40),
-		Vector3.new(-150, 0, 130),
-		Vector3.new(-120, 0, 200),
-		Vector3.new(-60, 0, 240),
-		Vector3.new(20, 0, 250),
-		Vector3.new(90, 0, 235),
-		Vector3.new(140, 0, 180),
-		Vector3.new(155, 0, 100),
-		Vector3.new(160, 0, 20),
-		Vector3.new(150, 0, -70),
-		Vector3.new(130, 0, -140),
-		Vector3.new(60, 0, -160),
-		Vector3.new(-20, 0, -170),
-		Vector3.new(-140, 0, -110),
-		Vector3.new(-20, 0, -90),
-		Vector3.new(95, 0, -115),
-	}
-	for index, spot in treeSpots do
-		local scale = 1 + (index % 3) * 0.25
-		local trunk = part({
-			Name = "TreeTrunk",
-			Size = Vector3.new(2 * scale, 12 * scale, 2 * scale),
-			Position = spot + Vector3.new(0, 6 * scale, 0),
-			Color = Color3.fromRGB(92, 64, 44),
-			Material = Enum.Material.Wood,
-		})
-		trunk.Parent = trees
-		local canopyLow = part({
-			Name = "TreeCanopy",
-			Shape = Enum.PartType.Ball,
-			Size = Vector3.new(11 * scale, 11 * scale, 11 * scale),
-			Position = spot + Vector3.new(0, 13 * scale, 0),
-			Color = Color3.fromRGB(64, 110, 52),
-			Material = Enum.Material.LeafyGrass,
-			CanCollide = false,
-		})
-		canopyLow.Parent = trees
-		local canopyHigh = part({
-			Name = "TreeCanopyTop",
-			Shape = Enum.PartType.Ball,
-			Size = Vector3.new(7 * scale, 7 * scale, 7 * scale),
-			Position = spot + Vector3.new(1.5, 17 * scale, 1),
-			Color = Color3.fromRGB(78, 128, 60),
-			Material = Enum.Material.LeafyGrass,
-			CanCollide = false,
-		})
-		canopyHigh.Parent = trees
-	end
-	trees.Parent = village
+	-- Connector roads to the forest gates (heights differ from the lanes and
+	-- streets they cross so overlapping tops never share a plane)
+	part({
+		Name = "SouthConnector",
+		Size = Vector3.new(12, 0.28, 130),
+		Position = Vector3.new(0, 0.14, -124),
+		Color = Color3.fromRGB(150, 125, 95),
+		Material = Enum.Material.Ground,
+	}).Parent = village
+	part({
+		Name = "NorthConnector",
+		Size = Vector3.new(12, 0.26, 106),
+		Position = Vector3.new(0, 0.13, 187),
+		Color = Color3.fromRGB(150, 125, 95),
+		Material = Enum.Material.Ground,
+	}).Parent = village
+
+	-- Forest surrounds the whole valley (also builds the exit roads + gates)
+	local ForestBuilder = require(script.Parent.ForestBuilder)
+	ForestBuilder.build(village)
 
 	-- NPCs
 	makeNpc("Mira", "Mira", Vector3.new(6, 0, -45), Color3.fromRGB(120, 90, 150)).Parent = village

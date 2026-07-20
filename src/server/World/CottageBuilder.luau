@@ -680,13 +680,13 @@ local function interior(parent: Instance)
 	part({ Name = "CounterPot", Size = Vector3.new(1.1, 0.9, 1.1), Position = Vector3.new(13.3, 3.75, -44), Color = Color3.fromRGB(80, 80, 85), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
 	part({ Name = "CounterJug", Size = Vector3.new(0.7, 1.1, 0.7), Position = Vector3.new(13.3, 3.85, -38.5), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
 	-- Shelf above the counter with jars
-	part({ Name = "KitchenShelf", Size = Vector3.new(1, 0.35, 6), Position = Vector3.new(13.8, 6.2, -41), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "KitchenShelf", Size = Vector3.new(1, 0.35, 6), Position = Vector3.new(14.1, 6.2, -41), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
 	local jarColors = { Color3.fromRGB(150, 170, 110), Color3.fromRGB(190, 140, 90), Color3.fromRGB(120, 130, 160) }
 	for i = 1, 3 do
 		part({
 			Name = "ShelfJar",
 			Size = Vector3.new(0.6, 0.9, 0.6),
-			Position = Vector3.new(13.8, 6.85, -43.2 + i * 1.5),
+			Position = Vector3.new(14.1, 6.85, -43.2 + i * 1.5),
 			Color = jarColors[i],
 			Material = Enum.Material.Glass,
 			Transparency = 0.15,
@@ -700,7 +700,7 @@ local function interior(parent: Instance)
 	part({ Name = "ShelfBook", Size = Vector3.new(0.7, 1, 1.6), Position = Vector3.new(-14.2, 9.0, -32.5), Color = Color3.fromRGB(70, 90, 130), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
 
 	-- Hanging lantern in the room center
-	part({ Name = "LanternChain", Size = Vector3.new(0.2, 3, 0.2), Position = Vector3.new(0, 16, -40), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
+	part({ Name = "LanternChain", Size = Vector3.new(0.2, 4.6, 0.2), Position = Vector3.new(0, 16.5, -40), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
 	local roomLamp = part({
 		Name = "RoomLantern",
 		Size = Vector3.new(1, 1.4, 1),

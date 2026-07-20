@@ -163,33 +163,35 @@ function FarmBuilder.build(parentFolder: Instance)
 	local farm = Instance.new("Folder")
 	farm.Name = "FarmHamlet"
 
-	-- Farmhouses
+	-- Farmhouses (real furnished interiors)
 	HouseBuilder.build(farm, {
 		name = "FarmhouseWest",
 		position = Vector3.new(-50, 0, -70),
 		rotation = 90,
-		width = 18,
-		depth = 14,
+		width = 22,
+		depth = 16,
 		stories = 1,
 		plasterColor = Color3.fromRGB(226, 214, 186),
+		seed = 21,
 	})
 	HouseBuilder.build(farm, {
 		name = "FarmhouseSouth",
 		position = Vector3.new(-45, 0, -110),
 		rotation = 0,
-		width = 20,
-		depth = 15,
+		width = 24,
+		depth = 18,
 		stories = 2,
 		plasterColor = Color3.fromRGB(220, 206, 180),
+		seed = 22,
 	})
 
-	-- Barn: tall single story, big door, red walls with pale trim
+	-- Barn: tall single story, big open door, working interior below
 	HouseBuilder.build(farm, {
 		name = "Barn",
 		position = Vector3.new(45, 0, -80),
 		rotation = -90,
-		width = 20,
-		depth = 16,
+		width = 24,
+		depth = 18,
 		stories = 1,
 		storyHeight = 12,
 		doorWidth = 8,
@@ -197,7 +199,65 @@ function FarmBuilder.build(parentFolder: Instance)
 		plasterColor = Color3.fromRGB(152, 46, 38),
 		beamColor = Color3.fromRGB(228, 220, 205),
 		roofColor = Color3.fromRGB(70, 62, 58),
+		interior = "none",
 	})
+	-- Barn interior (world coords; footprint x 36..54, z -92..-68, door west at x 36):
+	-- hay bales stacked in the northeast, animal stalls along the south wall
+	local HAY = Color3.fromRGB(212, 178, 92)
+	for i = 0, 4 do
+		part({
+			Name = "HayBale",
+			Size = Vector3.new(2.6, 1.8, 1.8),
+			Position = Vector3.new(49 + (i % 2) * 3, 1.9 + math.floor(i / 3) * 1.85, -71.5 + math.floor(i / 2) * 2.2 * (if i < 4 then 1 else 0)),
+			Color = HAY,
+			Material = Enum.Material.Grass,
+		}).Parent = farm
+	end
+	for _, x in { 42, 48 } do
+		part({
+			Name = "StallDivider",
+			Size = Vector3.new(0.4, 3.4, 5),
+			Position = Vector3.new(x, 2.7, -89),
+			Color = Color3.fromRGB(150, 120, 80),
+			Material = Enum.Material.WoodPlanks,
+		}).Parent = farm
+	end
+	for _, x in { 39, 45, 51 } do
+		part({
+			Name = "FeedTrough",
+			Size = Vector3.new(2.4, 0.9, 1),
+			Position = Vector3.new(x, 1.55, -90.6),
+			Color = Color3.fromRGB(110, 78, 48),
+			Material = Enum.Material.WoodPlanks,
+		}).Parent = farm
+	end
+	for i = 0, 2 do
+		part({
+			Name = "BarnCrate",
+			Size = Vector3.new(1.8, 1.8, 1.8),
+			Position = Vector3.new(38.2, 2 + (if i == 2 then 1.9 else 0), -70.5 + (i % 2) * 2.1),
+			Color = Color3.fromRGB(160, 126, 80),
+			Material = Enum.Material.WoodPlanks,
+		}).Parent = farm
+	end
+	-- Hanging barn lantern (chain reaches the collar beam)
+	part({ Name = "BarnBeam", Size = Vector3.new(17, 0.5, 0.7), Position = Vector3.new(45, 13.15, -80), Color = Color3.fromRGB(228, 220, 205), Material = Enum.Material.Wood, CanCollide = false }).Parent = farm
+	part({ Name = "BarnLampChain", Size = Vector3.new(0.18, 2.6, 0.18), Position = Vector3.new(45, 11.9, -80), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = farm
+	local barnLamp = part({
+		Name = "BarnLantern",
+		Size = Vector3.new(0.9, 1.2, 0.9),
+		Position = Vector3.new(45, 10.3, -80),
+		Color = Color3.fromRGB(255, 214, 130),
+		Material = Enum.Material.Neon,
+		CanCollide = false,
+	})
+	local barnLight = Instance.new("PointLight")
+	barnLight.Color = Color3.fromRGB(255, 205, 120)
+	barnLight.Brightness = 1.2
+	barnLight.Range = 20
+	barnLight.Parent = barnLamp
+	barnLamp.Parent = farm
+
 	silo(farm, 62, -85)
 
 	-- Sheds

@@ -161,7 +161,8 @@ function TownBuilder.build(parentFolder: Instance)
 	marketStall(town, 22, 68, -90, 5)
 	marketStall(town, 20, 55, -90, 6) -- Baker Hobb's stall
 
-	-- Town hall: 3 stories, stone ground floor, facing south over the plaza
+	-- Town hall: 3 stories, stone ground floor, facing south over the plaza.
+	-- Interior is custom-built below (assembly hall + records balcony).
 	local hall = HouseBuilder.build(town, {
 		name = "TownHall",
 		position = Vector3.new(0, 0, 120),
@@ -174,6 +175,7 @@ function TownBuilder.build(parentFolder: Instance)
 		roofColor = Color3.fromRGB(88, 78, 72),
 		doorWidth = 6,
 		doorHeight = 7,
+		interior = "none",
 	})
 	-- Clock face + bell cupola to mark it as civic
 	part({
@@ -221,8 +223,91 @@ function TownBuilder.build(parentFolder: Instance)
 		CanCollide = false,
 	}).Parent = hall
 
+	-- ---------------- town hall interior: assembly hall
+	-- Interior region: x -18.5..18.5, z 107.5..132.5 (door south at z 107)
+	local BENCH_WOOD = Color3.fromRGB(110, 78, 48)
+	for _, z in { 111.5, 114.5, 117.5, 120.5 } do
+		for _, x in { -5.5, 5.5 } do
+			part({ Name = "HallBench", Size = Vector3.new(6, 1.5, 1.2), Position = Vector3.new(x, 1.85, z), Color = BENCH_WOOD, Material = Enum.Material.WoodPlanks }).Parent = hall
+			part({ Name = "HallBenchBack", Size = Vector3.new(6, 1.2, 0.3), Position = Vector3.new(x, 3.1, z + 0.45), Color = BENCH_WOOD, Material = Enum.Material.WoodPlanks }).Parent = hall
+		end
+	end
+	-- Dais with podium and council table
+	part({ Name = "Dais", Size = Vector3.new(16, 0.8, 6), Position = Vector3.new(0, 1.5, 128.5), Color = Color3.fromRGB(120, 90, 60), Material = Enum.Material.WoodPlanks }).Parent = hall
+	part({ Name = "Podium", Size = Vector3.new(1.4, 3.1, 1.2), Position = Vector3.new(0, 3.45, 126.3), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
+	part({ Name = "PodiumTop", Size = Vector3.new(1.8, 0.3, 1.5), Position = Vector3.new(0, 5.1, 126.3), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.Wood }).Parent = hall
+	part({ Name = "CouncilTable", Size = Vector3.new(8, 0.5, 2.5), Position = Vector3.new(0, 4.15, 130.3), Color = BENCH_WOOD, Material = Enum.Material.WoodPlanks }).Parent = hall
+	for _, x in { -3.4, 3.4 } do
+		part({ Name = "CouncilTableLeg", Size = Vector3.new(0.5, 2, 2), Position = Vector3.new(x, 2.9, 130.3), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
+	end
+	for _, x in { -2.6, 0, 2.6 } do
+		part({ Name = "CouncilChair", Size = Vector3.new(1.4, 1.6, 1.3), Position = Vector3.new(x, 2.7, 131.6), Color = BENCH_WOOD, Material = Enum.Material.Wood }).Parent = hall
+	end
+	-- Banners on the north interior wall
+	for _, x in { -7, 7 } do
+		part({ Name = "HallBanner", Size = Vector3.new(2.4, 7, 0.2), Position = Vector3.new(x, 11.5, 132.2), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = hall
+	end
+	-- Stairs along the east wall up to the records balcony (rise toward +Z)
+	local wedgePart = Instance.new("WedgePart")
+	wedgePart.Name = "HallStairRamp"
+	wedgePart.Anchored = true
+	wedgePart.Size = Vector3.new(3.2, 7, 9.6)
+	wedgePart.CFrame = CFrame.new(16.8, 4.5, 119.4) * CFrame.Angles(0, math.pi, 0)
+	wedgePart.Color = Color3.fromRGB(133, 100, 67)
+	wedgePart.Material = Enum.Material.WoodPlanks
+	wedgePart.TopSurface = Enum.SurfaceType.Smooth
+	wedgePart.BottomSurface = Enum.SurfaceType.Smooth
+	wedgePart.Parent = hall
+	-- Balcony plate over the dais end
+	part({ Name = "BalconyPlate", Size = Vector3.new(36.5, 0.5, 7.9), Position = Vector3.new(0, 7.75, 128.2), Color = Color3.fromRGB(133, 100, 67), Material = Enum.Material.WoodPlanks }).Parent = hall
+	-- Railing along the balcony edge, leaving the stair arrival gap on the east
+	part({ Name = "BalconyRail", Size = Vector3.new(33, 0.3, 0.3), Position = Vector3.new(-1.6, 10.7, 124.4), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.Wood }).Parent = hall
+	for _, x in { -17.9, -12, -6, 0, 6, 12, 14.6 } do
+		part({ Name = "BalconyPost", Size = Vector3.new(0.3, 2.8, 0.3), Position = Vector3.new(x, 9.4, 124.4), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
+	end
+	-- Records desk and shelf on the balcony
+	part({ Name = "RecordsDesk", Size = Vector3.new(3.6, 0.4, 2), Position = Vector3.new(-8, 10.2, 130.4), Color = BENCH_WOOD, Material = Enum.Material.WoodPlanks }).Parent = hall
+	part({ Name = "RecordsShelf", Size = Vector3.new(6, 4.5, 1), Position = Vector3.new(6, 10.25, 131.7), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.WoodPlanks }).Parent = hall
+	-- Chandeliers hanging from collar beams high in the open hall
+	for _, z in { 112, 120 } do
+		part({ Name = "HallCollarBeam", Size = Vector3.new(36, 0.5, 0.7), Position = Vector3.new(0, 21.85, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = hall
+		part({ Name = "ChandelierChain", Size = Vector3.new(0.18, 6.4, 0.18), Position = Vector3.new(0, 18.7, z), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
+		local chandelier = part({
+			Name = "Chandelier",
+			Size = Vector3.new(1.4, 1.2, 1.4),
+			Position = Vector3.new(0, 15.2, z),
+			Color = Color3.fromRGB(255, 214, 130),
+			Material = Enum.Material.Neon,
+			CanCollide = false,
+		})
+		local chandelierLight = Instance.new("PointLight")
+		chandelierLight.Color = Color3.fromRGB(255, 205, 120)
+		chandelierLight.Brightness = 1.4
+		chandelierLight.Range = 24
+		chandelierLight.Parent = chandelier
+		chandelier.Parent = hall
+	end
+	-- Under-balcony light over the dais
+	part({ Name = "DaisLampChain", Size = Vector3.new(0.18, 1.6, 0.18), Position = Vector3.new(0, 6.9, 129), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
+	local daisLamp = part({
+		Name = "DaisLamp",
+		Size = Vector3.new(0.9, 1.1, 0.9),
+		Position = Vector3.new(0, 5.75, 129),
+		Color = Color3.fromRGB(255, 214, 130),
+		Material = Enum.Material.Neon,
+		CanCollide = false,
+	})
+	local daisLight = Instance.new("PointLight")
+	daisLight.Color = Color3.fromRGB(255, 205, 120)
+	daisLight.Brightness = 1
+	daisLight.Range = 14
+	daisLight.Parent = daisLamp
+	daisLamp.Parent = hall
+
 	-- Townhouse blocks: two rows each side of the main axis, plus a north row
 	-- behind the town hall. Deterministic variation from the index.
+	-- Townhouses: larger footprints so every one holds a real furnished
+	-- interior (living floor + bedrooms + stairs).
 	local index = 0
 	local function townhouse(x: number, z: number, rotation: number)
 		index += 1
@@ -230,25 +315,28 @@ function TownBuilder.build(parentFolder: Instance)
 			name = `Townhouse{index}`,
 			position = Vector3.new(x, 0, z),
 			rotation = rotation,
-			width = 16 + (index * 5 % 3) * 2,
-			depth = 13 + (index * 7 % 3) * 2,
+			width = 20 + (index * 5 % 2) * 2,
+			depth = 16 + (index * 7 % 2) * 2,
 			stories = if index % 3 == 0 then 3 else 2,
 			stoneGround = index % 4 == 0,
 			plasterColor = PLASTER_TINTS[(index - 1) % #PLASTER_TINTS + 1],
 			roofColor = ROOF_TINTS[(index - 1) % #ROOF_TINTS + 1],
+			seed = index,
 		})
 	end
 
 	local rowZs = { 30, 60, 90, 120, 150, 180 }
 	for _, z in rowZs do
-		if z ~= 60 then -- the guild halls stand at the inner z=60 spots
-			townhouse(-40, z, 90) -- west inner row, facing east
-			townhouse(40, z, -90) -- east inner row, facing west
+		if z ~= 30 and z ~= 60 then -- the bigger guild halls own the z 30-73 band
+			townhouse(-42, z, 90) -- west inner row, facing east
+			townhouse(42, z, -90) -- east inner row, facing west
 		end
-		townhouse(-72, z, 90) -- west outer row
-		townhouse(72, z, -90) -- east outer row
+		townhouse(-76, z, 90) -- west outer row
+		townhouse(76, z, -90) -- east outer row
 	end
-	for _, x in { -75, -45, -15, 15, 45, 75 } do
+	-- North row leaves the x ±6 road corridor clear (the north road to the
+	-- forest gate runs between them)
+	for _, x in { -80, -50, -20, 20, 50, 80 } do
 		townhouse(x, 210, 180) -- north row, facing south
 	end
 

@@ -31,12 +31,16 @@ end
 type Opening = { center: number, width: number, y0: number, y1: number }
 
 -- Builds an axis-aligned wall from p1 to p2 (ground endpoints) with real openings.
+-- topY: where the plaster stops. Eave-side walls stop below the sloping roof
+-- underside (the eave plate covers the rest); gable-side walls run to WALL_TOP.
 local function segmentedWall(
 	parent: Instance,
 	p1: Vector3,
 	p2: Vector3,
-	openings: { Opening }
+	openings: { Opening },
+	topY: number?
 )
+	local wallTop = topY or WALL_TOP
 	local delta = p2 - p1
 	local length = delta.Magnitude
 	local dir = delta.Unit
@@ -68,12 +72,12 @@ local function segmentedWall(
 	for _, opening in openings do
 		local left = opening.center - opening.width / 2
 		local right = opening.center + opening.width / 2
-		panel(cursor, left, WALL_BASE, WALL_TOP)
+		panel(cursor, left, WALL_BASE, wallTop)
 		panel(left, right, WALL_BASE, opening.y0) -- below opening
-		panel(left, right, opening.y1, WALL_TOP) -- above opening
+		panel(left, right, opening.y1, wallTop) -- above opening
 		cursor = right
 	end
-	panel(cursor, length, WALL_BASE, WALL_TOP)
+	panel(cursor, length, WALL_BASE, wallTop)
 end
 
 local function windowFrame(parent: Instance, center: Vector3, width: number, y0: number, y1: number, alongX: boolean)
@@ -135,17 +139,18 @@ local function cornerPostsAndPlates(parent: Instance)
 	for _, corner in corners do
 		part({
 			Name = "CornerPost",
-			Size = Vector3.new(1.4, WALL_TOP - WALL_BASE + 0.4, 1.4),
-			Position = Vector3.new(corner.X, (WALL_BASE + WALL_TOP) / 2, corner.Z),
+			Size = Vector3.new(1.4, 9, 1.4),
+			Position = Vector3.new(corner.X, WALL_BASE + 4.5 - 0.2, corner.Z),
 			Color = BEAM_COLOR,
 			Material = Enum.Material.Wood,
 		}).Parent = parent
 	end
-	-- Eave plates on the north/south faces: tall enough to reach up under the
-	-- lifted roof slabs so no gap (or wall top) shows at the eaves. The east/west
-	-- faces get a slim top plate under the gable triangles.
-	part({ Name = "EavePlate", Size = Vector3.new(31, 1.4, 1.4), Position = Vector3.new(0, WALL_TOP + 0.1, -52), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
-	part({ Name = "EavePlate", Size = Vector3.new(31, 1.4, 1.4), Position = Vector3.new(0, WALL_TOP + 0.1, -28), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	-- Eave plates on the north/south faces: they cap the (shorter) eave-side
+	-- walls and reach up toward the roof underside while staying entirely below
+	-- it across their full depth — the roof slope loses ~0.67 y per stud toward
+	-- the eave, so anything taller pierces the shingles at its outer edge.
+	part({ Name = "EavePlate", Size = Vector3.new(31, 1, 1.4), Position = Vector3.new(0, 9.8, -52), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "EavePlate", Size = Vector3.new(31, 1, 1.4), Position = Vector3.new(0, 9.8, -28), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
 	part({ Name = "Beam", Size = Vector3.new(1.4, 0.6, 25), Position = Vector3.new(-15, WALL_TOP - 0.3, -40), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
 	part({ Name = "Beam", Size = Vector3.new(1.4, 0.6, 25), Position = Vector3.new(15, WALL_TOP - 0.3, -40), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
 end
@@ -183,10 +188,11 @@ local function roof(parent: Instance)
 		Material = Enum.Material.Wood,
 	}).Parent = parent
 
-	-- Gable triangles (east/west ends): two wedges per end. Full size — the roof
-	-- lift above gives their sloped tops uniform clearance under the slabs.
+	-- Gable triangles (east/west ends): two wedges per end. Full rise (the roof
+	-- lift gives the sloped tops clearance); depth trimmed so the thin outer
+	-- tips end inside the eave plates instead of poking past them.
 	local gableRise = RISE
-	local gableDepth = HALF_DEPTH
+	local gableDepth = HALF_DEPTH - 0.7
 	for _, x in { -14.75, 14.75 } do
 		for _, side in { 1, -1 } do
 			local wedge = Instance.new("WedgePart")
@@ -406,14 +412,14 @@ function CottageBuilder.build(parentFolder: Instance): Model
 	-- North wall: window at west half (chimney occupies east half outside)
 	segmentedWall(cottage, Vector3.new(-15, 0, -52), Vector3.new(15, 0, -52), {
 		{ center = 7, width = 4, y0 = 4, y1 = 7.5 },
-	})
+	}, 9.5)
 	windowFrame(cottage, Vector3.new(-8, 0, -52), 4, 4, 7.5, true)
 	-- South wall: doorway + two windows
 	segmentedWall(cottage, Vector3.new(-15, 0, -28), Vector3.new(15, 0, -28), {
 		{ center = 15, width = 6, y0 = 1, y1 = 8.8 }, -- doorway (center of 30-long wall)
 		{ center = 6, width = 4, y0 = 4, y1 = 7.5 }, -- window at x=-9
 		{ center = 24, width = 4, y0 = 4, y1 = 7.5 }, -- window at x=9
-	})
+	}, 9.5)
 	windowFrame(cottage, Vector3.new(-9, 0, -28), 4, 4, 7.5, true)
 	windowFrame(cottage, Vector3.new(9, 0, -28), 4, 4, 7.5, true)
 	-- West wall: two windows

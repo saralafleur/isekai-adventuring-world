@@ -4,8 +4,10 @@
 
 local PartUtil = require(script.Parent.PartUtil)
 local HouseBuilder = require(script.Parent.HouseBuilder)
+local AvatarFactoryRef = require(script.Parent.Parent.NPC.AvatarFactory)
 
 local part = PartUtil.part
+local DARK_WOOD_TOWN = Color3.fromRGB(96, 62, 38)
 
 local BEAM_COLOR = Color3.fromRGB(74, 52, 34)
 local STONE_COLOR = Color3.fromRGB(130, 126, 120)
@@ -24,20 +26,85 @@ local ROOF_TINTS = {
 	Color3.fromRGB(88, 78, 72),
 	Color3.fromRGB(120, 58, 42),
 }
-local CANOPY_COLORS = {
-	Color3.fromRGB(190, 60, 60),
-	Color3.fromRGB(60, 110, 170),
-	Color3.fromRGB(70, 140, 80),
-	Color3.fromRGB(200, 150, 60),
-	Color3.fromRGB(150, 80, 160),
-	Color3.fromRGB(60, 150, 150),
-}
 
 local TownBuilder = {}
 
-local function marketStall(parent: Instance, x: number, z: number, facing: number, colorIndex: number)
+type StallTheme = {
+	key: string,
+	title: string,
+	canopy: Color3,
+	vendor: string,
+	vendorShirt: number,
+	vendorPants: number,
+	vendorSkin: Color3,
+	vendorBody: "masc" | "fem",
+	vendorShape: "heavy" | "average" | "thin",
+	vendorHair: number?,
+	isQuestBaker: boolean?,
+}
+
+-- Themed goods displayed on/around the counter, built in stall-local space
+-- (counter top at y 3.1, front toward +Z)
+local function stallGoods(model: Model, key: string)
+	local function p(props: { [string]: any })
+		local goodsPart = part(props)
+		goodsPart.CanCollide = false
+		goodsPart.Parent = model
+	end
+	if key == "produce" then
+		p({ Name = "GoodsCrate", Size = Vector3.new(2, 0.8, 1.4), Position = Vector3.new(-2, 3.55, 2), Color = Color3.fromRGB(150, 116, 70), Material = Enum.Material.WoodPlanks })
+		for i = 0, 3 do
+			p({ Name = "GoodsApple", Shape = Enum.PartType.Ball, Size = Vector3.new(0.55, 0.55, 0.55), Position = Vector3.new(-2.6 + (i % 2) * 1.1, 4.1, 1.7 + math.floor(i / 2) * 0.7), Color = Color3.fromRGB(200, 60, 55), Material = Enum.Material.SmoothPlastic })
+		end
+		p({ Name = "GoodsSquash", Size = Vector3.new(0.9, 0.7, 0.9), Position = Vector3.new(1.2, 3.5, 2.2), Color = Color3.fromRGB(230, 160, 60), Material = Enum.Material.SmoothPlastic })
+		p({ Name = "GoodsGreens", Size = Vector3.new(1.4, 0.5, 0.9), Position = Vector3.new(2.6, 3.4, 1.8), Color = Color3.fromRGB(96, 150, 70), Material = Enum.Material.Grass })
+		p({ Name = "GoodsSack", Size = Vector3.new(1.4, 1.8, 1.4), Position = Vector3.new(-2.6, 0.9, -0.8), Color = Color3.fromRGB(190, 170, 130), Material = Enum.Material.Fabric })
+	elseif key == "bread" then
+		for i = 0, 2 do
+			p({ Name = "GoodsLoaf", Size = Vector3.new(1.5, 0.5, 0.6), Position = Vector3.new(-2.2 + i * 1.9, 3.4, 2), Color = Color3.fromRGB(196, 150, 90), Material = Enum.Material.Sand })
+		end
+		p({ Name = "GoodsBasket", Size = Vector3.new(1.6, 0.9, 1.6), Position = Vector3.new(2.6, 3.6, 1.6), Color = Color3.fromRGB(150, 116, 70), Material = Enum.Material.WoodPlanks })
+		p({ Name = "GoodsRolls", Size = Vector3.new(1.2, 0.5, 1.2), Position = Vector3.new(2.6, 4.25, 1.6), Color = Color3.fromRGB(214, 172, 110), Material = Enum.Material.Sand })
+		p({ Name = "GoodsFlourSack", Size = Vector3.new(1.5, 1.9, 1.5), Position = Vector3.new(2.4, 0.95, -0.8), Color = Color3.fromRGB(225, 218, 200), Material = Enum.Material.Fabric })
+	elseif key == "fish" then
+		for i = 0, 2 do
+			p({ Name = "GoodsFish", Size = Vector3.new(0.4, 0.35, 1.8), Position = Vector3.new(-2 + i * 1.2, 3.3, 2), Color = Color3.fromRGB(140, 155, 165), Material = Enum.Material.SmoothPlastic })
+		end
+		p({ Name = "GoodsIce", Size = Vector3.new(5.5, 0.25, 2.2), Position = Vector3.new(-0.9, 3.15, 2), Color = Color3.fromRGB(200, 225, 235), Material = Enum.Material.Ice })
+		local barrel = part({ Name = "GoodsBarrel", Shape = Enum.PartType.Cylinder, Size = Vector3.new(2.2, 2, 2), CFrame = CFrame.new(2.7, 1.1, -0.6) * CFrame.Angles(0, 0, math.rad(90)), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks })
+		barrel.Parent = model
+		p({ Name = "GoodsNet", Size = Vector3.new(2.2, 0.15, 1.6), Position = Vector3.new(-2.6, 0.6, -0.8), Color = Color3.fromRGB(120, 110, 90), Material = Enum.Material.Fabric })
+	elseif key == "cloth" then
+		local rollColors = { Color3.fromRGB(160, 60, 70), Color3.fromRGB(70, 110, 160), Color3.fromRGB(190, 160, 80) }
+		for i = 0, 2 do
+			local roll = part({ Name = "GoodsClothRoll", Shape = Enum.PartType.Cylinder, Size = Vector3.new(2.6, 0.7, 0.7), CFrame = CFrame.new(-1.8 + i * 1.8, 3.5, 2) * CFrame.Angles(0, 0, math.rad(90)), Color = rollColors[i + 1], Material = Enum.Material.Fabric })
+			roll.Parent = model
+		end
+		p({ Name = "GoodsFoldStack", Size = Vector3.new(1.6, 1, 1.3), Position = Vector3.new(2.8, 3.65, 1.8), Color = Color3.fromRGB(150, 120, 150), Material = Enum.Material.Fabric })
+		p({ Name = "GoodsTrunk", Size = Vector3.new(2.2, 1.4, 1.4), Position = Vector3.new(-2.4, 0.75, -0.8), Color = DARK_WOOD_TOWN, Material = Enum.Material.WoodPlanks })
+	elseif key == "pottery" then
+		for i = 0, 2 do
+			local pot = part({ Name = "GoodsPot", Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.1, 0.9, 0.9), CFrame = CFrame.new(-2 + i * 1.6, 3.7, 2) * CFrame.Angles(0, 0, math.rad(90)), Color = Color3.fromRGB(168, 110, 72), Material = Enum.Material.SmoothPlastic })
+			pot.Parent = model
+		end
+		p({ Name = "GoodsBowlStack", Size = Vector3.new(1.1, 0.8, 1.1), Position = Vector3.new(2.6, 3.55, 1.9), Color = Color3.fromRGB(190, 150, 110), Material = Enum.Material.SmoothPlastic })
+		local bigUrn = part({ Name = "GoodsUrn", Shape = Enum.PartType.Cylinder, Size = Vector3.new(2.4, 1.5, 1.5), CFrame = CFrame.new(-2.6, 1.2, -0.8) * CFrame.Angles(0, 0, math.rad(90)), Color = Color3.fromRGB(150, 96, 62), Material = Enum.Material.SmoothPlastic })
+		bigUrn.Parent = model
+	elseif key == "flowers" then
+		local bloomColors = { Color3.fromRGB(230, 120, 150), Color3.fromRGB(240, 200, 80), Color3.fromRGB(150, 110, 220) }
+		for i = 0, 2 do
+			local bucket = part({ Name = "GoodsBucket", Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.1, 0.9, 0.9), CFrame = CFrame.new(-1.8 + i * 1.8, 3.7, 2) * CFrame.Angles(0, 0, math.rad(90)), Color = Color3.fromRGB(120, 120, 125), Material = Enum.Material.Metal })
+			bucket.Parent = model
+			p({ Name = "GoodsBloomCluster", Shape = Enum.PartType.Ball, Size = Vector3.new(1, 1, 1), Position = Vector3.new(-1.8 + i * 1.8, 4.6, 2), Color = bloomColors[i + 1], Material = Enum.Material.Grass })
+		end
+		p({ Name = "GoodsPlanter", Size = Vector3.new(2.4, 0.8, 1.2), Position = Vector3.new(-2.4, 0.45, -0.8), Color = Color3.fromRGB(150, 116, 70), Material = Enum.Material.WoodPlanks })
+		p({ Name = "GoodsPlanterBloom", Size = Vector3.new(2, 0.5, 0.9), Position = Vector3.new(-2.4, 1.1, -0.8), Color = Color3.fromRGB(230, 120, 150), Material = Enum.Material.Grass })
+	end
+end
+
+local function marketStall(parent: Instance, x: number, z: number, facing: number, theme: StallTheme)
 	local model = Instance.new("Model")
-	model.Name = "MarketStall"
+	model.Name = `Stall_{theme.key}`
 	local anchor = part({
 		Name = "Anchor",
 		Size = Vector3.new(1, 0.2, 1),
@@ -62,30 +129,85 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 	end
 	part({
 		Name = "StallCounter",
-		Size = Vector3.new(7.4, 1, 2),
+		Size = Vector3.new(7.4, 1, 2.2),
 		Position = Vector3.new(0, 2.6, 2),
 		Color = Color3.fromRGB(133, 100, 67),
 		Material = Enum.Material.WoodPlanks,
 	}).Parent = model
 	part({
+		Name = "StallCounterBase",
+		Size = Vector3.new(7, 2, 1.8),
+		Position = Vector3.new(0, 1.1, 2),
+		Color = Color3.fromRGB(110, 78, 48),
+		Material = Enum.Material.Wood,
+	}).Parent = model
+	-- Striped canopy: theme color with a lighter mid-stripe
+	part({
 		Name = "StallCanopy",
 		Size = Vector3.new(8.6, 0.3, 6),
 		CFrame = CFrame.new(0, 7.4, 0.4) * CFrame.Angles(math.rad(-10), 0, 0),
-		Color = CANOPY_COLORS[(colorIndex - 1) % #CANOPY_COLORS + 1],
+		Color = theme.canopy,
 		Material = Enum.Material.Fabric,
 	}).Parent = model
 	part({
-		Name = "StallCrate",
-		Size = Vector3.new(1.6, 1.6, 1.6),
-		Position = Vector3.new(-2, 0.8, -0.8),
-		Color = Color3.fromRGB(160, 126, 80),
+		Name = "StallCanopyStripe",
+		Size = Vector3.new(8.7, 0.12, 1.6),
+		CFrame = CFrame.new(0, 7.52, 0.4) * CFrame.Angles(math.rad(-10), 0, 0),
+		Color = theme.canopy:Lerp(Color3.new(1, 1, 1), 0.55),
+		Material = Enum.Material.Fabric,
+		CanCollide = false,
+	}).Parent = model
+	-- Side shelf for more goods
+	part({
+		Name = "StallShelf",
+		Size = Vector3.new(1.4, 0.4, 3.6),
+		Position = Vector3.new(-3.2, 3.9, 0),
+		Color = Color3.fromRGB(133, 100, 67),
 		Material = Enum.Material.WoodPlanks,
 	}).Parent = model
-	-- NPC destination in front of the counter
-	PartUtil.marker("BrowseSpot", Vector3.new(0, 0.5, 5)).Parent = model
+
+	stallGoods(model, theme.key)
+
+	-- NPC destination in front of the counter, tagged with what's sold here
+	local browseMarker = PartUtil.marker("BrowseSpot", Vector3.new(0, 0.5, 5))
+	browseMarker:SetAttribute("Wares", theme.key)
+	browseMarker.Parent = model
 
 	model.Parent = parent
-	model:PivotTo(CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(facing), 0))
+	local stallCF = CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(facing), 0)
+	model:PivotTo(stallCF)
+
+	-- Vendor behind the counter, facing customers
+	local vendorPos = (stallCF * CFrame.new(0, 0, -0.6)).Position
+	local vendorFacing = stallCF.LookVector
+	task.spawn(function()
+		local vendor = AvatarFactoryRef.createStatic({
+			name = theme.vendor,
+			shirtId = theme.vendorShirt,
+			pantsId = theme.vendorPants,
+			skin = theme.vendorSkin,
+			position = Vector3.new(vendorPos.X, 0.5, vendorPos.Z),
+			facing = vendorFacing,
+			body = theme.vendorBody,
+			shape = theme.vendorShape,
+			hairId = theme.vendorHair,
+		})
+		if vendor and theme.isQuestBaker then
+			-- Baker Hobb is the Harvest Morning delivery target: quest NPC
+			-- tag + Talk prompt wire him into the dialogue system
+			vendor:SetAttribute("NpcName", "Baker")
+			local torso = vendor:FindFirstChild("UpperTorso") or vendor.PrimaryPart
+			if torso then
+				local prompt = Instance.new("ProximityPrompt")
+				prompt.ActionText = "Talk"
+				prompt.ObjectText = theme.vendor
+				prompt.HoldDuration = 0
+				prompt.MaxActivationDistance = 10
+				prompt.Parent = torso
+			end
+			game:GetService("CollectionService"):AddTag(vendor, "NPC")
+		end
+	end)
 end
 
 local function well(parent: Instance, x: number, z: number)
@@ -153,13 +275,103 @@ function TownBuilder.build(parentFolder: Instance)
 
 	well(town, 0, 50)
 
-	-- Market stalls ringing the plaza, facing inward
-	marketStall(town, -22, 32, 90, 1)
-	marketStall(town, -22, 50, 90, 2)
-	marketStall(town, -22, 68, 90, 3)
-	marketStall(town, 22, 32, -90, 4)
-	marketStall(town, 22, 68, -90, 5)
-	marketStall(town, 20, 55, -90, 6) -- Baker Hobb's stall
+	-- Market stalls ringing the plaza, each selling something distinct,
+	-- each with its own vendor behind the counter
+	marketStall(town, -22, 32, 90, {
+		key = "produce",
+		title = "Produce",
+		canopy = Color3.fromRGB(70, 140, 80),
+		vendor = "Farmer Joss",
+		vendorHair = 62724852,
+		vendorShirt = 3174708425,
+		vendorPants = 5139586944,
+		vendorSkin = Color3.fromRGB(214, 173, 130),
+		vendorBody = "fem",
+		vendorShape = "average",
+	})
+	marketStall(town, -22, 50, 90, {
+		key = "cloth",
+		title = "Cloth & Thread",
+		canopy = Color3.fromRGB(150, 80, 160),
+		vendor = "Weaver Sena",
+		vendorHair = 17320190968,
+		vendorShirt = 9909459331,
+		vendorPants = 9313405331,
+		vendorSkin = Color3.fromRGB(150, 108, 70),
+		vendorBody = "fem",
+		vendorShape = "thin",
+	})
+	marketStall(town, -22, 68, 90, {
+		key = "flowers",
+		title = "Flowers",
+		canopy = Color3.fromRGB(200, 150, 60),
+		vendor = "Florist Wren",
+		vendorHair = 87786134298390,
+		vendorShirt = 767069743,
+		vendorPants = 17396743947,
+		vendorSkin = Color3.fromRGB(255, 219, 172),
+		vendorBody = "fem",
+		vendorShape = "thin",
+	})
+	marketStall(town, 22, 32, -90, {
+		key = "fish",
+		title = "Fresh Catch",
+		canopy = Color3.fromRGB(60, 110, 170),
+		vendor = "Fisher Malin",
+		vendorHair = 14651241814,
+		vendorShirt = 5518042632,
+		vendorPants = 6458492706,
+		vendorSkin = Color3.fromRGB(214, 173, 130),
+		vendorBody = "masc",
+		vendorShape = "average",
+	})
+	marketStall(town, 22, 68, -90, {
+		key = "pottery",
+		title = "Pottery",
+		canopy = Color3.fromRGB(60, 150, 150),
+		vendor = "Potter Grum",
+		vendorHair = 95892745934875,
+		vendorShirt = 872921927,
+		vendorPants = 13124170939,
+		vendorSkin = Color3.fromRGB(150, 108, 70),
+		vendorBody = "masc",
+		vendorShape = "heavy",
+	})
+	marketStall(town, 20, 55, -90, {
+		key = "bread",
+		title = "Hobb's Bakery",
+		canopy = Color3.fromRGB(190, 60, 60),
+		vendor = "Baker Hobb",
+		vendorHair = 122943278283338,
+		vendorShirt = 5088653702,
+		vendorPants = 10482967100,
+		vendorSkin = Color3.fromRGB(255, 219, 172),
+		vendorBody = "masc",
+		vendorShape = "heavy",
+		isQuestBaker = true,
+	})
+
+	-- Plaza ambience: corner lamp posts and freight
+	for _, corner in { Vector3.new(-27, 0, 23), Vector3.new(27, 0, 23), Vector3.new(-27, 0, 77), Vector3.new(27, 0, 77) } do
+		part({ Name = "PlazaLampPost", Size = Vector3.new(0.5, 6.5, 0.5), Position = corner + Vector3.new(0, 3.25, 0), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = town
+		local plazaLamp = part({
+			Name = "PlazaLamp",
+			Size = Vector3.new(0.9, 1.1, 0.9),
+			Position = corner + Vector3.new(0, 7, 0),
+			Color = Color3.fromRGB(255, 214, 130),
+			Material = Enum.Material.Neon,
+			CanCollide = false,
+		})
+		local plazaLight = Instance.new("PointLight")
+		plazaLight.Color = Color3.fromRGB(255, 200, 110)
+		plazaLight.Brightness = 1
+		plazaLight.Range = 16
+		plazaLight.Parent = plazaLamp
+		plazaLamp.Parent = town
+	end
+	for i = 0, 2 do
+		part({ Name = "PlazaCrate", Size = Vector3.new(1.7, 1.7, 1.7), Position = Vector3.new(-26 + (i % 2) * 2, 0.85 + math.floor(i / 2) * 1.75, 40 + (i % 2) * 1.2), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = town
+	end
 
 	-- Town hall: 3 stories, stone ground floor, facing south over the plaza.
 	-- Interior is custom-built below (assembly hall + records balcony).

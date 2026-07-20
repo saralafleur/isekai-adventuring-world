@@ -1,10 +1,13 @@
 --!strict
--- Drives the 15 ambient villagers as real R15 avatars: each rig is generated
--- from a HumanoidDescription (catalog clothing + body scales), walks with
--- Roblox's standard walk/idle animations via Humanoid:MoveTo, pathfinds around
--- buildings/fences, and runs endless randomized routines (walk somewhere ->
--- dwell / enter a house / work the forge -> pick the next errand). Routines
--- never repeat because each next stop is drawn from persona weights at runtime.
+-- Drives the ambient villagers: R15 avatars from AvatarFactory, real
+-- pathfinding, endless randomized routines. Movement rules that keep them
+-- fluid:
+--  * a failed path NEVER falls back to a straight line (that's how NPCs used
+--    to grind against walls) — they idle briefly and pick a new errand
+--  * stuck detection: no progress for a few seconds -> recompute the path
+--    from where they actually are; stuck twice -> abandon the errand
+--  * after browsing a stall they may buy something and visibly carry it away
+--    (see CarryItems); the item is put down at their next destination
 
 local CollectionService = game:GetService("CollectionService")
 local PathfindingService = game:GetService("PathfindingService")
@@ -13,17 +16,21 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local Catalog = require(script.Parent.VillagerCatalog)
+local AvatarFactory = require(script.Parent.AvatarFactory)
+local CarryItems = require(script.Parent.CarryItems)
 
 type Persona = Catalog.Persona
 
--- Roblox's standard R15 animation assets
 local ANIM_IDS = {
 	idle = "rbxassetid://507766388",
 	walk = "rbxassetid://507777826",
-	slash = "rbxassetid://522635514", -- hammer swing
+	slash = "rbxassetid://522635514",
 }
 
 local VILLAGER_GROUP = "Villager"
+local BUY_CHANCE = 0.65
+
+type Destination = { position: Vector3, wares: string? }
 
 type Villager = {
 	persona: Persona,
@@ -39,13 +46,21 @@ type Villager = {
 	timerUntil: number,
 	repathAt: number,
 	sparkAt: number,
+	-- current errand
+	target: Vector3?,
+	arriveMode: "enter" | "dwell" | "work",
+	pendingWares: string?,
+	-- stuck detection
+	progressPos: Vector3,
+	progressAt: number,
+	stuckRetries: number,
 	rng: Random,
 }
 
 local VillagerService = {}
 
 local villagers: { Villager } = {}
-local destinations: { [string]: { Vector3 } } = {}
+local destinations: { [string]: { Destination } } = {}
 local anvilSparks: ParticleEmitter? = nil
 
 -- ---------------------------------------------------------------- rig building
@@ -94,8 +109,6 @@ local function attachHammer(model: Model)
 	head.Parent = model
 end
 
-local AvatarFactory = require(script.Parent.AvatarFactory)
-
 local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
 	local description = AvatarFactory.describe({
 		shirtId = persona.shirtId,
@@ -138,7 +151,6 @@ local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
 		attachHammer(model)
 	end
 
-	-- Record original transparencies so hide/unhide can restore them exactly
 	local originalTransparency: { [Instance]: number } = {}
 	for _, descendant in model:GetDescendants() do
 		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
@@ -177,6 +189,12 @@ local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
 		timerUntil = 0,
 		repathAt = 0,
 		sparkAt = 0,
+		target = nil,
+		arriveMode = "dwell" :: "dwell",
+		pendingWares = nil,
+		progressPos = spawnPos,
+		progressAt = 0,
+		stuckRetries = 0,
 		rng = Random.new(),
 	}
 end
@@ -199,22 +217,25 @@ end
 -- ---------------------------------------------------------------- destinations
 
 local function collectDestinations()
-	local function positionsOf(tag: string): { Vector3 }
+	local function entriesOf(tag: string): { Destination }
 		local list = {}
 		for _, inst in CollectionService:GetTagged(tag) do
 			if inst:IsA("BasePart") then
-				table.insert(list, inst.Position)
+				table.insert(list, {
+					position = inst.Position,
+					wares = inst:GetAttribute("Wares") :: string?,
+				})
 			end
 		end
 		return list
 	end
 	destinations = {
-		house = positionsOf("HouseDoor"),
-		browse = positionsOf("BrowseSpot"),
-		well = positionsOf("GatherSpot"),
-		field = positionsOf("FieldSpot"),
-		watch = positionsOf("SmithyWatchSpot"),
-		forge = positionsOf("AnvilSpot"),
+		house = entriesOf("HouseDoor"),
+		browse = entriesOf("BrowseSpot"),
+		well = entriesOf("GatherSpot"),
+		field = entriesOf("FieldSpot"),
+		watch = entriesOf("SmithyWatchSpot"),
+		forge = entriesOf("AnvilSpot"),
 	}
 	for _, inst in CollectionService:GetTagged("AnvilSpot") do
 		local smithy = inst.Parent
@@ -258,61 +279,78 @@ end
 
 local function walkTo(v: Villager, target: Vector3, arriveMode: "enter" | "dwell" | "work")
 	v.mode = "Routing"
+	v.target = target
+	v.arriveMode = arriveMode
 	task.spawn(function()
 		local path = PathfindingService:CreatePath({
 			AgentRadius = 2.5,
 			AgentHeight = 6,
 			AgentCanJump = false,
-			WaypointSpacing = 8,
+			WaypointSpacing = 6,
 		})
 		local ok = pcall(function()
 			path:ComputeAsync(v.root.Position, target)
 		end)
-		local waypoints: { Vector3 } = {}
-		if ok and path.Status == Enum.PathStatus.Success then
-			for _, wp in path:GetWaypoints() do
-				table.insert(waypoints, wp.Position)
-			end
+		if not ok or path.Status ~= Enum.PathStatus.Success then
+			-- No route -> do NOT beeline (that grinds into walls). Wait a
+			-- moment and pick a different errand.
+			v.mode = "Idle"
+			v.timerUntil = os.clock() + 2
+			v.target = nil
+			return
 		end
-		if #waypoints == 0 then
-			waypoints = { target }
+		local waypoints: { Vector3 } = {}
+		for _, wp in path:GetWaypoints() do
+			table.insert(waypoints, wp.Position)
 		end
 		v.waypoints = waypoints
 		v.wpIndex = 1
 		v.repathAt = 0
+		v.progressPos = v.root.Position
+		v.progressAt = os.clock()
 		v.mode = "Walking"
-		v.model:SetAttribute("ArriveMode", arriveMode)
 		v.walkTrack:Play()
 	end)
 end
 
 local function chooseNext(v: Villager)
+	-- Departing a stall: maybe carry away a purchase
+	if v.pendingWares and v.rng:NextNumber() < BUY_CHANCE then
+		CarryItems.detach(v.model)
+		CarryItems.attach(v.model, v.pendingWares)
+	end
+	v.pendingWares = nil
+	v.stuckRetries = 0
+
 	local category = pickCategory(v)
 	local pool = destinations[category]
 	if not pool or #pool == 0 then
 		category = "well"
 		pool = destinations.well
 	end
-	local target = pool[v.rng:NextInteger(1, #pool)]
+	local entry = pool[v.rng:NextInteger(1, #pool)]
 	local arriveMode: "enter" | "dwell" | "work" = if category == "house"
 		then "enter"
 		elseif category == "forge" then "work"
 		else "dwell"
-	walkTo(v, target, arriveMode)
+	if category == "browse" then
+		v.pendingWares = entry.wares or (if v.rng:NextNumber() < 0.5 then "parcel" else nil)
+	end
+	walkTo(v, entry.position, arriveMode)
 end
 
 local function onArrive(v: Villager)
 	local persona = v.persona
 	local now = os.clock()
 	v.walkTrack:Stop(0.2)
-	local arriveMode = v.model:GetAttribute("ArriveMode")
-	if arriveMode == "enter" then
+	-- Whatever they were carrying has been "put away"
+	CarryItems.detach(v.model)
+	if v.arriveMode == "enter" then
 		v.mode = "Hidden"
 		setHidden(v, true)
 		v.timerUntil = now + v.rng:NextNumber(persona.hideMin, persona.hideMax)
-	elseif arriveMode == "work" then
+	elseif v.arriveMode == "work" then
 		v.mode = "Working"
-		-- face the anvil (east of the AnvilSpot)
 		v.root.CFrame = CFrame.lookAlong(v.root.Position, Vector3.xAxis)
 		v.slashTrack:Play(0.2)
 		v.timerUntil = now + v.rng:NextNumber(60, 150)
@@ -332,9 +370,30 @@ local function update(v: Villager)
 			onArrive(v)
 			return
 		end
+		-- Stuck detection: if we haven't actually moved in a while, the
+		-- humanoid is grinding against something the path didn't predict.
+		if (v.root.Position - v.progressPos).Magnitude > 1 then
+			v.progressPos = v.root.Position
+			v.progressAt = now
+		elseif now - v.progressAt > 3 then
+			v.walkTrack:Stop(0.2)
+			v.stuckRetries += 1
+			local finalTarget = v.target
+			if v.stuckRetries <= 1 and finalTarget then
+				-- one fresh path from where we actually are
+				walkTo(v, finalTarget, v.arriveMode)
+			else
+				-- abandon the errand entirely
+				v.mode = "Idle"
+				v.timerUntil = now + 1.5
+				v.target = nil
+			end
+			return
+		end
+
 		local delta = v.root.Position - target
 		local flatDistance = Vector3.new(delta.X, 0, delta.Z).Magnitude
-		if flatDistance < 3 then
+		if flatDistance < 3.5 then
 			v.wpIndex += 1
 			if v.wpIndex > #v.waypoints then
 				onArrive(v)
@@ -343,7 +402,6 @@ local function update(v: Villager)
 				v.repathAt = now + 4
 			end
 		elseif now >= v.repathAt then
-			-- (re)issue MoveTo; also covers the humanoid's 8s auto-timeout
 			v.humanoid:MoveTo(target)
 			v.repathAt = now + 4
 		end
@@ -368,7 +426,6 @@ local function update(v: Villager)
 			chooseNext(v)
 		end
 	end
-	-- "Routing" waits for the async path computation
 end
 
 -- ---------------------------------------------------------------- init
@@ -377,8 +434,6 @@ function VillagerService.init()
 	pcall(function()
 		PhysicsService:RegisterCollisionGroup(VILLAGER_GROUP)
 	end)
-	-- Villagers pass through each other (no plaza traffic jams) but still
-	-- collide with the world (Default group)
 	PhysicsService:CollisionGroupSetCollidable(VILLAGER_GROUP, VILLAGER_GROUP, false)
 
 	collectDestinations()
@@ -396,7 +451,6 @@ function VillagerService.init()
 			local jitter = Vector3.new((index * 7) % 11 - 5, 0, (index * 13) % 9 - 4)
 			local v = buildRig(persona, spot + jitter)
 			if v then
-				-- stagger first errands so the crowd doesn't move in lockstep
 				v.timerUntil = os.clock() + index * 1.5
 				table.insert(villagers, v)
 			end

@@ -236,10 +236,55 @@ function VillageBuilder.build(): Folder
 	local ForestBuilder = require(script.Parent.ForestBuilder)
 	ForestBuilder.build(village)
 
-	-- NPCs
-	makeNpc("Mira", "Mira", Vector3.new(6, 0, -45), Color3.fromRGB(120, 90, 150)).Parent = village
-	makeNpc("Daren", "Daren", Vector3.new(10, 0, -35), Color3.fromRGB(90, 110, 140)).Parent = village
-	makeNpc("Baker", "Baker Hobb", Vector3.new(15, 0, 55), Color3.fromRGB(220, 180, 120)).Parent = village
+	-- Quest NPCs (Baker Hobb is created by the market as the bread vendor).
+	-- Same avatar system as the villagers, wired into the dialogue system via
+	-- the NPC tag + NpcName attribute + Talk prompt.
+	local AvatarFactory = require(script.Parent.Parent.NPC.AvatarFactory)
+	local function makeQuestNpc(npcName: string, displayName: string, position: Vector3, facing: Vector3, config: { [string]: any })
+		task.spawn(function()
+			local model = AvatarFactory.createStatic({
+				name = displayName,
+				shirtId = config.shirtId,
+				pantsId = config.pantsId,
+				skin = config.skin,
+				position = position,
+				facing = facing,
+				body = config.body,
+				shape = config.shape,
+				hairId = config.hairId,
+			})
+			if not model then
+				return
+			end
+			model:SetAttribute("NpcName", npcName)
+			local torso = model:FindFirstChild("UpperTorso") or model.PrimaryPart
+			if torso then
+				local prompt = Instance.new("ProximityPrompt")
+				prompt.ActionText = "Talk"
+				prompt.ObjectText = displayName
+				prompt.HoldDuration = 0
+				prompt.MaxActivationDistance = 8
+				prompt.Parent = torso
+			end
+			CollectionService:AddTag(model, "NPC")
+		end)
+	end
+	makeQuestNpc("Mira", "Mira", Vector3.new(6, 0.5, -45), -Vector3.xAxis, {
+		shirtId = 18715074963, -- tavern dress
+		pantsId = 18715064441,
+		skin = Color3.fromRGB(255, 219, 172),
+		body = "fem",
+		shape = "average",
+		hairId = 110290888975881, -- brown wavy
+	})
+	makeQuestNpc("Daren", "Daren", Vector3.new(10, 0.5, -35), -Vector3.xAxis, {
+		shirtId = 5834523569, -- medieval work shirt
+		pantsId = 13124170939,
+		skin = Color3.fromRGB(214, 173, 130),
+		body = "masc",
+		shape = "heavy",
+		hairId = 62234425, -- brown
+	})
 
 	village.Parent = workspace
 	return village

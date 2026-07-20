@@ -342,6 +342,7 @@ local function buildAdventurersGuild(guilds: Folder)
 	task.spawn(function()
 		local thorne = AvatarFactory.createStatic({
 			name = "Guildmaster Thorne",
+			hairId = 10944323614,
 			body = "masc",
 			shape = "heavy",
 			shirtId = 11401062683,
@@ -359,6 +360,7 @@ local function buildAdventurersGuild(guilds: Folder)
 	task.spawn(function()
 		AvatarFactory.createStatic({
 			name = "Barkeep Hulda",
+			hairId = 110290888975881,
 			body = "fem",
 			shape = "average",
 			shirtId = 18715074963,
@@ -498,6 +500,7 @@ local function buildMerchantsGuild(guilds: Folder)
 	task.spawn(function()
 		local aldric = AvatarFactory.createStatic({
 			name = "Master Aldric",
+			hairId = 112378007199540,
 			body = "masc",
 			shape = "thin",
 			shirtId = 10565347864,
@@ -514,6 +517,7 @@ local function buildMerchantsGuild(guilds: Folder)
 	task.spawn(function()
 		AvatarFactory.createStatic({
 			name = "Scribe Odell",
+			hairId = 14651241814,
 			body = "masc",
 			shape = "thin",
 			shirtId = 329836637,

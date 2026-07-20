@@ -48,13 +48,16 @@ type Traveler = {
 	root: BasePart,
 	walkTrack: AnimationTrack,
 	-- remaining itinerary: walk to each point in order, dwelling where noted
-	stops: { { position: Vector3, dwell: number } },
+	stops: { { position: Vector3, dwell: number, wares: string? } },
 	stopIndex: number,
 	waypoints: { Vector3 },
 	wpIndex: number,
 	mode: "Walking" | "Dwelling" | "Routing" | "Done",
 	timerUntil: number,
 	repathAt: number,
+	progressPos: Vector3,
+	progressAt: number,
+	stuckRetries: number,
 	rng: Random,
 }
 
@@ -63,30 +66,40 @@ local TravelerService = {}
 local travelers: { Traveler } = {}
 local rng = Random.new()
 
-local function browseSpots(): { Vector3 }
+type SpotInfo = { position: Vector3, wares: string? }
+
+local function browseSpots(): { SpotInfo }
 	local list = {}
 	for _, inst in CollectionService:GetTagged("BrowseSpot") do
 		if inst:IsA("BasePart") then
-			table.insert(list, inst.Position)
+			table.insert(list, { position = inst.Position, wares = inst:GetAttribute("Wares") :: string? })
 		end
 	end
 	return list
 end
 
 local AvatarFactory = require(script.Parent.AvatarFactory)
+local CarryItems = require(script.Parent.CarryItems)
 
 local BODY_KINDS: { AvatarFactory.BodyKind } = { "masc", "fem" }
 local BODY_SHAPES: { AvatarFactory.BodyShape } = { "heavy", "average", "average", "thin" }
+local HAIR = {
+	masc = { 62234425, 10944323614, 14651241814 },
+	fem = { 62724852, 16289673213, 110290888975881 },
+}
 
 local function buildTraveler(): Traveler?
 	local outfit = OUTFITS[rng:NextInteger(1, #OUTFITS)]
+	local body: AvatarFactory.BodyKind = BODY_KINDS[rng:NextInteger(1, #BODY_KINDS)]
+	local hairPool = HAIR[body]
 	local description = AvatarFactory.describe({
 		shirtId = outfit.shirt,
 		pantsId = outfit.pants,
 		skin = SKINS[rng:NextInteger(1, #SKINS)],
 		heightScale = rng:NextNumber(0.94, 1.06),
-		body = BODY_KINDS[rng:NextInteger(1, #BODY_KINDS)],
+		body = body,
 		shape = BODY_SHAPES[rng:NextInteger(1, #BODY_SHAPES)],
+		hairId = hairPool[rng:NextInteger(1, #hairPool)],
 	})
 
 	local ok, model = pcall(function()
@@ -115,14 +128,14 @@ local function buildTraveler(): Traveler?
 	local southToNorth = rng:NextInteger(0, 1) == 0
 	local entry = if southToNorth then SOUTH_GATE else NORTH_GATE
 	local exitGate = if southToNorth then NORTH_GATE else SOUTH_GATE
-	local stops: { { position: Vector3, dwell: number } } = {}
+	local stops: { { position: Vector3, dwell: number, wares: string? } } = {}
 	table.insert(stops, { position = PLAZA + Vector3.new(rng:NextNumber(-8, 8), 0, rng:NextNumber(-8, 8)), dwell = rng:NextNumber(5, 15) })
 	local spots = browseSpots()
 	local stopCount = rng:NextInteger(1, 2)
 	for _ = 1, stopCount do
 		if #spots > 0 then
 			local spot = spots[rng:NextInteger(1, #spots)]
-			table.insert(stops, { position = spot, dwell = rng:NextNumber(15, 45) })
+			table.insert(stops, { position = spot.position, dwell = rng:NextNumber(15, 45), wares = spot.wares })
 		end
 	end
 	table.insert(stops, { position = exitGate, dwell = 0 })
@@ -158,6 +171,9 @@ local function buildTraveler(): Traveler?
 		mode = "Routing" :: "Routing",
 		timerUntil = 0,
 		repathAt = 0,
+		progressPos = Vector3.zero,
+		progressAt = 0,
+		stuckRetries = 0,
 		rng = Random.new(),
 	}
 end
@@ -180,18 +196,21 @@ local function routeToNextStop(t: Traveler)
 		local ok = pcall(function()
 			path:ComputeAsync(t.root.Position, stop.position)
 		end)
-		local waypoints: { Vector3 } = {}
-		if ok and path.Status == Enum.PathStatus.Success then
-			for _, wp in path:GetWaypoints() do
-				table.insert(waypoints, wp.Position)
-			end
+		if not ok or path.Status ~= Enum.PathStatus.Success then
+			-- unreachable stop: skip it rather than grinding into walls
+			routeToNextStop(t)
+			return
 		end
-		if #waypoints == 0 then
-			waypoints = { stop.position }
+		local waypoints: { Vector3 } = {}
+		for _, wp in path:GetWaypoints() do
+			table.insert(waypoints, wp.Position)
 		end
 		t.waypoints = waypoints
 		t.wpIndex = 1
 		t.repathAt = 0
+		t.progressPos = t.root.Position
+		t.progressAt = os.clock()
+		t.stuckRetries = 0
 		t.mode = "Walking"
 		t.walkTrack:Play()
 	end)
@@ -203,6 +222,8 @@ local function update(t: Traveler)
 		local target = t.waypoints[t.wpIndex]
 		if not target then
 			t.walkTrack:Stop(0.2)
+			t.stuckRetries = 0
+			CarryItems.detach(t.model)
 			local stop = t.stops[t.stopIndex]
 			if stop and stop.dwell > 0 then
 				t.mode = "Dwelling"
@@ -210,6 +231,20 @@ local function update(t: Traveler)
 			else
 				routeToNextStop(t)
 			end
+			return
+		end
+		-- stuck detection: recompute once from the actual position, then skip
+		if (t.root.Position - t.progressPos).Magnitude > 1 then
+			t.progressPos = t.root.Position
+			t.progressAt = now
+		elseif now - t.progressAt > 3 then
+			t.walkTrack:Stop(0.2)
+			t.stuckRetries += 1
+			t.stopIndex -= 1 -- routeToNextStop re-increments to the same stop
+			if t.stuckRetries > 1 then
+				t.stopIndex += 1 -- give up on this stop; move to the next
+			end
+			routeToNextStop(t)
 			return
 		end
 		local delta = t.root.Position - target
@@ -221,6 +256,10 @@ local function update(t: Traveler)
 		end
 	elseif t.mode == "Dwelling" then
 		if now >= t.timerUntil then
+			local stop = t.stops[t.stopIndex]
+			if stop and stop.wares and t.rng:NextNumber() < 0.65 then
+				CarryItems.attach(t.model, stop.wares)
+			end
 			routeToNextStop(t)
 		end
 	end

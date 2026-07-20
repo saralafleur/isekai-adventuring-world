@@ -6,6 +6,8 @@
 local CollectionService = game:GetService("CollectionService")
 
 local CottageBuilder = require(script.Parent.CottageBuilder)
+local FarmBuilder = require(script.Parent.FarmBuilder)
+local TownBuilder = require(script.Parent.TownBuilder)
 
 local VillageBuilder = {}
 
@@ -95,11 +97,11 @@ function VillageBuilder.build(): Folder
 	local village = Instance.new("Folder")
 	village.Name = "BriarGlen"
 
-	-- Ground
+	-- Ground: covers the farm hamlet (south) through the town (north)
 	local ground = part({
 		Name = "Ground",
-		Size = Vector3.new(400, 2, 400),
-		Position = Vector3.new(0, -1, 0),
+		Size = Vector3.new(700, 2, 700),
+		Position = Vector3.new(0, -1, 30),
 		Color = Color3.fromRGB(106, 152, 82),
 		Material = Enum.Material.Grass,
 	})
@@ -178,26 +180,21 @@ function VillageBuilder.build(): Folder
 	cluck.Parent = pen
 	pen.Parent = village
 
-	-- Village square + baker stall
+	-- Market plaza (stalls, well, town hall and townhouses come from TownBuilder)
 	local square = Instance.new("Folder")
 	square.Name = "VillageSquare"
 	local plaza = part({
 		Name = "Plaza",
-		Size = Vector3.new(50, 0.4, 50),
+		Size = Vector3.new(60, 0.4, 60),
 		Position = Vector3.new(0, 0.2, 50),
 		Color = Color3.fromRGB(180, 170, 150),
 		Material = Enum.Material.Cobblestone,
 	})
 	plaza.Parent = square
-	local stall = part({
-		Name = "BakerStall",
-		Size = Vector3.new(10, 8, 6),
-		Position = Vector3.new(15, 4, 60),
-		Color = Color3.fromRGB(120, 80, 50),
-		Material = Enum.Material.Wood,
-	})
-	stall.Parent = square
 	square.Parent = village
+
+	FarmBuilder.build(village)
+	TownBuilder.build(village)
 
 	-- Dirt path from the cottage door to the plaza
 	local path = Instance.new("Folder")
@@ -213,20 +210,28 @@ function VillageBuilder.build(): Folder
 	end
 	path.Parent = village
 
-	-- Trees scattered around the village
+	-- Trees ring the settled area (buildings now occupy the old inner spots)
 	local trees = Instance.new("Folder")
 	trees.Name = "Trees"
 	local treeSpots = {
-		Vector3.new(-60, 0, -60),
-		Vector3.new(-70, 0, 10),
-		Vector3.new(-55, 0, 70),
-		Vector3.new(60, 0, -55),
-		Vector3.new(75, 0, 20),
-		Vector3.new(55, 0, 80),
-		Vector3.new(-25, 0, 90),
-		Vector3.new(30, 0, 95),
-		Vector3.new(-90, 0, -30),
-		Vector3.new(90, 0, -15),
+		Vector3.new(-150, 0, -150),
+		Vector3.new(-160, 0, -60),
+		Vector3.new(-155, 0, 40),
+		Vector3.new(-150, 0, 130),
+		Vector3.new(-120, 0, 200),
+		Vector3.new(-60, 0, 240),
+		Vector3.new(20, 0, 250),
+		Vector3.new(90, 0, 235),
+		Vector3.new(140, 0, 180),
+		Vector3.new(155, 0, 100),
+		Vector3.new(160, 0, 20),
+		Vector3.new(150, 0, -70),
+		Vector3.new(130, 0, -140),
+		Vector3.new(60, 0, -160),
+		Vector3.new(-20, 0, -170),
+		Vector3.new(-140, 0, -110),
+		Vector3.new(-20, 0, -90),
+		Vector3.new(95, 0, -115),
 	}
 	for index, spot in treeSpots do
 		local scale = 1 + (index % 3) * 0.25

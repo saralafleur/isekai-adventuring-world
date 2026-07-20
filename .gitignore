@@ -7,3 +7,4 @@ globalTypes.d.luau
 # Wally-managed packages are reproducible from wally.lock; don't commit the vendored copies
 /Packages/
 /DevPackages/
+*.rbxl.lock

@@ -205,7 +205,8 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 				prompt.ActionText = "Talk"
 				prompt.ObjectText = theme.vendor
 				prompt.HoldDuration = 0
-				prompt.MaxActivationDistance = 10
+				prompt.MaxActivationDistance = 12
+				prompt.RequiresLineOfSight = false
 				prompt.Parent = torso
 			end
 			game:GetService("CollectionService"):AddTag(vendor, "NPC")

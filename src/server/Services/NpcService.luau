@@ -10,13 +10,18 @@ local function hookNpc(model: Instance)
 	if not npcName then
 		return
 	end
-	for _, descendant in model:GetDescendants() do
-		if descendant:IsA("ProximityPrompt") then
-			descendant.Triggered:Connect(function(player)
+	local function bind(prompt: Instance)
+		if prompt:IsA("ProximityPrompt") then
+			prompt.Triggered:Connect(function(player)
 				DialogueService.openForNpc(player, npcName)
 			end)
 		end
 	end
+	for _, descendant in model:GetDescendants() do
+		bind(descendant)
+	end
+	-- avatar models finish building asynchronously; catch prompts added later
+	model.DescendantAdded:Connect(bind)
 end
 
 function NpcService.init()

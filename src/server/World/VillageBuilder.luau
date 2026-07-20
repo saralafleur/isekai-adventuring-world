@@ -278,13 +278,15 @@ function VillageBuilder.build(): Folder
 				prompt.ActionText = "Talk"
 				prompt.ObjectText = displayName
 				prompt.HoldDuration = 0
-				prompt.MaxActivationDistance = 8
+				prompt.MaxActivationDistance = 12
+				-- furniture between you and the NPC must not hide their prompt
+				prompt.RequiresLineOfSight = false
 				prompt.Parent = torso
 			end
 			CollectionService:AddTag(model, "NPC")
 		end)
 	end
-	makeQuestNpc("Mira", "Mira", Vector3.new(6, 0.5, -45), -Vector3.xAxis, {
+	makeQuestNpc("Mira", "Mira", Vector3.new(10, 0.5, -47.5), Vector3.new(-0.86, 0, 0.5), {
 		shirtId = 18715074963, -- tavern dress
 		pantsId = 18715064441,
 		skin = Color3.fromRGB(255, 219, 172),

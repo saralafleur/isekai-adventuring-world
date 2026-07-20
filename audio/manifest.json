@@ -1,5 +1,61 @@
 [
   {
+    "key": "Prologue__secrets__1",
+    "file": "audio/lines/Prologue__secrets__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "Every world keeps its secrets. Aetheria keeps more than most."
+  },
+  {
+    "key": "Prologue__died__1",
+    "file": "audio/lines/Prologue__died__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "Fourteen years ago, a boy died in the rain of another world."
+  },
+  {
+    "key": "Prologue__reborn__1",
+    "file": "audio/lines/Prologue__reborn__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "He was born again here, to a farmer and his wife, in a village called Briar Glen."
+  },
+  {
+    "key": "Prologue__dream__1",
+    "file": "audio/lines/Prologue__dream__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "He remembers none of it. Only the dream. Rain. Lights. A voice."
+  },
+  {
+    "key": "Prologue__harvest__1",
+    "file": "audio/lines/Prologue__harvest__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "Today the village celebrates the First Harvest."
+  },
+  {
+    "key": "Prologue__nightfall__1",
+    "file": "audio/lines/Prologue__nightfall__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "And by nightfall, everything he loves will be taken from him."
+  },
+  {
+    "key": "Prologue__wake__1",
+    "file": "audio/lines/Prologue__wake__1.mp3",
+    "speaker": "Narrator",
+    "voice": "bm_fable",
+    "engine": "kokoro",
+    "text": "Wake up, lad. Your story starts now."
+  },
+  {
     "key": "MiraBreakfast__greeting__1",
     "file": "audio/lines/MiraBreakfast__greeting__1.mp3",
     "speaker": "Mira",

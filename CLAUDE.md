@@ -38,10 +38,14 @@ Run both before considering any change done:
 ```sh
 rojo sourcemap default.project.json -o sourcemap.json
 luau-lsp analyze --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src
-rojo build default.project.json -o /dev/null
+rojo build default.project.json -o /tmp/verify.rbxl
 ```
 
 (`globalTypes.d.luau` is gitignored; re-download from the luau-lsp repo's `scripts/globalTypes.d.luau` if missing.)
+
+(The build output must end in `.rbxl`/`.rbxm` — rojo picks the format from the
+extension and refuses `/dev/null`. Build to a throwaway path; the file itself is
+not the point, only that the project compiles.)
 
 ## The game
 

@@ -12,3 +12,8 @@ globalTypes.d.luau
 # local neural TTS model + venv (regenerate via scripts/generate-voice-lines.py header)
 .tts-models/
 .venv-tts/
+
+# Roblox Open Cloud credentials for scripts/upload-voice-lines.py. NEVER commit:
+# anyone with this key can upload assets to the account.
+.env
+.env.*

@@ -111,11 +111,11 @@ function VillageBuilder.build(): Folder
 	-- Rowan cottage (timber-frame build, includes Kael's bed and interior)
 	CottageBuilder.build(village)
 
-	-- Spawn next to the bed
+	-- Spawn beside the bed, facing INTO the room (toward the door) — never a wall
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "BedSpawn"
 	spawn.Size = Vector3.new(4, 1, 4)
-	spawn.Position = Vector3.new(-6, 1.5, -45)
+	spawn.CFrame = CFrame.lookAt(Vector3.new(-6.5, 1.5, -43.5), Vector3.new(-3, 1.5, -30))
 	spawn.Anchored = true
 	spawn.Transparency = 1
 	spawn.CanCollide = false

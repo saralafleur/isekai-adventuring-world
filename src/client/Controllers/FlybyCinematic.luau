@@ -202,14 +202,19 @@ function FlybyCinematic.play(blackGui: ScreenGui?)
 
 	conn:Disconnect()
 	skipGui:Destroy()
-	-- Camera is inside the head looking along the player's facing: switching to
-	-- Custom keeps that distance, i.e. we hand off in first person and the
-	-- player can scroll to zoom out.
+	-- Hand off in true first person: clamp the zoom to minimum for one frame so
+	-- the Custom camera snaps inside the head, then restore the max so the
+	-- player can scroll out to third person whenever they like.
+	player.CameraMaxZoomDistance = 0.5
+	player.CameraMinZoomDistance = 0.5
 	camera.CameraType = Enum.CameraType.Custom
 	for _, part in characterParts do
 		part.LocalTransparencyModifier = 0
 	end
 	root.Anchored = false
+	task.delay(0.3, function()
+		player.CameraMaxZoomDistance = 128
+	end)
 end
 
 return FlybyCinematic

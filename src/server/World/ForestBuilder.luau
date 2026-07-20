@@ -1,12 +1,14 @@
 --!strict
--- Dense, realistic forest surrounding the settled valley.
---
--- Structure: a thick DENSE BELT of trees + undergrowth hugs the settlement
--- edge (this is what players actually look into — canopies overlap and bushes
--- fill the ground layer, so you can't see through it), thinning to scattered
--- larger trees deeper out. Three species with per-tree size/color/rotation
--- variation: broadleaf oaks (clustered irregular canopies + branches), tall
--- pines (stacked tapering foliage), and pale-trunked birches.
+-- Dense, realistic forest covering the ENTIRE map outside the settlement —
+-- not a ring of trees around the village. Density and per-tree detail are
+-- graded by distance from the settlement edge so the near woods are an opaque
+-- wall while the far woods still carpet the horizon at an affordable cost:
+--   band A (0-60)    dense full-detail trees + undergrowth; no sightlines
+--   band B (60-175)  medium density, full detail
+--   band C (175+)    simplified trees (3 parts) out to the map edge
+-- Four forms with per-tree size/color/rotation variation: broadleaf oaks
+-- (clustered irregular canopies + branches), tall pines (stacked tapering
+-- foliage), pale-trunked birches, and the distant-band simplified tree.
 --
 -- The main road's corridor and the two gates stay clear. Deterministic
 -- (seeded) so every server builds the same forest.
@@ -139,6 +141,25 @@ local function birch(parent: Instance, x: number, z: number, scale: number, rng:
 	end
 end
 
+-- Distant-band tree: same shapes, far fewer parts, so the horizon can be
+-- filled solid without a five-figure part budget.
+local function simpleTree(parent: Instance, x: number, z: number, scale: number, rng: Random)
+	local conifer = rng:NextNumber() < 0.45
+	local trunkColor = Color3.fromRGB(84, 58, 40)
+	local leaf = if conifer
+		then Color3.fromRGB(38 + rng:NextInteger(0, 12), 76 + rng:NextInteger(0, 16), 42)
+		else Color3.fromRGB(56 + rng:NextInteger(0, 22), 100 + rng:NextInteger(0, 26), 48)
+	local h = (if conifer then 16 else 11) * scale
+	trunkPart(parent, x, z, h, 1.9 * scale, trunkColor, 0, rng:NextNumber(0, math.pi))
+	if conifer then
+		canopyBall(parent, Vector3.new(x, h * 0.62, z), Vector3.new(10 * scale, 6 * scale, 10 * scale), leaf)
+		canopyBall(parent, Vector3.new(x, h * 0.95, z), Vector3.new(6.5 * scale, 7 * scale, 6.5 * scale), leaf)
+	else
+		canopyBall(parent, Vector3.new(x, h + 2.6 * scale, z), Vector3.new(12 * scale, 10 * scale, 12 * scale), leaf)
+		canopyBall(parent, Vector3.new(x + 1.6 * scale, h + 5.4 * scale, z - scale), Vector3.new(7.5 * scale, 6.5 * scale, 7.5 * scale), leaf:Lerp(Color3.new(1, 1, 1), 0.07))
+	end
+end
+
 local function bush(parent: Instance, x: number, z: number, rng: Random)
 	local green = Color3.fromRGB(58 + rng:NextInteger(0, 26), 96 + rng:NextInteger(0, 30), 46)
 	for i = 0, 1 do
@@ -253,56 +274,62 @@ function ForestBuilder.build(parentFolder: Instance)
 
 	local rng = Random.new(7341)
 
-	-- Dense belt: tightly packed trees + undergrowth just outside the
-	-- settlement — the wall of forest you can't see through
-	local beltTrees = 0
-	local attempts = 0
-	while beltTrees < 620 and attempts < 26000 do
-		attempts += 1
-		local x = rng:NextNumber(-SETTLE_X - BELT_DEPTH - 10, SETTLE_X + BELT_DEPTH + 10)
-		local z = rng:NextNumber(SETTLE_Z_MIN - BELT_DEPTH - 10, SETTLE_Z_MAX + BELT_DEPTH + 10)
-		local dist = outsideDistance(x, z)
-		if dist <= 2 or dist > BELT_DEPTH or onRoadCorridor(x, z) then
-			continue
+	-- Forest fills the WHOLE map, not a ring around the village. Density and
+	-- per-tree detail are graded by distance from the settlement edge:
+	--   band A (0-60)    dense full-detail wall you cannot see through
+	--   band B (60-170)  medium density, full detail
+	--   band C (170+)    simplified trees carpeting out to the map edge
+	-- Jittered grid rather than random rejection, so coverage stays even.
+	local MAP_MIN_X, MAP_MAX_X = -545, 545
+	local MAP_MIN_Z, MAP_MAX_Z = -515, 575
+
+	local function scatter(cell: number, bandMin: number, bandMax: number, simple: boolean, jitter: number)
+		local planted = 0
+		local x = MAP_MIN_X
+		while x < MAP_MAX_X do
+			local z = MAP_MIN_Z
+			while z < MAP_MAX_Z do
+				local px = x + rng:NextNumber(0, cell) * jitter
+				local pz = z + rng:NextNumber(0, cell) * jitter
+				local dist = outsideDistance(px, pz)
+				if dist > bandMin and dist <= bandMax and not onRoadCorridor(px, pz) then
+					local scale = 0.85 + rng:NextNumber() * (if simple then 1.1 else 0.9)
+					if simple then
+						simpleTree(forest, px, pz, scale, rng)
+					elseif rng:NextNumber() < 0.06 then
+						rock(forest, px, pz, 0.7 + rng:NextNumber() * 1.1)
+					else
+						plantTree(forest, px, pz, rng)
+					end
+					planted += 1
+				end
+				z += cell
+			end
+			x += cell
 		end
-		plantTree(forest, x, z, rng)
-		beltTrees += 1
+		return planted
 	end
 
-	-- Undergrowth in and just inside the belt: bushes kill the remaining
-	-- ground-level sightlines
+	local dense = scatter(13, 2, BELT_DEPTH, false, 0.95)
+	local mid = scatter(20, BELT_DEPTH, 175, false, 0.95)
+	local far = scatter(30, 175, 9999, true, 0.9)
+
+	-- Undergrowth: only where the player can actually walk up to it
 	local bushes = 0
-	attempts = 0
-	while bushes < 480 and attempts < 20000 do
+	local attempts = 0
+	while bushes < 520 and attempts < 20000 do
 		attempts += 1
-		local x = rng:NextNumber(-SETTLE_X - BELT_DEPTH - 10, SETTLE_X + BELT_DEPTH + 10)
-		local z = rng:NextNumber(SETTLE_Z_MIN - BELT_DEPTH - 10, SETTLE_Z_MAX + BELT_DEPTH + 10)
-		local dist = outsideDistance(x, z)
-		if dist <= 1 or dist > BELT_DEPTH + 6 or onRoadCorridor(x, z) then
+		local bx = rng:NextNumber(-SETTLE_X - BELT_DEPTH - 10, SETTLE_X + BELT_DEPTH + 10)
+		local bz = rng:NextNumber(SETTLE_Z_MIN - BELT_DEPTH - 10, SETTLE_Z_MAX + BELT_DEPTH + 10)
+		local dist = outsideDistance(bx, bz)
+		if dist <= 1 or dist > BELT_DEPTH + 6 or onRoadCorridor(bx, bz) then
 			continue
 		end
-		bush(forest, x, z, rng)
+		bush(forest, bx, bz, rng)
 		bushes += 1
 	end
 
-	-- Outer woods: scattered larger trees and rocks filling the horizon
-	local outer = 0
-	attempts = 0
-	while outer < 280 and attempts < 8000 do
-		attempts += 1
-		local x = rng:NextNumber(-540, 540)
-		local z = rng:NextNumber(-500, 560)
-		local dist = outsideDistance(x, z)
-		if dist <= BELT_DEPTH or onRoadCorridor(x, z) then
-			continue
-		end
-		if attempts % 10 == 0 then
-			rock(forest, x, z, 0.7 + rng:NextNumber() * 1.1)
-		else
-			plantTree(forest, x, z, rng)
-		end
-		outer += 1
-	end
+	print(`[Forest] {dense} dense + {mid} mid + {far} distant trees, {bushes} bushes`)
 
 	forest.Parent = parentFolder
 	return forest

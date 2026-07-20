@@ -15,6 +15,54 @@
         "$path": "src/server"
       }
     },
+    "Lighting": {
+      "$properties": {
+        "Ambient": [0.32, 0.32, 0.36],
+        "OutdoorAmbient": [0.5, 0.47, 0.42],
+        "Brightness": 2.5,
+        "ClockTime": 8.5,
+        "GeographicLatitude": 45,
+        "GlobalShadows": true,
+        "ShadowSoftness": 0.2,
+        "Technology": "Future",
+        "EnvironmentDiffuseScale": 1,
+        "EnvironmentSpecularScale": 1
+      },
+      "Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Density": 0.3,
+          "Offset": 0.25,
+          "Color": [0.78, 0.78, 0.72],
+          "Decay": [0.42, 0.44, 0.5],
+          "Glare": 0.2,
+          "Haze": 1.5
+        }
+      },
+      "Bloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Intensity": 0.6,
+          "Size": 24,
+          "Threshold": 1.2
+        }
+      },
+      "ColorCorrection": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Saturation": 0.08,
+          "Contrast": 0.05,
+          "TintColor": [1, 0.98, 0.94]
+        }
+      },
+      "SunRays": {
+        "$className": "SunRaysEffect",
+        "$properties": {
+          "Intensity": 0.06,
+          "Spread": 0.7
+        }
+      }
+    },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": {

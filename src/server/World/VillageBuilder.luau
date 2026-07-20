@@ -5,6 +5,8 @@
 
 local CollectionService = game:GetService("CollectionService")
 
+local CottageBuilder = require(script.Parent.CottageBuilder)
+
 local VillageBuilder = {}
 
 local function part(props: { [string]: any }): Part
@@ -103,34 +105,8 @@ function VillageBuilder.build(): Folder
 	})
 	ground.Parent = village
 
-	-- Rowan cottage (open-top greybox: floor + 3 walls, gap for a door)
-	local cottage = Instance.new("Model")
-	cottage.Name = "RowanCottage"
-	local floorPart = part({
-		Name = "Floor",
-		Size = Vector3.new(30, 1, 24),
-		Position = Vector3.new(0, 0.5, -40),
-		Color = Color3.fromRGB(133, 100, 67),
-		Material = Enum.Material.WoodPlanks,
-	})
-	floorPart.Parent = cottage
-	local wallColor = Color3.fromRGB(170, 140, 100)
-	part({ Name = "WallN", Size = Vector3.new(30, 10, 1), Position = Vector3.new(0, 6, -52), Color = wallColor, Material = Enum.Material.Wood }).Parent = cottage
-	part({ Name = "WallW", Size = Vector3.new(1, 10, 24), Position = Vector3.new(-15, 6, -40), Color = wallColor, Material = Enum.Material.Wood }).Parent = cottage
-	part({ Name = "WallE", Size = Vector3.new(1, 10, 24), Position = Vector3.new(15, 6, -40), Color = wallColor, Material = Enum.Material.Wood }).Parent = cottage
-	-- South wall with door gap
-	part({ Name = "WallS1", Size = Vector3.new(12, 10, 1), Position = Vector3.new(-9, 6, -28), Color = wallColor, Material = Enum.Material.Wood }).Parent = cottage
-	part({ Name = "WallS2", Size = Vector3.new(12, 10, 1), Position = Vector3.new(9, 6, -28), Color = wallColor, Material = Enum.Material.Wood }).Parent = cottage
-	-- Kael's bed
-	local bed = part({
-		Name = "KaelBed",
-		Size = Vector3.new(4, 1.5, 8),
-		Position = Vector3.new(-11, 1.75, -47),
-		Color = Color3.fromRGB(196, 40, 28),
-		Material = Enum.Material.Fabric,
-	})
-	bed.Parent = cottage
-	cottage.Parent = village
+	-- Rowan cottage (timber-frame build, includes Kael's bed and interior)
+	CottageBuilder.build(village)
 
 	-- Spawn next to the bed
 	local spawn = Instance.new("SpawnLocation")
@@ -222,6 +198,68 @@ function VillageBuilder.build(): Folder
 	})
 	stall.Parent = square
 	square.Parent = village
+
+	-- Dirt path from the cottage door to the plaza
+	local path = Instance.new("Folder")
+	path.Name = "Path"
+	for i = 0, 5 do
+		part({
+			Name = "PathStone",
+			Size = Vector3.new(6 + (i % 2) * 1.5, 0.3, 9),
+			Position = Vector3.new((i % 2 - 0.5) * 1.2, 0.15, -22 + i * 8.5),
+			Color = Color3.fromRGB(150, 125, 95),
+			Material = Enum.Material.Ground,
+		}).Parent = path
+	end
+	path.Parent = village
+
+	-- Trees scattered around the village
+	local trees = Instance.new("Folder")
+	trees.Name = "Trees"
+	local treeSpots = {
+		Vector3.new(-60, 0, -60),
+		Vector3.new(-70, 0, 10),
+		Vector3.new(-55, 0, 70),
+		Vector3.new(60, 0, -55),
+		Vector3.new(75, 0, 20),
+		Vector3.new(55, 0, 80),
+		Vector3.new(-25, 0, 90),
+		Vector3.new(30, 0, 95),
+		Vector3.new(-90, 0, -30),
+		Vector3.new(90, 0, -15),
+	}
+	for index, spot in treeSpots do
+		local scale = 1 + (index % 3) * 0.25
+		local trunk = part({
+			Name = "TreeTrunk",
+			Size = Vector3.new(2 * scale, 12 * scale, 2 * scale),
+			Position = spot + Vector3.new(0, 6 * scale, 0),
+			Color = Color3.fromRGB(92, 64, 44),
+			Material = Enum.Material.Wood,
+		})
+		trunk.Parent = trees
+		local canopyLow = part({
+			Name = "TreeCanopy",
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.new(11 * scale, 11 * scale, 11 * scale),
+			Position = spot + Vector3.new(0, 13 * scale, 0),
+			Color = Color3.fromRGB(64, 110, 52),
+			Material = Enum.Material.LeafyGrass,
+			CanCollide = false,
+		})
+		canopyLow.Parent = trees
+		local canopyHigh = part({
+			Name = "TreeCanopyTop",
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.new(7 * scale, 7 * scale, 7 * scale),
+			Position = spot + Vector3.new(1.5, 17 * scale, 1),
+			Color = Color3.fromRGB(78, 128, 60),
+			Material = Enum.Material.LeafyGrass,
+			CanCollide = false,
+		})
+		canopyHigh.Parent = trees
+	end
+	trees.Parent = village
 
 	-- NPCs
 	makeNpc("Mira", "Mira", Vector3.new(6, 0, -45), Color3.fromRGB(120, 90, 150)).Parent = village

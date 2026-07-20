@@ -1,0 +1,8 @@
+.DS_Store
+sourcemap.json
+*.rbxl
+*.rbxlx
+
+# Wally-managed packages are reproducible from wally.lock; don't commit the vendored copies
+/Packages/
+/DevPackages/

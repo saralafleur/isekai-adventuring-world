@@ -173,6 +173,7 @@ function FarmBuilder.build(parentFolder: Instance)
 		stories = 1,
 		plasterColor = Color3.fromRGB(226, 214, 186),
 		seed = 21,
+		signText = "Farmhouse 1",
 	})
 	HouseBuilder.build(farm, {
 		name = "FarmhouseSouth",
@@ -183,6 +184,7 @@ function FarmBuilder.build(parentFolder: Instance)
 		stories = 2,
 		plasterColor = Color3.fromRGB(220, 206, 180),
 		seed = 22,
+		signText = "Farmhouse 2",
 	})
 
 	-- Barn: tall single story, big open door, working interior below
@@ -200,6 +202,7 @@ function FarmBuilder.build(parentFolder: Instance)
 		beamColor = Color3.fromRGB(228, 220, 205),
 		roofColor = Color3.fromRGB(70, 62, 58),
 		interior = "none",
+		signText = "Barn",
 	})
 	-- Barn interior (world coords; footprint x 36..54, z -92..-68, door west at x 36):
 	-- hay bales stacked in the northeast, animal stalls along the south wall

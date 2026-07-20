@@ -390,6 +390,7 @@ function TownBuilder.build(parentFolder: Instance)
 		doorWidth = 6,
 		doorHeight = 7,
 		interior = "none",
+		signText = "Town Hall",
 	})
 	-- Clock face + bell cupola to mark it as civic
 	part({
@@ -532,6 +533,7 @@ function TownBuilder.build(parentFolder: Instance)
 			plasterColor = PLASTER_TINTS[(index - 1) % #PLASTER_TINTS + 1],
 			roofColor = ROOF_TINTS[(index - 1) % #ROOF_TINTS + 1],
 			seed = index,
+			signText = `House {index}`,
 		})
 	end
 

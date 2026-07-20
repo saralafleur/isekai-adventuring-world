@@ -34,6 +34,7 @@ export type HouseConfig = {
 	doorWidth: number?,
 	doorHeight: number?,
 	interior: ("home" | "storage" | "shop" | "none")?,
+	signText: string?, -- identifier sign above the front door
 	shopWares: string?, -- what a "shop" interior sells (CarryItems kind for browsers)
 	seed: number?,
 }
@@ -722,6 +723,33 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	local doorStep = part({ Name = "DoorStep", Size = Vector3.new(doorW + 1, 0.5, 2.4), Position = Vector3.new(0, 0.25, halfD + 1.6), Color = STONE_COLOR, Material = Enum.Material.Slate })
 	doorStep.Parent = model
 	game:GetService("CollectionService"):AddTag(doorStep, "HouseDoor")
+
+	-- Identifier sign above the door (readable name so any building can be
+	-- referenced unambiguously: "House 7", "Apothecary", "Town Hall"...)
+	if config.signText then
+		local signBoard = part({
+			Name = "DoorSign",
+			Size = Vector3.new(math.max(5, #config.signText * 0.55 + 1.5), 1.5, 0.4),
+			Position = Vector3.new(0, 1 + doorH + 1.6, halfD + 0.45),
+			Color = Color3.fromRGB(112, 82, 52),
+			Material = Enum.Material.WoodPlanks,
+		})
+		local surface = Instance.new("SurfaceGui")
+		surface.Face = Enum.NormalId.Back
+		surface.CanvasSize = Vector2.new(60 * signBoard.Size.X, 90)
+		surface.Parent = signBoard
+		local text = Instance.new("TextLabel")
+		text.Size = UDim2.fromScale(1, 1)
+		text.BackgroundTransparency = 1
+		text.Text = config.signText
+		text.Font = Enum.Font.Merriweather
+		text.TextScaled = true
+		text.TextColor3 = Color3.fromRGB(240, 228, 200)
+		text.TextStrokeColor3 = Color3.fromRGB(48, 34, 20)
+		text.TextStrokeTransparency = 0.4
+		text.Parent = surface
+		signBoard.Parent = model
+	end
 
 	local rise = math.clamp(d * 0.38, 5, 10)
 	local overhang = 1.5

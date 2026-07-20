@@ -40,6 +40,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DIALOGUE = ROOT / "src" / "shared" / "Data" / "Dialogue.luau"
+PROLOGUE = ROOT / "src" / "shared" / "Data" / "Prologue.luau"
 OUT_DIR = ROOT / "audio" / "lines"
 MANIFEST = ROOT / "audio" / "manifest.json"
 LUAU_OUT = ROOT / "src" / "shared" / "Data" / "VoiceLines.luau"
@@ -62,6 +63,10 @@ CAST: dict[str, dict] = {
     "Elder Bram": {"kokoro": "bm_lewis",  "speed": 0.82, "voice": "Albert",   "rate": 140},
     "Tarin":      {"kokoro": "am_liam",   "speed": 1.1,  "voice": "Fred",     "rate": 195},
     "Lyra":       {"kokoro": "af_bella",  "speed": 1.0,  "voice": "Kathy",    "rate": 172},
+    # the prologue Chronicler: elderly British storyteller, unhurried. Kept
+    # distinct from Daren (bm_george) and Elder Bram (bm_lewis) so the narrator
+    # never sounds like someone you meet later in the village.
+    "Narrator":   {"kokoro": "bm_fable",  "speed": 0.85, "voice": "Daniel",   "rate": 142},
 }
 FALLBACK = {"kokoro": "af_sarah", "speed": 1.0, "voice": "Samantha", "rate": 175}
 
@@ -141,6 +146,19 @@ def parse_dialogue(text: str) -> list[dict]:
     return entries
 
 
+def parse_prologue(text: str) -> list[dict]:
+    """Pull the narrator's opening lines out of the flat Prologue table.
+
+    Shape is one entry per on-screen phrase, so each becomes its own clip keyed
+    Prologue__<key>__1 — the same key scheme the dialogue trees use.
+    """
+    pattern = r'\{\s*key = "(\w+)",\s*text = "((?:[^"\\]|\\.)*)"'
+    return [
+        {"tree": "Prologue", "node": key, "speaker": "Narrator", "lines": [line]}
+        for key, line in re.findall(pattern, text)
+    ]
+
+
 def unescape(s: str) -> str:
     return s.replace('\\"', '"').replace("\\\\", "\\")
 
@@ -162,6 +180,12 @@ def main() -> int:
     if not entries:
         print("error: parsed no dialogue lines", file=sys.stderr)
         return 1
+
+    prologue = parse_prologue(PROLOGUE.read_text()) if PROLOGUE.exists() else []
+    if not prologue:
+        print("warning: parsed no prologue narration", file=sys.stderr)
+    # narration first, so the opening clips lead the manifest
+    entries = prologue + entries
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     use_kokoro = kokoro_available()

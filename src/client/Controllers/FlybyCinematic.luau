@@ -22,7 +22,7 @@ local SKIP_SPEED = 6
 -- at runtime from the character's actual position and facing.
 local ROUTE_POS = {
 	Vector3.new(0, 150, -230), -- high over the southern farmland
-	Vector3.new(-130, 75, -120), -- wheat fields and windmill
+	Vector3.new(-160, 95, -80), -- wheat fields and windmill
 	Vector3.new(-30, 45, -75), -- over the cottage
 	Vector3.new(0, 40, -5), -- following the road north
 	Vector3.new(48, 32, 50), -- market plaza and guild banners
@@ -34,7 +34,7 @@ local ROUTE_POS = {
 }
 local ROUTE_LOOK = {
 	Vector3.new(0, 0, -40),
-	Vector3.new(-85, 8, -110),
+	Vector3.new(-100, 10, -140),
 	Vector3.new(0, 6, -40),
 	Vector3.new(0, 4, 50),
 	Vector3.new(0, 6, 52),

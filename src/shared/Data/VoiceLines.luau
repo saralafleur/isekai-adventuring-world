@@ -5,6 +5,13 @@
 -- A 0 means 'not uploaded yet'; the game just stays silent for that line.
 
 local VoiceLines: { [string]: number } = {
+	["Prologue__secrets__1"] = 89667046893345, -- Narrator: Every world keeps its secrets. Aetheria keeps more than mo
+	["Prologue__died__1"] = 124013048072323, -- Narrator: Fourteen years ago, a boy died in the rain of another worl
+	["Prologue__reborn__1"] = 129900113116392, -- Narrator: He was born again here, to a farmer and his wife, in a vil
+	["Prologue__dream__1"] = 128006043340638, -- Narrator: He remembers none of it. Only the dream. Rain. Lights. A v
+	["Prologue__harvest__1"] = 88322808276205, -- Narrator: Today the village celebrates the First Harvest.
+	["Prologue__nightfall__1"] = 96230068179990, -- Narrator: And by nightfall, everything he loves will be taken from h
+	["Prologue__wake__1"] = 111500979756381, -- Narrator: Wake up, lad. Your story starts now.
 	["MiraBreakfast__greeting__1"] = 103401603980037, -- Mira: There you are. I was beginning to think you planned to sle
 	["MiraBreakfast__kael_dream__1"] = 95920157472533, -- Kael: I had the dream again.
 	["MiraBreakfast__mira_city__1"] = 75233822967831, -- Mira: The city of glass?

@@ -1,4 +1,5 @@
 --!strict
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
@@ -6,6 +7,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Remotes = require(Shared.Remotes)
 local Dialogue = require(Shared.Data.Dialogue)
 
+local Voice = require(script.Parent.Parent.NPC.Voice)
 local QuestService = require(script.Parent.QuestService)
 local InventoryService = require(script.Parent.InventoryService)
 
@@ -13,6 +15,41 @@ local DialogueService = {}
 
 -- Tracks which tree each player currently has open, for server-side validation.
 local activeTree: { [Player]: string } = {}
+
+-- Which model should be heard saying a line. Kael's lines come from the
+-- player's own character; everyone else from their NPC model.
+local function speakerModel(player: Player, speaker: string): Model?
+	if speaker == "Kael" then
+		return player.Character
+	end
+	for _, model in CollectionService:GetTagged("NPC") do
+		if model:IsA("Model") and (model.Name == speaker or model:GetAttribute("NpcName") == speaker) then
+			return model
+		end
+	end
+	local direct = workspace:FindFirstChild(speaker)
+	return if direct and direct:IsA("Model") then direct else nil
+end
+
+local function speakLine(player: Player, treeId: unknown, nodeId: unknown, lineIndex: unknown)
+	if activeTree[player] ~= treeId or type(nodeId) ~= "string" or type(lineIndex) ~= "number" then
+		return
+	end
+	local tree = Dialogue[treeId :: string]
+	local node = tree and tree.nodes[nodeId]
+	if not node then
+		return
+	end
+	-- text comes from the server's own tree, not from the client
+	local line = node.lines[lineIndex]
+	if not line then
+		return
+	end
+	local model = speakerModel(player, node.speaker)
+	if model then
+		Voice.speak(model, node.speaker, line)
+	end
+end
 
 local function runAction(player: Player, action: string)
 	local verb, arg = string.match(action, "^(%w+):(%w+)$")
@@ -102,6 +139,7 @@ end
 
 function DialogueService.init()
 	Remotes.get("DialogueAdvance").OnServerEvent:Connect(onAdvance)
+	Remotes.get("DialogueLine").OnServerEvent:Connect(speakLine)
 	Remotes.get("DialogueClose").OnServerEvent:Connect(function(player)
 		activeTree[player] = nil
 	end)

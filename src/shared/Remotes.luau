@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local REMOTE_NAMES = {
 	"DialogueOpen", -- server -> client: (treeId, nodeId)
 	"DialogueAdvance", -- client -> server: (treeId, nodeId, choiceIndex?)
+	"DialogueLine", -- client -> server: (treeId, nodeId, lineIndex) — speak this line aloud
 	"DialogueClose", -- both directions
 	"QuestUpdated", -- server -> client: (questState)
 	"QuestCompleted", -- server -> client: (questId, reward)

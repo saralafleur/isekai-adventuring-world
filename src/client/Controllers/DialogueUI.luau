@@ -95,6 +95,8 @@ local function showCurrentLine()
 	speakerLabel.Text = node.speaker
 	bodyLabel.Text = node.lines[currentLineIndex] or ""
 	gui.Enabled = true
+	-- ask the server to speak this line in the character's voice
+	Remotes.get("DialogueLine"):FireServer(treeId, nodeId, currentLineIndex)
 end
 
 local function advance()

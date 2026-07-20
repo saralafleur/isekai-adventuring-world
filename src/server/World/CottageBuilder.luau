@@ -144,16 +144,15 @@ local function cornerPostsAndPlates(parent: Instance)
 		{ size = Vector3.new(1.4, 0.6, 25), pos = Vector3.new(-15, 0, -40) },
 		{ size = Vector3.new(1.4, 0.6, 25), pos = Vector3.new(15, 0, -40) },
 	}
+	-- Top plates only — a mid-height plate would cut across the window and door openings
 	for _, face in faces do
-		for _, y in { WALL_TOP - 0.3, 5.5 } do
-			part({
-				Name = "Beam",
-				Size = face.size,
-				Position = Vector3.new(face.pos.X, y, face.pos.Z),
-				Color = BEAM_COLOR,
-				Material = Enum.Material.Wood,
-			}).Parent = parent
-		end
+		part({
+			Name = "Beam",
+			Size = face.size,
+			Position = Vector3.new(face.pos.X, WALL_TOP - 0.3, face.pos.Z),
+			Color = BEAM_COLOR,
+			Material = Enum.Material.Wood,
+		}).Parent = parent
 	end
 end
 
@@ -188,14 +187,18 @@ local function roof(parent: Instance)
 		Material = Enum.Material.Wood,
 	}).Parent = parent
 
-	-- Gable triangles (east/west ends): two wedges per end
+	-- Gable triangles (east/west ends): two wedges per end.
+	-- Slightly undersized so the sloped tops sit below the roof slabs' underside
+	-- instead of sharing their plane (which z-fights).
+	local gableRise = RISE - 0.6
+	local gableDepth = HALF_DEPTH - 0.9
 	for _, x in { -14.75, 14.75 } do
 		for _, side in { 1, -1 } do
 			local wedge = Instance.new("WedgePart")
 			wedge.Anchored = true
-			wedge.Size = Vector3.new(1, RISE, HALF_DEPTH)
+			wedge.Size = Vector3.new(1, gableRise, gableDepth)
 			-- Wedge slopes up toward its -Z; put the tall face at the ridge (z=-40)
-			wedge.CFrame = CFrame.new(x, WALL_TOP + RISE / 2, -40 + side * HALF_DEPTH / 2)
+			wedge.CFrame = CFrame.new(x, WALL_TOP + gableRise / 2, -40 + side * gableDepth / 2)
 				* CFrame.Angles(0, if side == 1 then math.pi else 0, 0)
 			wedge.Color = PLASTER_COLOR
 			wedge.Material = Enum.Material.Plaster
@@ -337,7 +340,7 @@ local function interior(parent: Instance)
 	part({
 		Name = "Rug",
 		Size = Vector3.new(9, 0.12, 6.5),
-		Position = Vector3.new(0, 1.06, -40),
+		Position = Vector3.new(0, 1.17, -40),
 		Color = Color3.fromRGB(120, 60, 50),
 		Material = Enum.Material.Fabric,
 		CanCollide = false,
@@ -393,10 +396,11 @@ function CottageBuilder.build(parentFolder: Instance): Model
 		Color = STONE_COLOR,
 		Material = Enum.Material.Cobblestone,
 	}).Parent = cottage
+	-- Floor top sits 0.1 proud of the foundation so the surfaces never share a plane
 	part({
 		Name = "Floor",
 		Size = Vector3.new(30, 0.4, 24),
-		Position = Vector3.new(0, 0.8, -40),
+		Position = Vector3.new(0, 0.9, -40),
 		Color = Color3.fromRGB(133, 100, 67),
 		Material = Enum.Material.WoodPlanks,
 	}).Parent = cottage

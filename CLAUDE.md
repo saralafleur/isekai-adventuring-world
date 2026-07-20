@@ -31,7 +31,23 @@ Tools are pinned in `rokit.toml` and installed via [Rokit](https://github.com/ro
 - Client and server never `require` across the client/server boundary directly — share through `src/shared`, and use RemoteEvents/RemoteFunctions (in `src/shared` or a dedicated `Remotes` module) for client↔server communication
 - No dead/commented-out code left in place
 
+## Verifying changes
+
+Run both before considering any change done:
+
+```sh
+rojo sourcemap default.project.json -o sourcemap.json
+luau-lsp analyze --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src
+rojo build default.project.json -o /dev/null
+```
+
+(`globalTypes.d.luau` is gitignored; re-download from the luau-lsp repo's `scripts/globalTypes.d.luau` if missing.)
+
+## The game
+
+This repo builds **Echoes of Aetheria**, an isekai fantasy RPG — full design doc in `isekai_roblox_storyboard.md`. World geometry is currently procedurally greyboxed from `src/server/World/VillageBuilder.luau`; gameplay code finds world objects via CollectionService tags (`NPC`, `GatherNode`) and attributes (`NpcName`, `ItemId`), never geometry, so greybox can be replaced with real art without code changes.
+
 ## Notes for Claude
 
-- This project has no automated test runner set up yet. Verify changes by building (`rojo build`) to catch syntax/structure errors, and describe manual Studio playtest steps when a change needs runtime verification.
+- This project has no automated test runner set up yet. Verify with the commands above, and describe manual Studio playtest steps when a change needs runtime verification.
 - Don't invent gameplay systems that weren't asked for. Build exactly what the current request describes; ask before assuming scope on ambiguous requests.

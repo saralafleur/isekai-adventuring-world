@@ -242,6 +242,7 @@ end
 local function buildIndustry(district: Folder)
 	HouseBuilder.build(district, {
 		name = "Warehouse",
+		workshop = "warehouse",
 		signText = "Glen Storehouse",
 		signMajor = true,
 		position = Vector3.new(-96, 0, 22),
@@ -270,6 +271,7 @@ local function buildIndustry(district: Folder)
 
 	HouseBuilder.build(district, {
 		name = "Tannery",
+		workshop = "tannery",
 		signText = "Bramble Tannery",
 		signMajor = true,
 		position = Vector3.new(-146, 0, 24),
@@ -277,7 +279,7 @@ local function buildIndustry(district: Folder)
 		width = 28,
 		depth = 20,
 		stories = 1,
-		storyHeight = 12,
+		storyHeight = 14,
 		plasterColor = Color3.fromRGB(196, 176, 150),
 		roofColor = Color3.fromRGB(95, 70, 56),
 		interior = "storage",
@@ -307,6 +309,7 @@ local function buildIndustry(district: Folder)
 
 	HouseBuilder.build(district, {
 		name = "LumberYard",
+		workshop = "lumber",
 		signText = "Greyfen Timber",
 		signMajor = true,
 		position = Vector3.new(-100, 0, 78),
@@ -326,6 +329,7 @@ local function buildIndustry(district: Folder)
 
 	HouseBuilder.build(district, {
 		name = "MasonWorkshop",
+		workshop = "mason",
 		signText = "Stonewright's Yard",
 		signMajor = true,
 		position = Vector3.new(-150, 0, 76),
@@ -333,7 +337,7 @@ local function buildIndustry(district: Folder)
 		width = 28,
 		depth = 20,
 		stories = 1,
-		storyHeight = 12,
+		storyHeight = 14,
 		stoneGround = true,
 		plasterColor = Color3.fromRGB(210, 206, 198),
 		roofColor = Color3.fromRGB(88, 78, 72),
@@ -343,8 +347,8 @@ local function buildIndustry(district: Folder)
 	stonePile(district, -134, 92)
 
 	-- work spots so villagers wander through the industrial yard too
-	PartUtil.marker("FieldSpot", Vector3.new(-116, 0.5, 90)).Parent = district
-	PartUtil.marker("FieldSpot", Vector3.new(-162, 0.5, 88)).Parent = district
+	PartUtil.marker("FieldSpot", Vector3.new(-110, 0.5, 98)).Parent = district
+	PartUtil.marker("FieldSpot", Vector3.new(-155, 0.5, 97)).Parent = district
 end
 
 function DistrictBuilder.build(parentFolder: Instance)

@@ -34,6 +34,7 @@ export type HouseConfig = {
 	doorWidth: number?,
 	doorHeight: number?,
 	interior: ("home" | "storage" | "shop" | "none")?,
+	workshop: string?, -- "warehouse" | "tannery" | "lumber" | "mason" dressing for a storage interior
 	signText: string?, -- identifier sign above the front door
 	signMajor: boolean?, -- larger board + perpendicular hanging sign (named venues)
 	shopWares: string?, -- what a "shop" interior sells (CarryItems kind for browsers)
@@ -356,7 +357,7 @@ end
 
 -- ------------------------------------------------------------- ground floor
 
-local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number, seed: number)
+local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number, seed: number, withBed: boolean?)
 	local rug = RUG_COLORS[seed % #RUG_COLORS + 1]
 	part({
 		Name = "Rug",
@@ -386,9 +387,21 @@ local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY
 	local cabX = halfW - 2.2
 	local cabZ = -halfD + 1.7
 	part({ Name = "Cabinet", Size = Vector3.new(4, 6, 2), Position = Vector3.new(cabX, floorY + 2.25, cabZ), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
-	part({ Name = "CabinetJug", Size = Vector3.new(0.7, 1, 0.7), Position = Vector3.new(cabX - 0.7, floorY + 6.6, cabZ), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
+	part({ Name = "CabinetJug", Size = Vector3.new(0.7, 1, 0.7), Position = Vector3.new(cabX - 0.7, floorY + 5.75, cabZ), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
 
 	part({ Name = "WallBench", Size = Vector3.new(1.2, 1.5, 4), Position = Vector3.new(halfW - 1.35, floorY + 0.75, halfD - 3.4), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+
+	if withBed then
+		-- No upstairs: give the home a sleeping alcove in the back-west corner
+		local bx = -halfW + 3
+		local bz = -halfD + 4.5
+		part({ Name = "BedFrame", Size = Vector3.new(4.2, 0.9, 7), Position = Vector3.new(bx, floorY + 0.45, bz), Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
+		part({ Name = "BedMattress", Size = Vector3.new(3.8, 1.1, 6.6), Position = Vector3.new(bx, floorY + 1.15, bz), Color = Color3.fromRGB(225, 218, 200), Material = Enum.Material.Fabric }).Parent = parent
+		part({ Name = "BedPillow", Size = Vector3.new(2.6, 0.5, 1.5), Position = Vector3.new(bx, floorY + 1.9, bz - 2.3), Color = Color3.fromRGB(240, 235, 220), Material = Enum.Material.Fabric }).Parent = parent
+		part({ Name = "BedBlanket", Size = Vector3.new(3.9, 0.22, 3.8), Position = Vector3.new(bx, floorY + 1.78, bz + 1.2), Color = BLANKET_COLORS[seed % #BLANKET_COLORS + 1], Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
+		part({ Name = "BedChest", Size = Vector3.new(2.2, 1.3, 1.2), Position = Vector3.new(bx, floorY + 0.65, bz + 4.6), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+		sconce(parent, -halfW + 0.5, floorY + 7, bz, 1)
+	end
 
 	hangingLantern(parent, halfW * 0.2, -halfD / 2, ceilingY, 1.2, 20)
 end
@@ -606,7 +619,7 @@ local function shopRoom(parent: Instance, halfW: number, halfD: number, floorY: 
 	marker.Parent = parent
 end
 
-local function storageRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number)
+local function storageRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number, kind: string?)
 	for i = 0, 2 do
 		part({
 			Name = "StorageCrate",
@@ -624,7 +637,36 @@ local function storageRoom(parent: Instance, halfW: number, halfD: number, floor
 		Color = Color3.fromRGB(110, 78, 48),
 		Material = Enum.Material.WoodPlanks,
 	}).Parent = parent
-	hangingLantern(parent, 0, -halfD / 2, ceilingY, 0.8, 12)
+	if kind == "tannery" then
+		for i = 0, 2 do
+			part({ Name = "TanningFrame", Size = Vector3.new(0.4, 6, 5), Position = Vector3.new(-halfW + 4 + i * 5, floorY + 3, halfD - 5), Color = DEFAULT_BEAM, Material = Enum.Material.Wood }).Parent = parent
+			part({ Name = "StretchedHide", Size = Vector3.new(0.25, 4.6, 3.8), Position = Vector3.new(-halfW + 4 + i * 5, floorY + 3, halfD - 5), Color = Color3.fromRGB(168, 130, 92), Material = Enum.Material.Leather, CanCollide = false }).Parent = parent
+		end
+		part({ Name = "TanningBench", Size = Vector3.new(7, 2.4, 2.4), Position = Vector3.new(halfW - 4, floorY + 1.2, 0), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+	elseif kind == "lumber" then
+		for i = 0, 3 do
+			part({ Name = "PlankStack", Size = Vector3.new(9, 1.2, 3.2), Position = Vector3.new(halfW - 7, floorY + 0.6 + i * 1.25, -halfD + 4 + (i % 2) * 0.4), Color = Color3.fromRGB(186, 150, 104), Material = Enum.Material.WoodPlanks }).Parent = parent
+		end
+		part({ Name = "SawBench", Size = Vector3.new(6, 2.6, 2.6), Position = Vector3.new(-halfW + 5, floorY + 1.3, halfD - 5), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+		part({ Name = "SawBlade", Size = Vector3.new(3.4, 0.2, 1.6), Position = Vector3.new(-halfW + 5, floorY + 2.7, halfD - 5), Color = Color3.fromRGB(180, 180, 190), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
+	elseif kind == "mason" then
+		part({ Name = "MasonBench", Size = Vector3.new(7, 2.6, 3), Position = Vector3.new(halfW - 5, floorY + 1.3, halfD - 5), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+		for i = 0, 2 do
+			part({ Name = "Chisel", Size = Vector3.new(0.3, 0.3, 1.4), Position = Vector3.new(halfW - 7 + i * 1.4, floorY + 2.75, halfD - 5), Color = Color3.fromRGB(150, 150, 160), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
+		end
+		for i = 0, 3 do
+			part({ Name = "CutBlock", Size = Vector3.new(2.4, 1.8, 2), Position = Vector3.new(-halfW + 4 + (i % 2) * 3, floorY + 0.9 + math.floor(i / 2) * 1.85, -halfD + 4), Color = Color3.fromRGB(150, 146, 140), Material = Enum.Material.Rock }).Parent = parent
+		end
+	elseif kind == "warehouse" then
+		for row = 0, 2 do
+			for col = 0, 2 do
+				part({ Name = "FreightCrate", Size = Vector3.new(2.4, 2.4, 2.4), Position = Vector3.new(-halfW + 4 + col * 6, floorY + 1.2 + (if col == 1 then 2.5 else 0), -halfD + 5 + row * 6), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = parent
+			end
+		end
+		part({ Name = "LoadingBench", Size = Vector3.new(8, 2.4, 2.4), Position = Vector3.new(halfW - 5, floorY + 1.2, halfD - 5), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+	end
+
+	hangingLantern(parent, 0, -halfD / 2, ceilingY, 0.9, 16)
 end
 
 -- ------------------------------------------------------------------ main build
@@ -682,8 +724,8 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		local isStone = config.stoneGround == true and s == 1
 		local wallColor = if isStone then STONE_COLOR else plaster
 		local wallMaterial = if isStone then Enum.Material.Cobblestone else Enum.Material.Plaster
-		local winY0 = baseY + 4
-		local winY1 = baseY + 10
+		local winY0 = baseY + storyH * 0.29
+		local winY1 = baseY + storyH * 0.71
 		local winCount = math.max(1, math.floor(w / 10))
 		local sideWinCount = math.max(1, math.floor(d / 12))
 
@@ -766,7 +808,7 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	part({ Name = "DoorLintel", Size = Vector3.new(doorW + 1.6, 0.8, 1.6), Position = Vector3.new(0, 1 + doorH + 0.2, halfD), Color = beamColor, Material = Enum.Material.Wood }).Parent = model
 	local doorStep = part({ Name = "DoorStep", Size = Vector3.new(doorW + 1, 0.5, 2.4), Position = Vector3.new(0, 0.25, halfD + 1.6), Color = STONE_COLOR, Material = Enum.Material.Slate })
 	doorStep.Parent = model
-	game:GetService("CollectionService"):AddTag(doorStep, "HouseDoor")
+	PartUtil.marker("HouseDoor", Vector3.new(0, 1.2, halfD + 3.6)).Parent = model
 
 	-- Identifier sign above the door (readable name so any building can be
 	-- referenced unambiguously: "House 7", "Apothecary", "Town Hall"...)
@@ -930,7 +972,7 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		end
 
 		if interiorKind == "storage" or (interiorKind == "home" and d < 15) then
-			storageRoom(model, halfW, halfD, 1.1, wallTop)
+			storageRoom(model, halfW, halfD, 1.1, wallTop, config.workshop)
 		else
 			local hole: StairInfo? = nil
 			for s = 1, stories do
@@ -946,7 +988,7 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 					if interiorKind == "shop" then
 						shopRoom(model, halfW, halfD, floorY, ceilingY, config.shopWares or "parcel", beamColor)
 					else
-						livingRoom(model, halfW, halfD, floorY, ceilingY, seed + s)
+						livingRoom(model, halfW, halfD, floorY, ceilingY, seed + s, stories == 1)
 					end
 				elseif hole then
 					hallwayAndBedrooms(model, halfW, halfD, 1 + (s - 1) * storyH, ceilingY, hole, beamColor, seed + s * 2)

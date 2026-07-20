@@ -168,8 +168,8 @@ function FarmBuilder.build(parentFolder: Instance)
 		name = "FarmhouseWest",
 		position = Vector3.new(-50, 0, -70),
 		rotation = 90,
-		width = 26,
-		depth = 20,
+		width = 30,
+		depth = 24,
 		stories = 1,
 		plasterColor = Color3.fromRGB(226, 214, 186),
 		seed = 21,
@@ -180,8 +180,8 @@ function FarmBuilder.build(parentFolder: Instance)
 		name = "FarmhouseSouth",
 		position = Vector3.new(-45, 0, -110),
 		rotation = 0,
-		width = 28,
-		depth = 22,
+		width = 30,
+		depth = 24,
 		stories = 2,
 		plasterColor = Color3.fromRGB(220, 206, 180),
 		seed = 22,
@@ -199,7 +199,7 @@ function FarmBuilder.build(parentFolder: Instance)
 		stories = 1,
 		storyHeight = 12,
 		doorWidth = 8,
-		doorHeight = 8,
+		doorHeight = 10,
 		plasterColor = Color3.fromRGB(152, 46, 38),
 		beamColor = Color3.fromRGB(228, 220, 205),
 		roofColor = Color3.fromRGB(70, 62, 58),
@@ -214,7 +214,7 @@ function FarmBuilder.build(parentFolder: Instance)
 		part({
 			Name = "HayBale",
 			Size = Vector3.new(2.6, 1.8, 1.8),
-			Position = Vector3.new(49 + (i % 2) * 3, 1.9 + math.floor(i / 3) * 1.85, -71.5 + math.floor(i / 2) * 2.2 * (if i < 4 then 1 else 0)),
+			Position = Vector3.new(49 + (i % 2) * 3, 1.9 + math.floor(i / 3) * 1.85, -71.5 + (if i < 3 then math.floor(i / 2) * 2.2 else 0)),
 			Color = HAY,
 			Material = Enum.Material.Grass,
 		}).Parent = farm
@@ -264,27 +264,29 @@ function FarmBuilder.build(parentFolder: Instance)
 	barnLight.Parent = barnLamp
 	barnLamp.Parent = farm
 
-	silo(farm, 62, -85)
+	silo(farm, 70, -85)
 
 	-- Sheds
 	HouseBuilder.build(farm, {
 		name = "ToolShed",
 		position = Vector3.new(70, 0, -50),
 		rotation = -90,
-		width = 12,
-		depth = 10,
+		width = 14,
+		depth = 14,
 		stories = 1,
 		storyHeight = 14,
+		signText = "Tool Shed",
 		plasterColor = Color3.fromRGB(190, 172, 140),
 	})
 	HouseBuilder.build(farm, {
 		name = "CoopShed",
 		position = Vector3.new(46, 0, -28),
 		rotation = 180,
-		width = 10,
-		depth = 10,
+		width = 12,
+		depth = 14,
 		stories = 1,
 		storyHeight = 14,
+		signText = "Chicken Coop",
 		plasterColor = Color3.fromRGB(200, 180, 150),
 	})
 
@@ -301,6 +303,10 @@ function FarmBuilder.build(parentFolder: Instance)
 	-- Spur skirts EAST of the cottage (between cottage and chicken pen) down to
 	-- the lanes; slightly thicker so its top clears the lanes where they overlap
 	dirtLane(farm, 20.5, -40, 8, 44, 0.3)
+	-- spurs so the farmhouse, barn and coop doors front onto a route
+	dirtLane(farm, -45, -80, 8, 42, 0.34)
+	dirtLane(farm, 32, -76, 16, 8, 0.34)
+	dirtLane(farm, 46, -44, 8, 26, 0.38)
 
 	farm.Parent = parentFolder
 	return farm

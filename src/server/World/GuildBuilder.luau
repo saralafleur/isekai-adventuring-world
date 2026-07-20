@@ -87,7 +87,7 @@ end
 
 -- Stepped stair run rising WESTWARD (toward -X) along a south wall.
 local function stairsWestward(parent: Instance, xBottom: number, z: number, storyH: number)
-	PartUtil.steppedStairs(parent, Vector3.new(xBottom, 1.05, z), -Vector3.xAxis, storyH, storyH * 1.3, 3.2, {
+	PartUtil.steppedStairs(parent, Vector3.new(xBottom, 1.05, z), -Vector3.xAxis, storyH, storyH * 1.3, 4.2, {
 		stepColor = FLOOR_WOOD,
 		stepMaterial = Enum.Material.WoodPlanks,
 		railColor = DARK_WOOD,
@@ -176,7 +176,7 @@ local function buildAdventurersGuild(guilds: Folder)
 		plasterColor = Color3.fromRGB(214, 200, 175),
 		roofColor = Color3.fromRGB(70, 62, 58),
 		doorWidth = 6,
-		doorHeight = 7,
+		doorHeight = 10,
 		interior = "none",
 		signText = "The Wandering Blade",
 		signMajor = true,
@@ -185,7 +185,7 @@ local function buildAdventurersGuild(guilds: Folder)
 	-- Interior region: x -64.5..-39.5, z 37.5..72.5. Ground ceiling plate at y 9.
 
 	-- Signage + banners outside
-	part({ Name = "SignBracket", Size = Vector3.new(0.3, 0.3, 2.6), Position = Vector3.new(-38.2, 11.4, 54.4), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = guilds
+	part({ Name = "SignBracket", Size = Vector3.new(1.6, 0.3, 0.3), Position = Vector3.new(-38.0, 11.4, 55), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = guilds
 	part({ Name = "SignBoard", Size = Vector3.new(0.4, 2.6, 4.4), Position = Vector3.new(-38.2, 10, 55), Color = Color3.fromRGB(90, 60, 40), Material = Enum.Material.Wood }).Parent = guilds
 	for _, bladeAngle in { 40, -40 } do
 		part({
@@ -239,7 +239,7 @@ local function buildAdventurersGuild(guilds: Folder)
 
 	-- Tavern tables (benches for the big ones, stools for the small)
 	rectTable(guilds, -50, 60, true)
-	rectTable(guilds, -58, 61, false)
+	rectTable(guilds, -55, 50, false)
 	rectTable(guilds, -47, 45, true)
 	rectTable(guilds, -57, 48, false)
 
@@ -364,7 +364,7 @@ local function buildMerchantsGuild(guilds: Folder)
 		plasterColor = Color3.fromRGB(226, 216, 196),
 		roofColor = Color3.fromRGB(60, 90, 120),
 		doorWidth = 6,
-		doorHeight = 7,
+		doorHeight = 10,
 		interior = "none",
 		signText = "The Gilded Ledger",
 		signMajor = true,
@@ -373,7 +373,7 @@ local function buildMerchantsGuild(guilds: Folder)
 	-- Interior region: x 39.5..64.5, z 39.5..70.5. Ground ceiling plate at y 9.
 
 	-- Signage + banners
-	part({ Name = "SignBracket", Size = Vector3.new(0.3, 0.3, 2.6), Position = Vector3.new(38.2, 11.4, 54.4), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = guilds
+	part({ Name = "SignBracket", Size = Vector3.new(1.6, 0.3, 0.3), Position = Vector3.new(38.0, 11.4, 55), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = guilds
 	part({ Name = "SignBoard", Size = Vector3.new(0.4, 2.6, 4.4), Position = Vector3.new(38.2, 10, 55), Color = Color3.fromRGB(80, 70, 50), Material = Enum.Material.Wood }).Parent = guilds
 	part({
 		Name = "SignCoin",
@@ -468,6 +468,21 @@ local function buildMerchantsGuild(guilds: Folder)
 	part({ Name = "Strongbox", Size = Vector3.new(2, 1.6, 1.5), Position = Vector3.new(62.5, 13.85, 46), Color = Color3.fromRGB(70, 68, 66), Material = Enum.Material.Metal }).Parent = guilds
 	part({ Name = "OfficeRug", Size = Vector3.new(14, 0.12, 5), Position = Vector3.new(52, 13.06, 56), Color = Color3.fromRGB(80, 95, 120), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
 
+	-- Split the loft into two offices off the stair landing
+	for _, seg in { { 40.0, 47.5 }, { 51.5, 64.4 } } do
+		part({
+			Name = "OfficePartition",
+			Size = Vector3.new(seg[2] - seg[1], 12, 0.45),
+			Position = Vector3.new((seg[1] + seg[2]) / 2, 19, 56),
+			Color = Color3.fromRGB(222, 212, 190),
+			Material = Enum.Material.Plaster,
+		}).Parent = guilds
+	end
+	part({ Name = "OfficeDoorLintel", Size = Vector3.new(4.6, 3.5, 0.45), Position = Vector3.new(49.5, 23.75, 56), Color = Color3.fromRGB(222, 212, 190), Material = Enum.Material.Plaster }).Parent = guilds
+	for _, dx in { -2.3, 2.3 } do
+		part({ Name = "OfficeDoorTrim", Size = Vector3.new(0.6, 9.4, 0.75), Position = Vector3.new(49.5 + dx, 17.7, 56), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = guilds
+	end
+
 	for _, z in { 48, 62 } do
 		part({ Name = "CollarRafter", Size = Vector3.new(24.5, 0.5, 0.7), Position = Vector3.new(52, 25.15, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
 	end
@@ -504,8 +519,8 @@ local function buildMerchantsGuild(guilds: Folder)
 			shirtId = 329836637,
 			pantsId = 17154514582,
 			skin = Color3.fromRGB(214, 173, 130),
-			position = Vector3.new(56, 0.5, 66.9),
-			facing = Vector3.zAxis,
+			position = Vector3.new(56, 0.5, 70.2),
+			facing = -Vector3.zAxis,
 			gestures = true,
 		})
 	end)

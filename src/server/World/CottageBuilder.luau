@@ -262,8 +262,9 @@ local function roof(parent: Instance)
 		part({
 			Name = "RoofSlabDetail",
 			Size = Vector3.new(30, 0.3, slabLength * 0.62),
-			CFrame = CFrame.new(0, centerY + 0.45, centerZ - side * slabLength * 0.16)
-				* CFrame.Angles(side * angle, 0, 0),
+			CFrame = CFrame.new(0, centerY, centerZ)
+				* CFrame.Angles(side * angle, 0, 0)
+				* CFrame.new(0, 0.3, -side * slabLength * 0.16),
 			Color = Color3.fromRGB(100, 58, 42),
 			Material = Enum.Material.RoofShingles,
 		}).Parent = parent
@@ -454,14 +455,37 @@ local function doorway(parent: Instance)
 	for _, x in { -3.2, 3.2 } do
 		part({
 			Name = "CanopyBracket",
-			Size = Vector3.new(0.4, 0.4, 2.6),
-			CFrame = CFrame.new(x, 8.4, -26.9) * CFrame.Angles(math.rad(45), 0, 0),
+			Size = Vector3.new(0.4, 0.4, 3.4),
+			CFrame = CFrame.new(x, 9.05, -27.05) * CFrame.Angles(math.rad(-40), 0, 0),
 			Color = BEAM_COLOR,
 			Material = Enum.Material.Wood,
 		}).Parent = parent
 	end
 
 	-- Lantern beside the door
+	local cottageSign = part({
+		Name = "DoorSign",
+		Size = Vector3.new(7, 1.6, 0.4),
+		Position = Vector3.new(0, 10.1, -27.35),
+		Color = Color3.fromRGB(112, 82, 52),
+		Material = Enum.Material.WoodPlanks,
+	})
+	local signSurface = Instance.new("SurfaceGui")
+	signSurface.Face = Enum.NormalId.Front
+	signSurface.CanvasSize = Vector2.new(420, 96)
+	signSurface.Parent = cottageSign
+	local signText = Instance.new("TextLabel")
+	signText.Size = UDim2.fromScale(1, 1)
+	signText.BackgroundTransparency = 1
+	signText.Text = "Rowan Cottage"
+	signText.Font = Enum.Font.Merriweather
+	signText.TextScaled = true
+	signText.TextColor3 = Color3.fromRGB(240, 228, 200)
+	signText.TextStrokeColor3 = Color3.fromRGB(48, 34, 20)
+	signText.TextStrokeTransparency = 0.4
+	signText.Parent = signSurface
+	cottageSign.Parent = parent
+
 	local lamp = part({
 		Name = "DoorLantern",
 		Size = Vector3.new(0.8, 1.2, 0.8),
@@ -580,8 +604,8 @@ local function interior(parent: Instance)
 	-- Herb bundles hanging over the kitchen end
 	for i = 0, 2 do
 		local x = 8.5 + (i % 2) * 2.4
-		local z = -44 + i * 0.4
-		part({ Name = "HerbString", Size = Vector3.new(0.12, 1, 0.12), Position = Vector3.new(x, 9.4, z), Color = Color3.fromRGB(180, 160, 120), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
+		local z = -44 + (i - 1) * 0.3
+		part({ Name = "HerbString", Size = Vector3.new(0.12, 1.2, 0.12), Position = Vector3.new(x, 9.5, z), Color = Color3.fromRGB(180, 160, 120), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
 		part({
 			Name = "HerbBundle",
 			Size = Vector3.new(0.7, 1.1, 0.7),
@@ -605,21 +629,21 @@ local function interior(parent: Instance)
 	part({ Name = "BedPillow", Size = Vector3.new(3, 0.6, 1.8), Position = Vector3.new(-11, 2.7, -50), Color = Color3.fromRGB(235, 228, 210), Material = Enum.Material.Fabric }).Parent = parent
 	part({ Name = "BedBlanket", Size = Vector3.new(4.1, 0.25, 4.4), Position = Vector3.new(-11, 2.58, -44.9), Color = Color3.fromRGB(90, 110, 150), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
 	-- Storage chest at the foot of the bed
-	part({ Name = "BedChest", Size = Vector3.new(2.6, 1.5, 1.4), Position = Vector3.new(-11, 1.85, -42.1), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
-	part({ Name = "BedChestLid", Size = Vector3.new(2.7, 0.35, 1.5), Position = Vector3.new(-11, 2.72, -42.1), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
-	part({ Name = "BedChestLatch", Size = Vector3.new(0.35, 0.5, 0.14), Position = Vector3.new(-11, 2.2, -41.35), Color = Color3.fromRGB(200, 170, 90), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
+	part({ Name = "BedChest", Size = Vector3.new(2.6, 1.5, 1.4), Position = Vector3.new(-11, 1.85, -41.0), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+	part({ Name = "BedChestLid", Size = Vector3.new(2.7, 0.35, 1.5), Position = Vector3.new(-11, 2.72, -41.0), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "BedChestLatch", Size = Vector3.new(0.35, 0.5, 0.14), Position = Vector3.new(-11, 2.2, -40.25), Color = Color3.fromRGB(200, 170, 90), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
 
 	-- Parents' bed, southwest corner
-	part({ Name = "ParentsBedFrame", Size = Vector3.new(5.6, 1, 8.2), Position = Vector3.new(-11.5, 1.3, -33), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
-	part({ Name = "ParentsBed", Size = Vector3.new(5, 1.5, 7.6), Position = Vector3.new(-11.5, 1.75, -33), Color = Color3.fromRGB(120, 96, 70), Material = Enum.Material.Fabric }).Parent = parent
-	part({ Name = "ParentsPillowL", Size = Vector3.new(2, 0.6, 1.6), Position = Vector3.new(-12.6, 2.7, -30.2), Color = Color3.fromRGB(235, 228, 210), Material = Enum.Material.Fabric }).Parent = parent
-	part({ Name = "ParentsPillowR", Size = Vector3.new(2, 0.6, 1.6), Position = Vector3.new(-10.4, 2.7, -30.2), Color = Color3.fromRGB(235, 228, 210), Material = Enum.Material.Fabric }).Parent = parent
-	part({ Name = "ParentsBlanket", Size = Vector3.new(5.1, 0.25, 4.2), Position = Vector3.new(-11.5, 2.58, -34.8), Color = Color3.fromRGB(130, 90, 90), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
+	part({ Name = "ParentsBedFrame", Size = Vector3.new(5.6, 1, 8.2), Position = Vector3.new(-11.5, 1.3, -31.5), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "ParentsBed", Size = Vector3.new(5, 1.5, 7.6), Position = Vector3.new(-11.5, 1.75, -31.5), Color = Color3.fromRGB(120, 96, 70), Material = Enum.Material.Fabric }).Parent = parent
+	part({ Name = "ParentsPillowL", Size = Vector3.new(2, 0.6, 1.6), Position = Vector3.new(-12.6, 2.7, -28.7), Color = Color3.fromRGB(235, 228, 210), Material = Enum.Material.Fabric }).Parent = parent
+	part({ Name = "ParentsPillowR", Size = Vector3.new(2, 0.6, 1.6), Position = Vector3.new(-10.4, 2.7, -28.7), Color = Color3.fromRGB(235, 228, 210), Material = Enum.Material.Fabric }).Parent = parent
+	part({ Name = "ParentsBlanket", Size = Vector3.new(5.1, 0.25, 4.2), Position = Vector3.new(-11.5, 2.58, -33.3), Color = Color3.fromRGB(130, 90, 90), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
 
 	-- Wardrobe on the west wall between the windows
-	part({ Name = "Wardrobe", Size = Vector3.new(1.8, 6.5, 3.6), Position = Vector3.new(-13.4, 4.25, -40), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
-	part({ Name = "WardrobeDoorSeam", Size = Vector3.new(0.12, 5.8, 0.16), Position = Vector3.new(-12.44, 4.1, -40), Color = Color3.fromRGB(50, 34, 22), Material = Enum.Material.Wood, CanCollide = false }).Parent = parent
-	for _, z in { -40.8, -39.2 } do
+	part({ Name = "Wardrobe", Size = Vector3.new(1.8, 6.5, 3.6), Position = Vector3.new(-13.4, 4.25, -36.5), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+	part({ Name = "WardrobeDoorSeam", Size = Vector3.new(0.12, 5.8, 0.16), Position = Vector3.new(-12.44, 4.1, -36.5), Color = Color3.fromRGB(50, 34, 22), Material = Enum.Material.Wood, CanCollide = false }).Parent = parent
+	for _, z in { -37.3, -35.7 } do
 		part({ Name = "WardrobeKnob", Size = Vector3.new(0.18, 0.18, 0.18), Position = Vector3.new(-12.4, 4.1, z), Color = Color3.fromRGB(200, 170, 90), Material = Enum.Material.Metal, CanCollide = false }).Parent = parent
 	end
 

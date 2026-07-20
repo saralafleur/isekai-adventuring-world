@@ -210,8 +210,17 @@ function VillageBuilder.build(): Folder
 	for i = 0, 5 do
 		part({
 			Name = "PathStone",
-			Size = Vector3.new(6 + (i % 2) * 1.5, 0.3, 9),
-			Position = Vector3.new((i % 2 - 0.5) * 1.2, 0.15, -22 + i * 8.5),
+			Size = Vector3.new(6 + (i % 2) * 1.5, 0.3 + (i % 2) * 0.12, 9),
+			Position = Vector3.new((i % 2 - 0.5) * 1.2, (0.3 + (i % 2) * 0.12) / 2, -22 + i * 8.5),
+			Color = Color3.fromRGB(150, 125, 95),
+			Material = Enum.Material.Ground,
+		}).Parent = path
+	end
+	for i = 0, 2 do
+		part({
+			Name = "SmithySpur",
+			Size = Vector3.new(9, 0.26, 7),
+			Position = Vector3.new(-30 + i * 8, 0.13, 8 - i * 3),
 			Color = Color3.fromRGB(150, 125, 95),
 			Material = Enum.Material.Ground,
 		}).Parent = path

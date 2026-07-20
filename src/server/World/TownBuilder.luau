@@ -120,8 +120,8 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 		for _, pz in { -2, 2 } do
 			part({
 				Name = "StallPost",
-				Size = Vector3.new(0.5, 7, 0.5),
-				Position = Vector3.new(px, 3.5, pz),
+				Size = Vector3.new(0.5, 7.7, 0.5),
+				Position = Vector3.new(px, 3.85, pz),
 				Color = BEAM_COLOR,
 				Material = Enum.Material.Wood,
 			}).Parent = model
@@ -169,7 +169,7 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 	stallGoods(model, theme.key)
 
 	-- NPC destination in front of the counter, tagged with what's sold here
-	local browseMarker = PartUtil.marker("BrowseSpot", Vector3.new(0, 0.5, 5))
+	local browseMarker = PartUtil.marker("BrowseSpot", Vector3.new(0, 0.5, 6.5))
 	browseMarker:SetAttribute("Wares", theme.key)
 	browseMarker.Parent = model
 
@@ -236,8 +236,8 @@ local function well(parent: Instance, x: number, z: number)
 	for _, px in { -3.2, 3.2 } do
 		part({
 			Name = "WellPost",
-			Size = Vector3.new(0.5, 6, 0.5),
-			Position = Vector3.new(x + px, 3, z),
+			Size = Vector3.new(0.5, 6.5, 0.5),
+			Position = Vector3.new(x + px, 3.25, z),
 			Color = BEAM_COLOR,
 			Material = Enum.Material.Wood,
 		}).Parent = parent
@@ -250,9 +250,9 @@ local function well(parent: Instance, x: number, z: number)
 		Material = Enum.Material.RoofShingles,
 	}).Parent = parent
 	-- NPC loitering spots around the well
-	PartUtil.marker("GatherSpot", Vector3.new(x + 6, 0.9, z)).Parent = parent
-	PartUtil.marker("GatherSpot", Vector3.new(x - 6, 0.9, z + 2)).Parent = parent
-	PartUtil.marker("GatherSpot", Vector3.new(x, 0.9, z - 6)).Parent = parent
+	PartUtil.marker("GatherSpot", Vector3.new(x + 7.5, 0.9, z)).Parent = parent
+	PartUtil.marker("GatherSpot", Vector3.new(x - 7.5, 0.9, z + 2)).Parent = parent
+	PartUtil.marker("GatherSpot", Vector3.new(x, 0.9, z - 7.5)).Parent = parent
 end
 
 local function road(parent: Instance, centerX: number, centerZ: number, w: number, d: number, thickness: number?)
@@ -458,7 +458,7 @@ function TownBuilder.build(parentFolder: Instance)
 		part({ Name = "CouncilTableLeg", Size = Vector3.new(0.5, 2, 2), Position = Vector3.new(x, 2.9, 130.3), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = hall
 	end
 	for _, x in { -2.6, 0, 2.6 } do
-		part({ Name = "CouncilChair", Size = Vector3.new(1.4, 1.6, 1.3), Position = Vector3.new(x, 2.7, 131.6), Color = BENCH_WOOD, Material = Enum.Material.Wood }).Parent = hall
+		part({ Name = "CouncilChair", Size = Vector3.new(1.4, 1.6, 1.3), Position = Vector3.new(x, 2.7, 130.7), Color = BENCH_WOOD, Material = Enum.Material.Wood }).Parent = hall
 	end
 	-- Banners on the north interior wall
 	for _, x in { -7, 7 } do
@@ -624,6 +624,22 @@ function TownBuilder.build(parentFolder: Instance)
 		Vector3.new(-64, 0, 32),
 		Vector3.new(-72, 0, 44),
 	}, 7)
+
+	task.spawn(function()
+		AvatarFactoryRef.createStatic({
+			name = "Clerk Rowan",
+			shirtId = 10565347864,
+			pantsId = 180864440,
+			skin = Color3.fromRGB(255, 219, 172),
+			position = Vector3.new(0, 2.4, 129.6),
+			facing = -Vector3.zAxis,
+			body = "masc",
+			shape = "average",
+			hairId = 112378007199540,
+			gestures = true,
+		})
+	end)
+	PartUtil.marker("GatherSpot", Vector3.new(-6, 1.6, 118)).Parent = town
 
 	town.Parent = parentFolder
 	return town

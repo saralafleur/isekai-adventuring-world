@@ -58,6 +58,7 @@ type Traveler = {
 	progressPos: Vector3,
 	progressAt: number,
 	stuckRetries: number,
+	gestureAt: number,
 	rng: Random,
 }
 
@@ -80,6 +81,7 @@ end
 
 local AvatarFactory = require(script.Parent.AvatarFactory)
 local CarryItems = require(script.Parent.CarryItems)
+local Gestures = require(script.Parent.Gestures)
 
 local BODY_KINDS: { AvatarFactory.BodyKind } = { "masc", "fem" }
 local BODY_SHAPES: { AvatarFactory.BodyShape } = { "heavy", "average", "average", "thin" }
@@ -174,6 +176,7 @@ local function buildTraveler(): Traveler?
 		progressPos = Vector3.zero,
 		progressAt = 0,
 		stuckRetries = 0,
+		gestureAt = 0,
 		rng = Random.new(),
 	}
 end
@@ -210,7 +213,8 @@ local function routeToNextStop(t: Traveler)
 		t.repathAt = 0
 		t.progressPos = t.root.Position
 		t.progressAt = os.clock()
-		t.stuckRetries = 0
+		-- stuckRetries deliberately NOT reset here: it persists across a
+		-- stuck-retry's re-path so a wedged traveler can't loop forever
 		t.mode = "Walking"
 		t.walkTrack:Play()
 	end)
@@ -228,6 +232,9 @@ local function update(t: Traveler)
 			if stop and stop.dwell > 0 then
 				t.mode = "Dwelling"
 				t.timerUntil = now + stop.dwell
+				if stop.wares then
+					t.gestureAt = now + t.rng:NextNumber(1, 3)
+				end
 			else
 				routeToNextStop(t)
 			end
@@ -255,8 +262,12 @@ local function update(t: Traveler)
 			t.repathAt = now + 4
 		end
 	elseif t.mode == "Dwelling" then
+		local stop = t.stops[t.stopIndex]
+		if stop and stop.wares and now >= t.gestureAt then
+			Gestures.play(t.humanoid, t.rng)
+			t.gestureAt = now + t.rng:NextNumber(4, 8)
+		end
 		if now >= t.timerUntil then
-			local stop = t.stops[t.stopIndex]
 			if stop and stop.wares and t.rng:NextNumber() < 0.65 then
 				CarryItems.attach(t.model, stop.wares)
 			end

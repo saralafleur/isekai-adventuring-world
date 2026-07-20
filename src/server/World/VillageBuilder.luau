@@ -252,6 +252,7 @@ function VillageBuilder.build(): Folder
 				body = config.body,
 				shape = config.shape,
 				hairId = config.hairId,
+				gestures = true,
 			})
 			if not model then
 				return

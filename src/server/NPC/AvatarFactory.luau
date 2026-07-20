@@ -6,6 +6,8 @@
 
 local Players = game:GetService("Players")
 
+local Gestures = require(script.Parent.Gestures)
+
 local IDLE_ANIM = "rbxassetid://507766388"
 
 -- Official free Roblox bundles: "Man" (238) and "Woman" (239) body parts
@@ -98,6 +100,7 @@ export type StaticAvatarConfig = {
 	hatId: number?,
 	body: BodyKind?,
 	shape: BodyShape?,
+	gestures: boolean?, -- subtle point/wave when someone stands nearby
 }
 
 function AvatarFactory.createStatic(config: StaticAvatarConfig): Model?
@@ -140,6 +143,10 @@ function AvatarFactory.createStatic(config: StaticAvatarConfig): Model?
 	idleTrack.Priority = Enum.AnimationPriority.Idle
 	idleTrack.Looped = true
 	idleTrack:Play()
+
+	if config.gestures then
+		Gestures.attachIdleLoop(model)
+	end
 
 	return model
 end

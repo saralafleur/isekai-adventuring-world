@@ -18,6 +18,7 @@ local RunService = game:GetService("RunService")
 local Catalog = require(script.Parent.VillagerCatalog)
 local AvatarFactory = require(script.Parent.AvatarFactory)
 local CarryItems = require(script.Parent.CarryItems)
+local Gestures = require(script.Parent.Gestures)
 
 type Persona = Catalog.Persona
 
@@ -50,6 +51,7 @@ type Villager = {
 	target: Vector3?,
 	arriveMode: "enter" | "dwell" | "work",
 	pendingWares: string?,
+	gestureAt: number,
 	-- stuck detection
 	progressPos: Vector3,
 	progressAt: number,
@@ -192,6 +194,7 @@ local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
 		target = nil,
 		arriveMode = "dwell" :: "dwell",
 		pendingWares = nil,
+		gestureAt = 0,
 		progressPos = spawnPos,
 		progressAt = 0,
 		stuckRetries = 0,
@@ -358,6 +361,10 @@ local function onArrive(v: Villager)
 	else
 		v.mode = "Idle"
 		v.timerUntil = now + v.rng:NextNumber(persona.dwellMin, persona.dwellMax)
+		if v.pendingWares then
+			-- browsing a stall: chat with the vendor now and then
+			v.gestureAt = now + v.rng:NextNumber(1, 3)
+		end
 	end
 end
 
@@ -406,6 +413,10 @@ local function update(v: Villager)
 			v.repathAt = now + 4
 		end
 	elseif v.mode == "Idle" then
+		if v.pendingWares and now >= v.gestureAt then
+			Gestures.play(v.humanoid, v.rng)
+			v.gestureAt = now + v.rng:NextNumber(4, 8)
+		end
 		if now >= v.timerUntil then
 			chooseNext(v)
 		end

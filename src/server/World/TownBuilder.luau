@@ -179,7 +179,9 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 
 	-- Vendor behind the counter, facing customers
 	local vendorPos = (stallCF * CFrame.new(0, 0, -0.6)).Position
-	local vendorFacing = stallCF.LookVector
+	-- Stall fronts are local +Z (toward the plaza/well); LookVector is -Z,
+	-- so vendors face the negation — inward, at their customers
+	local vendorFacing = -stallCF.LookVector
 	task.spawn(function()
 		local vendor = AvatarFactoryRef.createStatic({
 			name = theme.vendor,
@@ -191,6 +193,7 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 			body = theme.vendorBody,
 			shape = theme.vendorShape,
 			hairId = theme.vendorHair,
+			gestures = true,
 		})
 		if vendor and theme.isQuestBaker then
 			-- Baker Hobb is the Harvest Morning delivery target: quest NPC

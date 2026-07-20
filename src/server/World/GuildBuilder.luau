@@ -350,6 +350,7 @@ local function buildAdventurersGuild(guilds: Folder)
 			skin = Color3.fromRGB(214, 173, 130),
 			position = Vector3.new(-63.6, 0.5, 55),
 			facing = Vector3.xAxis,
+			gestures = true,
 			widthScale = 1.1,
 		})
 		if thorne then
@@ -368,6 +369,7 @@ local function buildAdventurersGuild(guilds: Folder)
 			skin = Color3.fromRGB(255, 219, 172),
 			position = Vector3.new(-56, 0.5, 68.6),
 			facing = -Vector3.zAxis,
+			gestures = true,
 		})
 	end)
 end
@@ -508,6 +510,7 @@ local function buildMerchantsGuild(guilds: Folder)
 			skin = Color3.fromRGB(255, 219, 172),
 			position = Vector3.new(63.6, 0.5, 55),
 			facing = -Vector3.xAxis,
+			gestures = true,
 		})
 		if aldric then
 			aldric:SetAttribute("ShopId", "MerchantsGuild")
@@ -525,6 +528,7 @@ local function buildMerchantsGuild(guilds: Folder)
 			skin = Color3.fromRGB(214, 173, 130),
 			position = Vector3.new(56, 0.5, 66.9),
 			facing = Vector3.zAxis,
+			gestures = true,
 		})
 	end)
 end

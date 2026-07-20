@@ -241,9 +241,11 @@ function TownBuilder.build(parentFolder: Instance)
 
 	local rowZs = { 30, 60, 90, 120, 150, 180 }
 	for _, z in rowZs do
-		townhouse(-40, z, 90) -- west inner row, facing east
+		if z ~= 60 then -- the guild halls stand at the inner z=60 spots
+			townhouse(-40, z, 90) -- west inner row, facing east
+			townhouse(40, z, -90) -- east inner row, facing west
+		end
 		townhouse(-72, z, 90) -- west outer row
-		townhouse(40, z, -90) -- east inner row, facing west
 		townhouse(72, z, -90) -- east outer row
 	end
 	for _, x in { -75, -45, -15, 15, 45, 75 } do

@@ -28,6 +28,7 @@ export type HouseConfig = {
 	doorWidth: number?,
 	doorHeight: number?,
 	doorColor: Color3?,
+	openDoor: boolean?, -- no door slab: players/NPCs can walk inside
 }
 
 local DEFAULT_PLASTER = Color3.fromRGB(232, 224, 205)
@@ -293,21 +294,23 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	part({ Name = "DoorPost", Size = Vector3.new(0.8, doorH + 1, 1.6), Position = Vector3.new(-doorW / 2 - 0.2 + doorFrameInset, (doorH + 1) / 2 + 0.6, halfD), Color = beamColor, Material = Enum.Material.Wood }).Parent = model
 	part({ Name = "DoorPost", Size = Vector3.new(0.8, doorH + 1, 1.6), Position = Vector3.new(doorW / 2 + 0.2 - doorFrameInset, (doorH + 1) / 2 + 0.6, halfD), Color = beamColor, Material = Enum.Material.Wood }).Parent = model
 	part({ Name = "DoorLintel", Size = Vector3.new(doorW + 1.6, 0.8, 1.6), Position = Vector3.new(0, 1 + doorH + 0.2, halfD), Color = beamColor, Material = Enum.Material.Wood }).Parent = model
-	part({
-		Name = "Door",
-		Size = Vector3.new(doorW - 0.6, doorH - 0.2, 0.3),
-		Position = Vector3.new(0, 1 + (doorH - 0.2) / 2, halfD),
-		Color = config.doorColor or Color3.fromRGB(96, 62, 38),
-		Material = Enum.Material.Wood,
-	}).Parent = model
-	part({
-		Name = "DoorKnob",
-		Size = Vector3.new(0.3, 0.3, 0.3),
-		Position = Vector3.new(doorW / 2 - 1, 1 + doorH / 2 - 0.4, halfD + 0.25),
-		Color = Color3.fromRGB(200, 170, 90),
-		Material = Enum.Material.Metal,
-		CanCollide = false,
-	}).Parent = model
+	if not config.openDoor then
+		part({
+			Name = "Door",
+			Size = Vector3.new(doorW - 0.6, doorH - 0.2, 0.3),
+			Position = Vector3.new(0, 1 + (doorH - 0.2) / 2, halfD),
+			Color = config.doorColor or Color3.fromRGB(96, 62, 38),
+			Material = Enum.Material.Wood,
+		}).Parent = model
+		part({
+			Name = "DoorKnob",
+			Size = Vector3.new(0.3, 0.3, 0.3),
+			Position = Vector3.new(doorW / 2 - 1, 1 + doorH / 2 - 0.4, halfD + 0.25),
+			Color = Color3.fromRGB(200, 170, 90),
+			Material = Enum.Material.Metal,
+			CanCollide = false,
+		}).Parent = model
+	end
 	local doorStep = part({ Name = "DoorStep", Size = Vector3.new(doorW + 1, 0.5, 2.4), Position = Vector3.new(0, 0.25, halfD + 1.6), Color = STONE_COLOR, Material = Enum.Material.Slate })
 	doorStep.Parent = model
 	-- NPC destination: villagers walk here to "enter" the house

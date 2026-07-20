@@ -64,6 +64,21 @@ function InventoryService.getCount(player: Player, itemId: string): number
 	return if inv then (inv.items[itemId] or 0) else 0
 end
 
+function InventoryService.getCoins(player: Player): number
+	local inv = inventories[player]
+	return if inv then inv.coins else 0
+end
+
+function InventoryService.spendCoins(player: Player, amount: number): boolean
+	local inv = inventories[player]
+	if not inv or inv.coins < amount then
+		return false
+	end
+	inv.coins -= amount
+	replicate(player)
+	return true
+end
+
 function InventoryService.addCoins(player: Player, amount: number)
 	local inv = inventories[player]
 	if not inv then

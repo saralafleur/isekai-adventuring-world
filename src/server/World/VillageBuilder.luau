@@ -198,6 +198,9 @@ function VillageBuilder.build(): Folder
 	TownBuilder.build(village)
 	SmithyBuilder.build(village)
 
+	local GuildBuilder = require(script.Parent.GuildBuilder)
+	GuildBuilder.build(village)
+
 	-- Dirt path from the cottage door to the plaza
 	local path = Instance.new("Folder")
 	path.Name = "Path"

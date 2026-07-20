@@ -12,6 +12,8 @@ local REMOTE_NAMES = {
 	"InventoryUpdated", -- server -> client: ({ [itemId]: count }, coins)
 	"Notify", -- server -> client: (message, kind)
 	"IntroFinished", -- client -> server: player closed the intro sequence
+	"ShopOpen", -- server -> client: (shopId, shopName, entries)
+	"ShopBuy", -- client -> server: (shopId, itemId)
 }
 
 local Remotes = {}

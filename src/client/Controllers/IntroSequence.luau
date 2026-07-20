@@ -15,7 +15,10 @@ local MONOLOGUE = {
 
 local IntroSequence = {}
 
-function IntroSequence.play()
+-- Plays the monologue over black. If keepBlack is true the black overlay is
+-- returned (still opaque) instead of fading out — the flyby cinematic that
+-- follows owns the fade-in.
+function IntroSequence.play(keepBlack: boolean?): ScreenGui?
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "IntroGui"
 	gui.ResetOnSpawn = false
@@ -84,12 +87,18 @@ function IntroSequence.play()
 		waitForClick()
 	end
 
-	local fadeOut = TweenService:Create(black, TweenInfo.new(2), { BackgroundTransparency = 1 })
 	TweenService:Create(line, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
 	TweenService:Create(hint, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
+
+	if keepBlack then
+		return gui
+	end
+
+	local fadeOut = TweenService:Create(black, TweenInfo.new(2), { BackgroundTransparency = 1 })
 	fadeOut:Play()
 	fadeOut.Completed:Wait()
 	gui:Destroy()
+	return nil
 end
 
 return IntroSequence

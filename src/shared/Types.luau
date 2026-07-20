@@ -7,7 +7,7 @@ export type ItemDef = {
 	name: string,
 	description: string,
 	stackable: boolean,
-	category: "Consumable" | "Weapon" | "Armor" | "QuestItem" | "Material" | "Currency",
+	category: "Consumable" | "Weapon" | "Armor" | "QuestItem" | "Material" | "Currency" | "Utility" | "Scroll",
 }
 
 export type ObjectiveKind = "Gather" | "Deliver" | "Talk" | "Kill" | "Reach"

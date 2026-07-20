@@ -390,7 +390,8 @@ function TownBuilder.build(parentFolder: Instance)
 		doorWidth = 6,
 		doorHeight = 7,
 		interior = "none",
-		signText = "Town Hall",
+		signText = "Briar Glen Town Hall",
+		signMajor = true,
 	})
 	-- Clock face + bell cupola to mark it as civic
 	part({

@@ -37,7 +37,7 @@ type ShopSpec = {
 local SHOPS: { ShopSpec } = {
 	{
 		name = "GeneralGoods",
-		label = "General Goods",
+		label = "Berta's Sundries",
 		x = 84,
 		z = 26,
 		rotation = 0,
@@ -54,7 +54,7 @@ local SHOPS: { ShopSpec } = {
 	},
 	{
 		name = "Apothecary",
-		label = "Apothecary",
+		label = "The Green Flask",
 		x = 128,
 		z = 26,
 		rotation = 0,
@@ -71,7 +71,7 @@ local SHOPS: { ShopSpec } = {
 	},
 	{
 		name = "Tailor",
-		label = "Tailor",
+		label = "Imre's Fine Threads",
 		x = 168,
 		z = 26,
 		rotation = 0,
@@ -88,7 +88,7 @@ local SHOPS: { ShopSpec } = {
 	},
 	{
 		name = "Bookbinder",
-		label = "Bookbinder",
+		label = "The Inkwell",
 		x = 96,
 		z = 74,
 		rotation = 180,
@@ -105,7 +105,7 @@ local SHOPS: { ShopSpec } = {
 	},
 	{
 		name = "Cobbler",
-		label = "Cobbler",
+		label = "Wex & Sons, Cobblers",
 		x = 140,
 		z = 74,
 		rotation = 180,
@@ -122,7 +122,7 @@ local SHOPS: { ShopSpec } = {
 	},
 	{
 		name = "Trinkets",
-		label = "Trinkets",
+		label = "The Magpie's Hoard",
 		x = 180,
 		z = 74,
 		rotation = 180,
@@ -162,6 +162,7 @@ local function buildShoppingStreet(district: Folder)
 			shopWares = spec.wares,
 			seed = 40 + index,
 			signText = spec.label,
+			signMajor = true,
 		})
 		shopSign(district, spec.x, spec.z, spec.rotation, spec.signColor)
 
@@ -241,7 +242,8 @@ end
 local function buildIndustry(district: Folder)
 	HouseBuilder.build(district, {
 		name = "Warehouse",
-		signText = "Warehouse",
+		signText = "Glen Storehouse",
+		signMajor = true,
 		position = Vector3.new(-96, 0, 22),
 		rotation = 0,
 		width = 36,
@@ -268,7 +270,8 @@ local function buildIndustry(district: Folder)
 
 	HouseBuilder.build(district, {
 		name = "Tannery",
-		signText = "Tannery",
+		signText = "Bramble Tannery",
+		signMajor = true,
 		position = Vector3.new(-146, 0, 24),
 		rotation = 0,
 		width = 28,
@@ -304,7 +307,8 @@ local function buildIndustry(district: Folder)
 
 	HouseBuilder.build(district, {
 		name = "LumberYard",
-		signText = "Lumber Yard",
+		signText = "Greyfen Timber",
+		signMajor = true,
 		position = Vector3.new(-100, 0, 78),
 		rotation = 180,
 		width = 30,
@@ -322,7 +326,8 @@ local function buildIndustry(district: Folder)
 
 	HouseBuilder.build(district, {
 		name = "MasonWorkshop",
-		signText = "Mason's Workshop",
+		signText = "Stonewright's Yard",
+		signMajor = true,
 		position = Vector3.new(-150, 0, 76),
 		rotation = 180,
 		width = 28,

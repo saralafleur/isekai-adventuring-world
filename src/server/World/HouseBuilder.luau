@@ -35,6 +35,7 @@ export type HouseConfig = {
 	doorHeight: number?,
 	interior: ("home" | "storage" | "shop" | "none")?,
 	signText: string?, -- identifier sign above the front door
+	signMajor: boolean?, -- larger board + perpendicular hanging sign (named venues)
 	shopWares: string?, -- what a "shop" interior sells (CarryItems kind for browsers)
 	seed: number?,
 }
@@ -727,28 +728,93 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	-- Identifier sign above the door (readable name so any building can be
 	-- referenced unambiguously: "House 7", "Apothecary", "Town Hall"...)
 	if config.signText then
+		local signName = config.signText
+		local major = config.signMajor == true
+		local boardHeight = if major then 2.6 else 1.5
+		local boardWidth = math.max(if major then 9 else 5, #signName * (if major then 0.72 else 0.55) + 2)
+		local trimColor = Color3.fromRGB(74, 52, 34)
+
+		local function signFace(board: BasePart, face: Enum.NormalId)
+			local surface = Instance.new("SurfaceGui")
+			surface.Face = face
+			surface.CanvasSize = Vector2.new(60 * board.Size.X, 60 * board.Size.Y)
+			surface.Parent = board
+			local text = Instance.new("TextLabel")
+			text.Size = UDim2.fromScale(0.94, 0.8)
+			text.Position = UDim2.fromScale(0.03, 0.1)
+			text.BackgroundTransparency = 1
+			text.Text = signName
+			text.Font = Enum.Font.Merriweather
+			text.TextScaled = true
+			text.TextColor3 = if major then Color3.fromRGB(246, 226, 160) else Color3.fromRGB(240, 228, 200)
+			text.TextStrokeColor3 = Color3.fromRGB(40, 28, 16)
+			text.TextStrokeTransparency = 0.35
+			text.Parent = surface
+		end
+
+		-- Board mounted flat above the door
 		local signBoard = part({
 			Name = "DoorSign",
-			Size = Vector3.new(math.max(5, #config.signText * 0.55 + 1.5), 1.5, 0.4),
-			Position = Vector3.new(0, 1 + doorH + 1.6, halfD + 0.45),
-			Color = Color3.fromRGB(112, 82, 52),
+			Size = Vector3.new(boardWidth, boardHeight, 0.4),
+			Position = Vector3.new(0, 1 + doorH + boardHeight / 2 + 0.7, halfD + 0.45),
+			Color = if major then Color3.fromRGB(92, 64, 40) else Color3.fromRGB(112, 82, 52),
 			Material = Enum.Material.WoodPlanks,
 		})
-		local surface = Instance.new("SurfaceGui")
-		surface.Face = Enum.NormalId.Back
-		surface.CanvasSize = Vector2.new(60 * signBoard.Size.X, 90)
-		surface.Parent = signBoard
-		local text = Instance.new("TextLabel")
-		text.Size = UDim2.fromScale(1, 1)
-		text.BackgroundTransparency = 1
-		text.Text = config.signText
-		text.Font = Enum.Font.Merriweather
-		text.TextScaled = true
-		text.TextColor3 = Color3.fromRGB(240, 228, 200)
-		text.TextStrokeColor3 = Color3.fromRGB(48, 34, 20)
-		text.TextStrokeTransparency = 0.4
-		text.Parent = surface
+		signFace(signBoard, Enum.NormalId.Back)
 		signBoard.Parent = model
+
+		if major then
+			-- carved frame around the board
+			for _, dx in { -(boardWidth / 2 + 0.2), boardWidth / 2 + 0.2 } do
+				part({
+					Name = "SignTrim",
+					Size = Vector3.new(0.45, boardHeight + 0.8, 0.55),
+					Position = Vector3.new(dx, signBoard.Position.Y, halfD + 0.5),
+					Color = trimColor,
+					Material = Enum.Material.Wood,
+				}).Parent = model
+			end
+			for _, dy in { -(boardHeight / 2 + 0.25), boardHeight / 2 + 0.25 } do
+				part({
+					Name = "SignTrim",
+					Size = Vector3.new(boardWidth + 1.3, 0.45, 0.55),
+					Position = Vector3.new(0, signBoard.Position.Y + dy, halfD + 0.5),
+					Color = trimColor,
+					Material = Enum.Material.Wood,
+				}).Parent = model
+			end
+			-- perpendicular hanging sign, readable from down the street
+			local hangX = doorW / 2 + 3.5
+			local hangY = 1 + doorH - 0.4
+			part({
+				Name = "HangingSignBracket",
+				Size = Vector3.new(3.2, 0.3, 0.3),
+				Position = Vector3.new(hangX - 1.4, hangY + 2.4, halfD + 0.5),
+				Color = Color3.fromRGB(60, 58, 55),
+				Material = Enum.Material.Metal,
+			}).Parent = model
+			for _, dx in { -1.1, 1.1 } do
+				part({
+					Name = "HangingSignChain",
+					Size = Vector3.new(0.16, 1.2, 0.16),
+					Position = Vector3.new(hangX + dx, hangY + 1.8, halfD + 1.9),
+					Color = Color3.fromRGB(60, 58, 55),
+					Material = Enum.Material.Metal,
+					CanCollide = false,
+				}).Parent = model
+			end
+			local hangBoard = part({
+				Name = "HangingSign",
+				Size = Vector3.new(0.4, 2.2, math.max(6, #signName * 0.5 + 1.5)),
+				Position = Vector3.new(hangX, hangY + 0.1, halfD + 1.9),
+				Color = Color3.fromRGB(92, 64, 40),
+				Material = Enum.Material.WoodPlanks,
+			})
+            -- both faces so it reads from either direction along the street
+			signFace(hangBoard, Enum.NormalId.Right)
+			signFace(hangBoard, Enum.NormalId.Left)
+			hangBoard.Parent = model
+		end
 	end
 
 	local rise = math.clamp(d * 0.38, 5, 10)

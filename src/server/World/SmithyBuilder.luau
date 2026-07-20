@@ -142,6 +142,39 @@ function SmithyBuilder.build(parentFolder: Instance): Model
 		}).Parent = smithy
 	end
 
+	-- Signage: "Holt Forge & Anvil" hung at the open east front
+	local function smithyFace(board: BasePart, face: Enum.NormalId)
+		local surface = Instance.new("SurfaceGui")
+		surface.Face = face
+		surface.CanvasSize = Vector2.new(60 * board.Size.Z, 60 * board.Size.Y)
+		surface.Parent = board
+		local text = Instance.new("TextLabel")
+		text.Size = UDim2.fromScale(0.94, 0.8)
+		text.Position = UDim2.fromScale(0.03, 0.1)
+		text.BackgroundTransparency = 1
+		text.Text = "Holt Forge & Anvil"
+		text.Font = Enum.Font.Merriweather
+		text.TextScaled = true
+		text.TextColor3 = Color3.fromRGB(246, 226, 160)
+		text.TextStrokeColor3 = Color3.fromRGB(40, 28, 16)
+		text.TextStrokeTransparency = 0.35
+		text.Parent = surface
+	end
+	part({ Name = "SmithySignBracket", Size = Vector3.new(3.4, 0.3, 0.3), Position = Vector3.new(-32.6, 9.2, 2), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = smithy
+	for _, dz in { -2.6, 2.6 } do
+		part({ Name = "SmithySignChain", Size = Vector3.new(0.16, 1.1, 0.16), Position = Vector3.new(-31.1, 8.6, 2 + dz), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal, CanCollide = false }).Parent = smithy
+	end
+	local smithyBoard = part({
+		Name = "SmithySign",
+		Size = Vector3.new(0.4, 2.2, 7),
+		Position = Vector3.new(-31.1, 6.9, 2),
+		Color = Color3.fromRGB(92, 64, 40),
+		Material = Enum.Material.WoodPlanks,
+	})
+	smithyFace(smithyBoard, Enum.NormalId.Right)
+	smithyFace(smithyBoard, Enum.NormalId.Left)
+	smithyBoard.Parent = smithy
+
 	-- NPC work markers: blacksmith stands west of the anvil facing it
 	PartUtil.marker("AnvilSpot", Vector3.new(-43.9, 0.9, -1)).Parent = smithy
 	-- Onlookers can watch from the open side

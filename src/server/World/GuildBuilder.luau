@@ -178,7 +178,8 @@ local function buildAdventurersGuild(guilds: Folder)
 		doorWidth = 6,
 		doorHeight = 7,
 		interior = "none",
-		signText = "Adventurers' Guild",
+		signText = "The Wandering Blade",
+		signMajor = true,
 	})
 	-- Footprint: x -65..-39, z 37..73. Door faces east (+X) at (-39, 55).
 	-- Interior region: x -64.5..-39.5, z 37.5..72.5. Ground ceiling plate at y 9.
@@ -365,7 +366,8 @@ local function buildMerchantsGuild(guilds: Folder)
 		doorWidth = 6,
 		doorHeight = 7,
 		interior = "none",
-		signText = "Merchants' Guild",
+		signText = "The Gilded Ledger",
+		signMajor = true,
 	})
 	-- Footprint: x 39..65, z 39..71. Door faces west (-X) at (39, 55).
 	-- Interior region: x 39.5..64.5, z 39.5..70.5. Ground ceiling plate at y 9.

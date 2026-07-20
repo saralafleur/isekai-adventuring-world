@@ -279,7 +279,7 @@ function FarmBuilder.build(parentFolder: Instance)
 	})
 	HouseBuilder.build(farm, {
 		name = "CoopShed",
-		position = Vector3.new(52, 0, -34),
+		position = Vector3.new(46, 0, -28),
 		rotation = 180,
 		width = 10,
 		depth = 10,

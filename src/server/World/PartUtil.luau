@@ -71,7 +71,7 @@ function PartUtil.steppedStairs(
 
 	local railSides: { Vector3 } = opts.railSides or {}
 	for _, side in railSides do
-		local offset = side * (width / 2 + 0.18)
+		local offset = side * (width / 2 - 0.16)
 		for _, t in { 0.05, 0.5, 0.95 } do
 			local post = Instance.new("Part")
 			post.Name = "StairPost"

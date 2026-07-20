@@ -244,14 +244,14 @@ local function buildAdventurersGuild(guilds: Folder)
 	rectTable(guilds, -57, 48, false)
 
 	-- Fireplace on the south wall (west of the stairs)
-	part({ Name = "HearthSideL", Size = Vector3.new(0.8, 4, 1.8), Position = Vector3.new(-62.1, 3, 38.6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = guilds
-	part({ Name = "HearthSideR", Size = Vector3.new(0.8, 4, 1.8), Position = Vector3.new(-57.9, 3, 38.6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = guilds
-	part({ Name = "HearthLintel", Size = Vector3.new(5, 0.9, 1.8), Position = Vector3.new(-60, 5.45, 38.6), Color = STONE_COLOR, Material = Enum.Material.Slate }).Parent = guilds
-	part({ Name = "HearthBase", Size = Vector3.new(5, 0.4, 2.2), Position = Vector3.new(-60, 1.3, 38.8), Color = STONE_COLOR, Material = Enum.Material.Slate }).Parent = guilds
+	part({ Name = "HearthSideL", Size = Vector3.new(0.8, 4, 1.8), Position = Vector3.new(-63.6, 3, 38.6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = guilds
+	part({ Name = "HearthSideR", Size = Vector3.new(0.8, 4, 1.8), Position = Vector3.new(-59.4, 3, 38.6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = guilds
+	part({ Name = "HearthLintel", Size = Vector3.new(5, 0.9, 1.8), Position = Vector3.new(-61.5, 5.45, 38.6), Color = STONE_COLOR, Material = Enum.Material.Slate }).Parent = guilds
+	part({ Name = "HearthBase", Size = Vector3.new(5, 0.4, 2.2), Position = Vector3.new(-61.5, 1.3, 38.8), Color = STONE_COLOR, Material = Enum.Material.Slate }).Parent = guilds
 	local fireLogs = part({
 		Name = "FireLogs",
 		Size = Vector3.new(2.2, 0.7, 1.2),
-		Position = Vector3.new(-60, 1.85, 38.7),
+		Position = Vector3.new(-61.5, 1.85, 38.7),
 		Color = Color3.fromRGB(60, 42, 30),
 		Material = Enum.Material.Wood,
 	})
@@ -285,20 +285,20 @@ local function buildAdventurersGuild(guilds: Folder)
 	hangingLantern(guilds, -58, 46, 12.5, 1.2, 20)
 
 	-- Stairs up along the south wall (bottom at east, rising west)
-	stairsWestward(guilds, -43, 40.4, 12)
+	stairsWestward(guilds, -43, 40.4, 11.95)
 
 	-- ---------------- upper floor: lodging
 	-- Floor plate at y 9 with stairwell hole over the stair top
-	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 30.6), Position = Vector3.new(-52, 12.75, 57.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(6.4, 0.5, 4.8), Position = Vector3.new(-61.3, 12.75, 40.3), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 30.7), Position = Vector3.new(-52, 12.75, 57.25), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(6.5, 0.5, 4.5), Position = Vector3.new(-61.35, 12.75, 39.65), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
 	guardRailZ(guilds, 42.8, -58.0, -42.9, 13)
 	guardRailX(guilds, -58.0, 37.8, 38.6, 13)
 
 	-- Beds for traveling adventurers
 	local blankets = { Color3.fromRGB(150, 60, 60), Color3.fromRGB(80, 100, 140), Color3.fromRGB(96, 128, 88), Color3.fromRGB(150, 120, 80) }
 	for i = 0, 3 do
-		bed(guilds, -62.2, 68 - i * 7.4, blankets[i + 1], 13, true)
-		part({ Name = "LodgingChest", Size = Vector3.new(1.6, 1.2, 1.2), Position = Vector3.new(-57.6, 13.6, 68 - i * 7.4), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+		bed(guilds, -61.0, 71 - i * 7.4, blankets[i + 1], 13, true)
+		part({ Name = "LodgingChest", Size = Vector3.new(1.6, 1.2, 1.2), Position = Vector3.new(-55.6, 13.6, 71 - i * 7.4), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
 	end
 	part({ Name = "LodgingRug", Size = Vector3.new(4, 0.12, 20), Position = Vector3.new(-54, 13.06, 58), Color = Color3.fromRGB(110, 90, 60), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
 
@@ -312,7 +312,7 @@ local function buildAdventurersGuild(guilds: Folder)
 	-- Villager/traveler destinations inside
 	PartUtil.marker("BrowseSpot", Vector3.new(-53, 1.6, 63)).Parent = guilds -- at the bar
 	PartUtil.marker("BrowseSpot", Vector3.new(-62.5, 1.6, 44)).Parent = guilds -- notice board
-	PartUtil.marker("GatherSpot", Vector3.new(-51, 1.6, 59)).Parent = guilds -- tavern floor
+	PartUtil.marker("GatherSpot", Vector3.new(-51, 1.6, 55.5)).Parent = guilds -- tavern floor
 
 	-- Staff
 	task.spawn(function()
@@ -436,7 +436,7 @@ local function buildMerchantsGuild(guilds: Folder)
 		Name = "TradeBarrel",
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(2.4, 2.2, 2.2),
-		CFrame = CFrame.new(46.5, 2.3, 41.8) * CFrame.Angles(0, 0, math.rad(90)),
+		CFrame = CFrame.new(44.0, 2.3, 45.5) * CFrame.Angles(0, 0, math.rad(90)),
 		Color = Color3.fromRGB(110, 78, 48),
 		Material = Enum.Material.WoodPlanks,
 	}).Parent = guilds
@@ -448,13 +448,13 @@ local function buildMerchantsGuild(guilds: Folder)
 	hangingLantern(guilds, 58, 46, 12.5, 1.2, 20)
 
 	-- Stairs up along the south wall
-	stairsWestward(guilds, 61.5, 41.2, 12)
+	stairsWestward(guilds, 61.5, 41.2, 11.95)
 
 	-- ---------------- upper floor: offices
-	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 28.2), Position = Vector3.new(52, 12.75, 56.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(6.6, 0.5, 4.2), Position = Vector3.new(42.5, 12.75, 41.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(25.2, 0.5, 28.3), Position = Vector3.new(52, 12.75, 56.45), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(6.8, 0.5, 3.0), Position = Vector3.new(42.6, 12.75, 40.8), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
 	guardRailZ(guilds, 42.9, 47.0, 62.7, 13)
-	guardRailX(guilds, 47.0, 43.2, 42.9, 13)
+	guardRailX(guilds, 47.0, 42.9, 43.2, 13)
 
 	-- Office furnishings
 	for _, z in { 62, 50 } do
@@ -474,8 +474,8 @@ local function buildMerchantsGuild(guilds: Folder)
 	hangingLantern(guilds, 52, 48, 25, 1, 18)
 	hangingLantern(guilds, 52, 62, 25, 1, 18)
 
-	PartUtil.marker("BrowseSpot", Vector3.new(47, 1.6, 55)).Parent = guilds -- map table
-	PartUtil.marker("BrowseSpot", Vector3.new(60.5, 1.6, 55)).Parent = guilds -- counter
+	PartUtil.marker("BrowseSpot", Vector3.new(45.5, 1.6, 55)).Parent = guilds -- map table
+	PartUtil.marker("BrowseSpot", Vector3.new(58.5, 1.6, 55)).Parent = guilds -- counter
 
 	task.spawn(function()
 		local aldric = AvatarFactory.createStatic({

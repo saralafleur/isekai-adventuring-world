@@ -26,9 +26,9 @@ function SmithyBuilder.build(parentFolder: Instance): Model
 	}).Parent = smithy
 
 	-- Three walls (west/back, north, south); east side open
-	part({ Name = "WallW", Size = Vector3.new(1, 7.2, 16), Position = Vector3.new(-50, 4.05, 2), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
-	part({ Name = "WallN", Size = Vector3.new(16, 7.2, 1), Position = Vector3.new(-42, 4.05, 10), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
-	part({ Name = "WallS", Size = Vector3.new(16, 7.2, 1), Position = Vector3.new(-42, 4.05, -6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
+	part({ Name = "WallW", Size = Vector3.new(1, 7.4, 16), Position = Vector3.new(-50, 3.7, 2), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
+	part({ Name = "WallN", Size = Vector3.new(16, 7.4, 1), Position = Vector3.new(-42, 3.7, 10), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
+	part({ Name = "WallS", Size = Vector3.new(16, 7.4, 1), Position = Vector3.new(-42, 3.7, -6), Color = STONE_COLOR, Material = Enum.Material.Cobblestone }).Parent = smithy
 
 	-- Open-front posts
 	for _, z in { -5.5, 9.5 } do
@@ -160,9 +160,10 @@ function SmithyBuilder.build(parentFolder: Instance): Model
 		text.TextStrokeTransparency = 0.35
 		text.Parent = surface
 	end
+	part({ Name = "SmithySignArm", Size = Vector3.new(0.3, 0.3, 5.6), Position = Vector3.new(-31.1, 9.2, 2), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = smithy
 	part({ Name = "SmithySignBracket", Size = Vector3.new(3.4, 0.3, 0.3), Position = Vector3.new(-32.6, 9.2, 2), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = smithy
 	for _, dz in { -2.6, 2.6 } do
-		part({ Name = "SmithySignChain", Size = Vector3.new(0.16, 1.1, 0.16), Position = Vector3.new(-31.1, 8.6, 2 + dz), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal, CanCollide = false }).Parent = smithy
+		part({ Name = "SmithySignChain", Size = Vector3.new(0.16, 1.1, 0.16), Position = Vector3.new(-31.1, 8.65, 2 + dz), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal, CanCollide = false }).Parent = smithy
 	end
 	local smithyBoard = part({
 		Name = "SmithySign",

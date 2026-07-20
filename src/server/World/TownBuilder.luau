@@ -397,15 +397,15 @@ function TownBuilder.build(parentFolder: Instance)
 	part({
 		Name = "ClockFace",
 		Shape = Enum.PartType.Cylinder,
-		Size = Vector3.new(0.4, 6, 6),
-		CFrame = CFrame.new(0, 30, 106.2) * CFrame.Angles(0, math.rad(90), 0),
+		Size = Vector3.new(0.4, 5.4, 5.4),
+		CFrame = CFrame.new(0, 26, 106.4) * CFrame.Angles(0, math.rad(90), 0),
 		Color = Color3.fromRGB(240, 234, 216),
 		Material = Enum.Material.SmoothPlastic,
 	}).Parent = hall
 	part({
 		Name = "ClockHand",
 		Size = Vector3.new(0.3, 2.2, 0.2),
-		CFrame = CFrame.new(0, 30.8, 105.9) * CFrame.Angles(0, 0, math.rad(25)),
+		CFrame = CFrame.new(0, 26.6, 106.1) * CFrame.Angles(0, 0, math.rad(25)),
 		Color = Color3.fromRGB(40, 36, 32),
 		Material = Enum.Material.Metal,
 		CanCollide = false,
@@ -438,6 +438,7 @@ function TownBuilder.build(parentFolder: Instance)
 		Material = Enum.Material.Metal,
 		CanCollide = false,
 	}).Parent = hall
+	part({ Name = "BellYoke", Size = Vector3.new(0.18, 0.7, 0.18), Position = Vector3.new(0, 50.6, 120), Color = Color3.fromRGB(70, 68, 66), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
 
 	-- ---------------- town hall interior: assembly hall
 	-- Interior region: x -18.5..18.5, z 107.5..132.5 (door south at z 107)
@@ -461,7 +462,7 @@ function TownBuilder.build(parentFolder: Instance)
 	end
 	-- Banners on the north interior wall
 	for _, x in { -7, 7 } do
-		part({ Name = "HallBanner", Size = Vector3.new(2.4, 7, 0.2), Position = Vector3.new(x, 11.5, 132.2), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = hall
+		part({ Name = "HallBanner", Size = Vector3.new(2.4, 7, 0.2), Position = Vector3.new(x, 20.5, 132.4), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = hall
 	end
 	-- Stepped stairs along the east wall up to the records balcony
 	PartUtil.steppedStairs(hall, Vector3.new(16.8, 1.05, 110.0), Vector3.zAxis, 12.95, 14.2, 4.2, {
@@ -556,7 +557,7 @@ function TownBuilder.build(parentFolder: Instance)
 		{ 30, 180, -85 },
 		-- north crescent
 		{ -56, 216, 160 },
-		{ 56, 216, 200 },
+		{ 58, 222, 200 },
 	}
 	for _, plot in PLOTS do
 		townhouse(plot[1], plot[2], plot[3])

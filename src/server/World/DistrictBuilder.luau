@@ -38,7 +38,7 @@ local SHOPS: { ShopSpec } = {
 	{
 		name = "GeneralGoods",
 		label = "Berta's Sundries",
-		x = 92,
+		x = 90,
 		z = 26,
 		rotation = 0,
 		wares = "parcel",
@@ -55,7 +55,7 @@ local SHOPS: { ShopSpec } = {
 	{
 		name = "Apothecary",
 		label = "The Green Flask",
-		x = 128,
+		x = 130,
 		z = 26,
 		rotation = 0,
 		wares = "potion",

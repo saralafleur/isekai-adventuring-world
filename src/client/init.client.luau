@@ -5,6 +5,7 @@ local Notifier = require(script.Controllers.Notifier)
 local ShopUI = require(script.Controllers.ShopUI)
 local MusicController = require(script.Controllers.MusicController)
 local MapUI = require(script.Controllers.MapUI)
+local VoiceListener = require(script.Controllers.VoiceListener)
 local TitleScreen = require(script.Controllers.TitleScreen)
 local IntroSequence = require(script.Controllers.IntroSequence)
 local FlybyCinematic = require(script.Controllers.FlybyCinematic)
@@ -15,6 +16,7 @@ DialogueUI.init()
 ShopUI.init()
 MusicController.init()
 MapUI.init()
+VoiceListener.init()
 
 -- Opening flow: title screen -> monologue over black -> village flyby that
 -- glides back into the player's head (first person) -> control handed over

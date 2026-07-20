@@ -93,13 +93,27 @@ function Voice.speak(model: Model, speaker: string, text: string)
 			end)
 		end
 		tts.Text = text
-		local loaded = pcall(function()
+		-- LoadAsync returns an AssetFetchStatus; a pcall success does NOT mean
+		-- the speech actually loaded, so check the status itself.
+		local ok, status = pcall(function()
 			return tts:LoadAsync()
 		end)
-		if loaded and tts.Parent then
-			pcall(function()
+		if not ok then
+			warn(`[Voice] {speaker}: LoadAsync errored — {status}`)
+			return
+		end
+		if status ~= Enum.AssetFetchStatus.Success then
+			warn(`[Voice] {speaker}: speech did not load (status {tostring(status)}). `
+				.. "Text-to-speech may need enabling for this experience.")
+			return
+		end
+		if tts.Parent then
+			local played = pcall(function()
 				tts:Play()
 			end)
+			if not played then
+				warn(`[Voice] {speaker}: Play() failed`)
+			end
 		end
 	end)
 end

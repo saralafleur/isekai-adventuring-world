@@ -83,6 +83,9 @@ local function wheatField(parent: Instance, centerX: number, centerZ: number, w:
 	end
 
 	fence(parent, centerX, centerZ, w, d)
+	-- NPC work spots just outside the fence
+	PartUtil.marker("FieldSpot", Vector3.new(centerX - w / 2 - 4, 0.5, centerZ)).Parent = parent
+	PartUtil.marker("FieldSpot", Vector3.new(centerX + w / 2 + 4, 0.5, centerZ + 3)).Parent = parent
 end
 
 local function silo(parent: Instance, x: number, z: number)

@@ -8,6 +8,7 @@ local CollectionService = game:GetService("CollectionService")
 local CottageBuilder = require(script.Parent.CottageBuilder)
 local FarmBuilder = require(script.Parent.FarmBuilder)
 local TownBuilder = require(script.Parent.TownBuilder)
+local SmithyBuilder = require(script.Parent.SmithyBuilder)
 
 local VillageBuilder = {}
 
@@ -195,6 +196,7 @@ function VillageBuilder.build(): Folder
 
 	FarmBuilder.build(village)
 	TownBuilder.build(village)
+	SmithyBuilder.build(village)
 
 	-- Dirt path from the cottage door to the plaza
 	local path = Instance.new("Folder")

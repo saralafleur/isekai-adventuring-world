@@ -81,6 +81,8 @@ local function marketStall(parent: Instance, x: number, z: number, facing: numbe
 		Color = Color3.fromRGB(160, 126, 80),
 		Material = Enum.Material.WoodPlanks,
 	}).Parent = model
+	-- NPC destination in front of the counter
+	PartUtil.marker("BrowseSpot", Vector3.new(0, 0.5, 5)).Parent = model
 
 	model.Parent = parent
 	model:PivotTo(CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(facing), 0))
@@ -122,6 +124,10 @@ local function well(parent: Instance, x: number, z: number)
 		Color = Color3.fromRGB(112, 66, 48),
 		Material = Enum.Material.RoofShingles,
 	}).Parent = parent
+	-- NPC loitering spots around the well
+	PartUtil.marker("GatherSpot", Vector3.new(x + 6, 0.9, z)).Parent = parent
+	PartUtil.marker("GatherSpot", Vector3.new(x - 6, 0.9, z + 2)).Parent = parent
+	PartUtil.marker("GatherSpot", Vector3.new(x, 0.9, z - 6)).Parent = parent
 end
 
 local function road(parent: Instance, centerX: number, centerZ: number, w: number, d: number, thickness: number?)

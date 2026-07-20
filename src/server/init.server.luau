@@ -14,12 +14,14 @@ local QuestService = require(script.Services.QuestService)
 local DialogueService = require(script.Services.DialogueService)
 local GatherService = require(script.Services.GatherService)
 local NpcService = require(script.Services.NpcService)
+local VillagerService = require(script.NPC.VillagerService)
 
 VillageBuilder.build()
 
 DialogueService.init()
 GatherService.init()
 NpcService.init()
+VillagerService.init()
 
 local function onPlayerAdded(player: Player)
 	InventoryService.setup(player)

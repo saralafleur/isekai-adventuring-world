@@ -308,7 +308,10 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		Material = Enum.Material.Metal,
 		CanCollide = false,
 	}).Parent = model
-	part({ Name = "DoorStep", Size = Vector3.new(doorW + 1, 0.5, 2.4), Position = Vector3.new(0, 0.25, halfD + 1.6), Color = STONE_COLOR, Material = Enum.Material.Slate }).Parent = model
+	local doorStep = part({ Name = "DoorStep", Size = Vector3.new(doorW + 1, 0.5, 2.4), Position = Vector3.new(0, 0.25, halfD + 1.6), Color = STONE_COLOR, Material = Enum.Material.Slate })
+	doorStep.Parent = model
+	-- NPC destination: villagers walk here to "enter" the house
+	game:GetService("CollectionService"):AddTag(doorStep, "HouseDoor")
 
 	-- Roof: gable, ridge along X, slopes toward +/-Z
 	local rise = math.clamp(d * 0.4, 4, 7)

@@ -263,8 +263,8 @@ function ForestBuilder.build(parentFolder: Instance)
 	}).Parent = forest
 	part({
 		Name = "NorthRoad",
-		Size = Vector3.new(12, 0.24, 330),
-		Position = Vector3.new(0, 0.12, 405),
+		Size = Vector3.new(12, 0.20, 336),
+		Position = Vector3.new(0, 0.10, 406),
 		Color = Color3.fromRGB(150, 125, 95),
 		Material = Enum.Material.Ground,
 	}).Parent = forest

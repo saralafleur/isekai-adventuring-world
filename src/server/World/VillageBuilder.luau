@@ -186,8 +186,8 @@ function VillageBuilder.build(): Folder
 	square.Name = "VillageSquare"
 	local plaza = part({
 		Name = "Plaza",
-		Size = Vector3.new(60, 0.4, 60),
-		Position = Vector3.new(0, 0.2, 50),
+		Size = Vector3.new(60, 0.5, 60),
+		Position = Vector3.new(0, 0.25, 50),
 		Color = Color3.fromRGB(180, 170, 150),
 		Material = Enum.Material.Cobblestone,
 	})
@@ -210,17 +210,19 @@ function VillageBuilder.build(): Folder
 	for i = 0, 5 do
 		part({
 			Name = "PathStone",
-			Size = Vector3.new(6 + (i % 2) * 1.5, 0.3 + (i % 2) * 0.12, 9),
-			Position = Vector3.new((i % 2 - 0.5) * 1.2, (0.3 + (i % 2) * 0.12) / 2, -22 + i * 8.5),
+			Size = Vector3.new(6 + (i % 2) * 1.5, 0.3 + (i % 2) * 0.16, 9),
+			Position = Vector3.new((i % 2 - 0.5) * 1.2, (0.3 + (i % 2) * 0.16) / 2, -22 + i * 8.5),
 			Color = Color3.fromRGB(150, 125, 95),
 			Material = Enum.Material.Ground,
 		}).Parent = path
 	end
-	for i = 0, 2 do
+	-- Spur from the smithy's open front to the cottage path (it previously ran
+	-- into the smithy floor and stopped 5 studs short of the path)
+	for _, spur in { { -27.5, 2, 9, 0.26 }, { -19, 3, 11, 0.32 }, { -7.5, 5, 14, 0.24 } } do
 		part({
 			Name = "SmithySpur",
-			Size = Vector3.new(9, 0.26, 7),
-			Position = Vector3.new(-30 + i * 8, 0.13, 8 - i * 3),
+			Size = Vector3.new(spur[3], spur[4], 7),
+			Position = Vector3.new(spur[1], spur[4] / 2, spur[2]),
 			Color = Color3.fromRGB(150, 125, 95),
 			Material = Enum.Material.Ground,
 		}).Parent = path
@@ -231,15 +233,15 @@ function VillageBuilder.build(): Folder
 	-- streets they cross so overlapping tops never share a plane)
 	part({
 		Name = "SouthConnector",
-		Size = Vector3.new(12, 0.28, 130),
-		Position = Vector3.new(0, 0.14, -124),
+		Size = Vector3.new(12, 0.28, 128),
+		Position = Vector3.new(0, 0.14, -125),
 		Color = Color3.fromRGB(150, 125, 95),
 		Material = Enum.Material.Ground,
 	}).Parent = village
 	part({
 		Name = "NorthConnector",
-		Size = Vector3.new(12, 0.26, 106),
-		Position = Vector3.new(0, 0.13, 187),
+		Size = Vector3.new(12, 0.30, 107),
+		Position = Vector3.new(0, 0.15, 189.5),
 		Color = Color3.fromRGB(150, 125, 95),
 		Material = Enum.Material.Ground,
 	}).Parent = village

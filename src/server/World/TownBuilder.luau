@@ -272,7 +272,7 @@ function TownBuilder.build(parentFolder: Instance)
 
 	-- Streets: main road plaza->town hall, and two east-west side streets.
 	-- (The plaza part itself is built by VillageBuilder; roads tuck under it.)
-	road(town, 0, 93, 10, 27)
+	road(town, 0, 91.5, 10, 24)
 
 	well(town, 0, 50)
 
@@ -371,7 +371,7 @@ function TownBuilder.build(parentFolder: Instance)
 		plazaLamp.Parent = town
 	end
 	for i = 0, 2 do
-		part({ Name = "PlazaCrate", Size = Vector3.new(1.7, 1.7, 1.7), Position = Vector3.new(-26 + (i % 2) * 2, 0.85 + math.floor(i / 2) * 1.75, 40 + (i % 2) * 1.2), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = town
+		part({ Name = "PlazaCrate", Size = Vector3.new(1.7, 1.7, 1.7), Position = Vector3.new(-33 + (i % 2) * 2, 0.85 + math.floor(i / 2) * 1.75, 40 + (i % 2) * 1.2), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = town
 	end
 
 	-- Town hall: 3 stories, stone ground floor, facing south over the plaza.
@@ -556,8 +556,8 @@ function TownBuilder.build(parentFolder: Instance)
 		{ -30, 168, 85 },
 		{ 30, 180, -85 },
 		-- north crescent
-		{ -56, 216, 160 },
-		{ 58, 222, 200 },
+		{ -52, 222, 160 },
+		{ 54, 228, 200 },
 	}
 	for _, plot in PLOTS do
 		townhouse(plot[1], plot[2], plot[3])
@@ -565,13 +565,13 @@ function TownBuilder.build(parentFolder: Instance)
 
 	-- Curved dirt lanes (segment heights alternate so overlapping joints never
 	-- share a top plane)
-	local function curvedLane(points: { Vector3 }, width: number)
+	local function curvedLane(points: { Vector3 }, width: number, base: number?)
 		for i = 1, #points - 1 do
 			local a, b = points[i], points[i + 1]
 			local delta = b - a
 			local length = delta.Magnitude
 			local laneAngle = math.atan2(delta.Z, delta.X)
-			local thickness = 0.16 + (i % 2) * 0.05
+			local thickness = (base or 0.30) + (i % 2) * 0.06
 			part({
 				Name = "Lane",
 				Size = Vector3.new(length + 3, thickness, width),
@@ -581,49 +581,32 @@ function TownBuilder.build(parentFolder: Instance)
 			}).Parent = town
 		end
 	end
-	-- northwest residential lane
-	curvedLane({
-		Vector3.new(-26, 0, 80),
-		Vector3.new(-40, 0, 98),
-		Vector3.new(-56, 0, 120),
-		Vector3.new(-72, 0, 150),
-		Vector3.new(-84, 0, 182),
-		Vector3.new(-90, 0, 208),
-	}, 8)
-	-- northeast residential lane
-	curvedLane({
-		Vector3.new(26, 0, 80),
-		Vector3.new(40, 0, 98),
-		Vector3.new(56, 0, 120),
-		Vector3.new(72, 0, 150),
-		Vector3.new(84, 0, 182),
-		Vector3.new(90, 0, 208),
-	}, 8)
-	-- crescent lane behind the hall
-	curvedLane({
-		Vector3.new(-70, 0, 200),
-		Vector3.new(-40, 0, 214),
-		Vector3.new(-14, 0, 220),
-		Vector3.new(14, 0, 220),
-		Vector3.new(40, 0, 214),
-		Vector3.new(70, 0, 200),
-	}, 6)
+	-- Residential lanes thread the corridors BETWEEN plots rather than running
+	-- down the middle of them; north ends narrow to 6 where the gap tightens.
+	local V = Vector3.new
+	curvedLane({ V(-26, 0, 80), V(-26.4, 0, 106), V(-26.4, 0, 130), V(-40, 0, 138), V(-58, 0, 152), V(-58, 0, 178) }, 8, 0.30)
+	curvedLane({ V(-58, 0, 178), V(-69, 0, 194), V(-76, 0, 204), V(-80, 0, 214), V(-85, 0, 228) }, 6, 0.30)
+	curvedLane({ V(26, 0, 80), V(26.4, 0, 106), V(26.4, 0, 130), V(40, 0, 138), V(58, 0, 152), V(58, 0, 178) }, 8, 0.30)
+	curvedLane({ V(58, 0, 178), V(70, 0, 196), V(79, 0, 205), V(84, 0, 215), V(89, 0, 229) }, 6, 0.30)
+	-- crescent, now north of both corner plots
+	curvedLane({ V(-85, 0, 228), V(-56, 0, 248), V(-20, 0, 254), V(20, 0, 254), V(56, 0, 248), V(89, 0, 229) }, 6, 0.44)
+	-- cross-link around the town hall, tying both lanes to the north connector
+	curvedLane({ V(-27, 0, 140), V(0, 0, 140), V(27, 0, 140) }, 8, 0.52)
+	-- door spurs so every house front reaches surfaced ground
+	curvedLane({ V(-30, 0, 118), V(-35.5, 0, 118) }, 5, 0.44)
+	curvedLane({ V(30, 0, 118), V(36, 0, 118) }, 5, 0.44)
+	curvedLane({ V(-62, 0, 163), V(-70, 0, 163) }, 5, 0.44)
+	curvedLane({ V(62, 0, 163), V(68, 0, 163) }, 5, 0.44)
+	curvedLane({ V(-4, 0, 202), V(-43, 0, 202) }, 5, 0.44)
+	curvedLane({ V(4, 0, 209), V(46, 0, 209) }, 5, 0.44)
+	curvedLane({ V(6, 0, 181), V(11, 0, 181) }, 5, 0.44)
+
 	-- shopping street (east) and industrial road (west): the roads start past
 	-- the guild halls' rears; curved connectors skirt the guilds' south sides
 	part({ Name = "ShoppingRoad", Size = Vector3.new(112, 0.2, 12), Position = Vector3.new(124, 0.1, 50), Color = Color3.fromRGB(168, 158, 140), Material = Enum.Material.Cobblestone }).Parent = town
 	part({ Name = "IndustryRoad", Size = Vector3.new(112, 0.2, 12), Position = Vector3.new(-124, 0.1, 50), Color = Color3.fromRGB(160, 150, 135), Material = Enum.Material.Cobblestone }).Parent = town
-	curvedLane({
-		Vector3.new(28, 0, 32),
-		Vector3.new(48, 0, 26),
-		Vector3.new(64, 0, 32),
-		Vector3.new(72, 0, 44),
-	}, 7)
-	curvedLane({
-		Vector3.new(-28, 0, 32),
-		Vector3.new(-48, 0, 26),
-		Vector3.new(-64, 0, 32),
-		Vector3.new(-72, 0, 44),
-	}, 7)
+	curvedLane({ V(28, 0, 30), V(52, 0, 26), V(71, 0, 26), V(71, 0, 50) }, 6, 0.60)
+	curvedLane({ V(-28, 0, 30), V(-52, 0, 26), V(-71.5, 0, 26), V(-71.5, 0, 50) }, 6, 0.60)
 
 	task.spawn(function()
 		AvatarFactoryRef.createStatic({

@@ -297,6 +297,52 @@ function FarmBuilder.build(parentFolder: Instance)
 	wheatField(farm, -85, -105, 30, 24)
 	wheatField(farm, 30, -115, 34, 22)
 
+	-- Farm lanes route AROUND the buildings they serve (they previously ran
+	-- straight through both farmhouses, the barn and the coop).
+	dirtLane(farm, -22.5, -60, 25, 8) -- west lane, stops clear of FarmhouseWest
+	dirtLane(farm, 0, -60, 22, 8, 0.36) -- links both lanes across the south connector
+	dirtLane(farm, 34.5, -60, 49, 8) -- east lane, stops clear of the ToolShed
+	dirtLane(farm, -31, -75.5, 8, 39, 0.30) -- down FarmhouseWest's door side
+	dirtLane(farm, -38, -92, 22, 6, 0.36) -- FarmhouseSouth doorstep spur
+	dirtLane(farm, 20, -40, 6, 44, 0.30) -- cottage east spur (narrowed to clear the pen)
+	dirtLane(farm, 10, -22, 22, 7, 0.44) -- links that spur to the cottage path
+	dirtLane(farm, 28.5, -71, 9, 26, 0.34) -- barn spur
+	dirtLane(farm, 54, -50, 12, 7, 0.44) -- tool shed spur
+	dirtLane(farm, 46, -47.5, 8, 19, 0.38) -- coop spur
+
+	silo(farm, 70, -85)
+
+	-- Sheds
+	HouseBuilder.build(farm, {
+		name = "ToolShed",
+		position = Vector3.new(70, 0, -50),
+		rotation = -90,
+		width = 14,
+		depth = 14,
+		stories = 1,
+		storyHeight = 14,
+		signText = "Tool Shed",
+		plasterColor = Color3.fromRGB(190, 172, 140),
+	})
+	HouseBuilder.build(farm, {
+		name = "CoopShed",
+		position = Vector3.new(46, 0, -28),
+		rotation = 180,
+		width = 12,
+		depth = 14,
+		stories = 1,
+		storyHeight = 14,
+		signText = "Chicken Coop",
+		plasterColor = Color3.fromRGB(200, 180, 150),
+	})
+
+	windmill(farm, -90, -140)
+
+	-- Wheat fields
+	wheatField(farm, -85, -60, 30, 20)
+	wheatField(farm, -85, -105, 30, 24)
+	wheatField(farm, 30, -115, 34, 22)
+
 	-- Dirt lanes linking the hamlet to the cottage path
 	dirtLane(farm, -40, -60, 60, 8) -- west lane to the farmhouses/fields
 	dirtLane(farm, 40, -60, 60, 8) -- east lane to the barn

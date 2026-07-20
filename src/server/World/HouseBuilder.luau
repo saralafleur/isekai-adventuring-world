@@ -830,7 +830,11 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		local function signFace(board: BasePart, face: Enum.NormalId)
 			local surface = Instance.new("SurfaceGui")
 			surface.Face = face
-			surface.CanvasSize = Vector2.new(60 * board.Size.X, 60 * board.Size.Y)
+			-- the canvas' width axis is X on the front/back faces but Z on the
+			-- side faces, which the perpendicular hanging board uses
+			local sideways = face == Enum.NormalId.Right or face == Enum.NormalId.Left
+			local faceWidth = if sideways then board.Size.Z else board.Size.X
+			surface.CanvasSize = Vector2.new(60 * faceWidth, 60 * board.Size.Y)
 			surface.Parent = board
 			local text = Instance.new("TextLabel")
 			text.Size = UDim2.fromScale(0.94, 0.8)
@@ -845,11 +849,17 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 			text.Parent = surface
 		end
 
-		-- Board mounted flat above the door
+		-- Board mounted flat above the door. It has to stand proud of the
+		-- EavePlate (front face halfD + 0.7) or the plate renders in front of the
+		-- lettering, and it has to stay clear of the plate's underside
+		-- (wallTop - 0.7) or the roof line cuts through the text — on a 1-story
+		-- building the door head is high enough that the unclamped board would
+		-- reach it.
+		local signTop = math.min(1 + doorH + 0.7 + boardHeight, wallTop - 1.1)
 		local signBoard = part({
 			Name = "DoorSign",
-			Size = Vector3.new(boardWidth, boardHeight, 0.4),
-			Position = Vector3.new(0, 1 + doorH + boardHeight / 2 + 0.7, halfD + 0.45),
+			Size = Vector3.new(boardWidth, boardHeight, 0.6),
+			Position = Vector3.new(0, signTop - boardHeight / 2, halfD + 0.6),
 			Color = if major then Color3.fromRGB(92, 64, 40) else Color3.fromRGB(112, 82, 52),
 			Material = Enum.Material.WoodPlanks,
 		})
@@ -858,55 +868,70 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 
 		if major then
 			-- carved frame around the board
-			for _, dx in { -(boardWidth / 2 + 0.2), boardWidth / 2 + 0.2 } do
+			-- Rails overlap the board by 0.125 rather than kissing its edge, and
+			-- the frame stands 0.1 proud of the board face so it reads as a frame
+			-- instead of z-fighting with it.
+			for _, dx in { -(boardWidth / 2 + 0.1), boardWidth / 2 + 0.1 } do
 				part({
 					Name = "SignTrim",
-					Size = Vector3.new(0.45, boardHeight + 0.8, 0.55),
-					Position = Vector3.new(dx, signBoard.Position.Y, halfD + 0.5),
+					Size = Vector3.new(0.45, boardHeight + 0.8, 0.7),
+					Position = Vector3.new(dx, signBoard.Position.Y, halfD + 0.65),
 					Color = trimColor,
 					Material = Enum.Material.Wood,
 				}).Parent = model
 			end
-			for _, dy in { -(boardHeight / 2 + 0.25), boardHeight / 2 + 0.25 } do
+			for _, dy in { -(boardHeight / 2 + 0.1), boardHeight / 2 + 0.1 } do
 				part({
 					Name = "SignTrim",
-					Size = Vector3.new(boardWidth + 1.3, 0.45, 0.55),
-					Position = Vector3.new(0, signBoard.Position.Y + dy, halfD + 0.5),
+					Size = Vector3.new(boardWidth + 1.3, 0.45, 0.7),
+					Position = Vector3.new(0, signBoard.Position.Y + dy, halfD + 0.65),
 					Color = trimColor,
 					Material = Enum.Material.Wood,
 				}).Parent = model
 			end
-			-- perpendicular hanging sign, readable from down the street
-			local hangX = doorW / 2 + 3.5
+			-- Perpendicular hanging sign, readable from down the street. It has to
+			-- clear the door board in X — the two used to share a plane, which put
+			-- a metal bar flat across the lettering — and the board hangs entirely
+			-- outside the wall rather than half-buried in the ground floor.
+			local hangX = math.max(doorW / 2 + 3.5, boardWidth / 2 + 2.5)
 			local hangY = 1 + doorH - 0.4
+			-- capped: the board's long axis points away from the wall, so an
+			-- uncapped long name would jut most of the way across the street
+			local hangLength = math.clamp(#signName * 0.5 + 1.5, 6, 8)
+			local hangCenterZ = halfD + 0.5 + hangLength / 2 + 0.6
+			-- wall plate, under the arm and set back from the door board's face
 			part({
 				Name = "HangingSignBracket",
-				Size = Vector3.new(3.2, 0.3, 0.3),
-				Position = Vector3.new(hangX - 1.4, hangY + 2.4, halfD + 0.5),
+				Size = Vector3.new(0.3, 1.2, 0.3),
+				Position = Vector3.new(hangX, hangY + 1.9, halfD + 0.45),
 				Color = Color3.fromRGB(60, 58, 55),
 				Material = Enum.Material.Metal,
 			}).Parent = model
-			for _, dx in { -1.1, 1.1 } do
+			-- outrigger: bites 0.2 into the wall and reaches past the board's far edge
+			local armLength = hangLength + 1.4
+			part({
+				Name = "HangingSignArm",
+				Size = Vector3.new(0.3, 0.3, armLength),
+				Position = Vector3.new(hangX, hangY + 2.4, halfD + 0.3 + armLength / 2),
+				Color = Color3.fromRGB(60, 58, 55),
+				Material = Enum.Material.Metal,
+			}).Parent = model
+			-- chains drop along the board's length (its thin axis is X, so
+			-- spreading them in X left them hanging beside the board, not on it)
+			for _, dz in { -(hangLength / 2 - 0.8), hangLength / 2 - 0.8 } do
 				part({
 					Name = "HangingSignChain",
-					Size = Vector3.new(0.16, 1.2, 0.16),
-					Position = Vector3.new(hangX + dx, hangY + 1.8, halfD + 1.9),
+					Size = Vector3.new(0.16, 1.4, 0.16),
+					Position = Vector3.new(hangX, hangY + 1.7, hangCenterZ + dz),
 					Color = Color3.fromRGB(60, 58, 55),
 					Material = Enum.Material.Metal,
 					CanCollide = false,
 				}).Parent = model
 			end
-			part({
-				Name = "HangingSignArm",
-				Size = Vector3.new(2.6, 0.3, 0.3),
-				Position = Vector3.new(hangX, hangY + 2.4, halfD + 1.9),
-				Color = Color3.fromRGB(60, 58, 55),
-				Material = Enum.Material.Metal,
-			}).Parent = model
 			local hangBoard = part({
 				Name = "HangingSign",
-				Size = Vector3.new(0.4, 2.2, math.max(6, #signName * 0.5 + 1.5)),
-				Position = Vector3.new(hangX, hangY + 0.1, halfD + 1.9),
+				Size = Vector3.new(0.4, 2.2, hangLength),
+				Position = Vector3.new(hangX, hangY + 0.1, hangCenterZ),
 				Color = Color3.fromRGB(92, 64, 40),
 				Material = Enum.Material.WoodPlanks,
 			})

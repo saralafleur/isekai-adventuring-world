@@ -462,20 +462,28 @@ local function doorway(parent: Instance)
 		}).Parent = parent
 	end
 
-	-- Lantern beside the door
+	-- Name board, hung under the door canopy. There is no legal wall space above
+	-- the door — the lintel tops out at y 9.4 and the canopy underside is
+	-- already at 9.18 there — so mounting it flat put the board through the
+	-- canopy, the eave plate and the roof slab at once. Hanging it from the
+	-- canopy's outer half clears all three.
 	local cottageSign = part({
 		Name = "DoorSign",
 		Size = Vector3.new(7, 1.6, 0.4),
-		Position = Vector3.new(0, 10.1, -27.35),
+		Position = Vector3.new(0, 7.7, -25.2),
 		Color = Color3.fromRGB(112, 82, 52),
 		Material = Enum.Material.WoodPlanks,
 	})
 	local signSurface = Instance.new("SurfaceGui")
-	signSurface.Face = Enum.NormalId.Front
+	-- outward is +Z here (the door step sits at z + 1.5), so the readable face
+	-- is Back. Front pointed the canvas into the cottage, which is why the
+	-- lettering washed out as you got close to it.
+	signSurface.Face = Enum.NormalId.Back
 	signSurface.CanvasSize = Vector2.new(420, 96)
 	signSurface.Parent = cottageSign
 	local signText = Instance.new("TextLabel")
-	signText.Size = UDim2.fromScale(1, 1)
+	signText.Size = UDim2.fromScale(0.94, 0.8)
+	signText.Position = UDim2.fromScale(0.03, 0.1)
 	signText.BackgroundTransparency = 1
 	signText.Text = "Rowan Cottage"
 	signText.Font = Enum.Font.Merriweather
@@ -485,6 +493,18 @@ local function doorway(parent: Instance)
 	signText.TextStrokeTransparency = 0.4
 	signText.Parent = signSurface
 	cottageSign.Parent = parent
+
+	-- chains up to the canopy underside (y 9.23 at this depth)
+	for _, x in { -2.6, 2.6 } do
+		part({
+			Name = "SignChain",
+			Size = Vector3.new(0.16, 1.0, 0.16),
+			Position = Vector3.new(x, 8.9, -25.2),
+			Color = Color3.fromRGB(60, 58, 55),
+			Material = Enum.Material.Metal,
+			CanCollide = false,
+		}).Parent = parent
+	end
 
 	local lamp = part({
 		Name = "DoorLantern",

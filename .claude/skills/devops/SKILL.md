@@ -1,6 +1,6 @@
 ---
 name: devops
-argument-hint: "[roblox-setup | roblox | setup | rojo | tts-setup | tts | voices | status]"
+argument-hint: "[roblox-setup | roblox | setup | rojo | serve | sync | live | up | tts-setup | tts | voices | status]"
 description: >
   Isekai in an Adventuring World (Roblox)'s DevOps toolbox — commands for
   setting up and verifying this project's build environments. Use when Sara
@@ -8,9 +8,13 @@ description: >
   environment for this project. Current commands: `roblox-setup` (aliases
   `roblox`, `setup`, `rojo`) — installs and verifies the full Roblox
   development toolchain (Rokit, Rojo, Wally, luau-lsp, Roblox Studio, the
-  Rojo Studio plugin, and Luau API types); `status` — read-only report of the
-  current state of everything the devops skill manages. Invoking with no
-  command lists available commands and runs the status report.
+  Rojo Studio plugin, and Luau API types); `serve` (aliases `sync`, `live`) —
+  launches the `rojo serve` live-sync server so file edits stream into Studio;
+  `up` — checks and starts BOTH the Rojo server and Roblox Studio (launching
+  Studio with the game's place file if it isn't already running); `status` —
+  read-only report of the current state of everything the devops skill
+  manages. Invoking with no command lists available commands and runs the
+  status report.
 ---
 
 # DevOps Skill — Isekai in an Adventuring World (Roblox)
@@ -39,6 +43,8 @@ Parse the argument after `/devops`:
 | Argument | Command |
 |---|---|
 | `roblox-setup`, `roblox`, `setup`, `rojo` | Roblox toolchain setup — follow `references/roblox-setup.md` |
+| `serve`, `sync`, `live` | Start the Rojo live-sync server — follow `references/serve.md` |
+| `up` | Start Rojo server AND launch Roblox Studio with the game — follow `references/up.md` |
 | `tts-setup`, `tts`, `voices` | Dialogue voice toolchain — follow `references/tts-setup.md` |
 | `status` | Report current state of everything this skill manages — follow `references/status.md` |
 | *(none)* | List commands, then run the `status` command |
@@ -57,6 +63,28 @@ clean `luau-lsp analyze` and a successful `rojo build` of the actual game.
 Full procedure in `references/roblox-setup.md`; audit script at
 `scripts/roblox-setup-check.sh` (run it relative to this skill's base
 directory).
+
+### serve
+
+Aliases: `sync`, `live`. Starts the `rojo serve` live-sync server
+(`localhost:34872`) so edits to the `.luau` files on disk stream straight into
+the open place in Studio. Audits first so it never double-starts a server
+that's already running, launches it as a background process, and verifies the
+listening banner. Sara then clicks **Connect** on the Rojo plugin in Studio.
+For a one-off build with no live sync, `rojo build` a place file instead — no
+server needed. Full procedure in `references/serve.md`; audit script at
+`scripts/serve-check.sh`.
+
+### up
+
+Checks and brings up the WHOLE dev environment in one shot: starts the Rojo
+live-sync server if it isn't running (same as `serve`), and launches Roblox
+Studio with the game's place file (`EchoesOfAetheria.rbxl`, building it first
+if it doesn't exist yet) if Studio isn't already running. Idempotent — each
+piece is only started if the audit shows it's not already up. Sara still has
+to click **Connect** on the Rojo plugin herself once Studio finishes loading;
+that step can't be scripted. Full procedure in `references/up.md`; audit
+script at `scripts/up-check.sh`.
 
 ### tts-setup
 
@@ -81,5 +109,5 @@ New commands get: a row in the routing table, a section here, a procedure doc
 in `references/<command>.md`, an entry in the frontmatter `argument-hint`,
 and a read-only audit script in `scripts/<command>-check.sh` — the audit
 script is what makes the command show up in `status`. Keep the
-audit/plan/install/verify structure. (A likely future addition: a `serve`
-command managing the `rojo serve` live-sync server as a background process.)
+audit/plan/install/verify structure — for a process command like `serve`, the
+"install" phase is "launch" and "verify" is "confirm it's listening".

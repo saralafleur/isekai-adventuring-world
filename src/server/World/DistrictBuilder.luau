@@ -142,8 +142,11 @@ local SHOPS: { ShopSpec } = {
 local function shopSign(parent: Instance, x: number, z: number, rotation: number, color: Color3)
 	-- hanging sign over the door, on the road-facing side
 	local frontDir = if rotation == 0 then 1 else -1
-	local signZ = z + frontDir * 11.2
-	part({ Name = "ShopSignBracket", Size = Vector3.new(0.3, 0.3, 2.4), Position = Vector3.new(x - 3, 13, signZ - frontDir * 0.8), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = parent
+	-- the shop is 24 deep, so its front wall's outer face is 12.5 from centre;
+	-- at 11.2 the board and its bracket were built inside the ground floor,
+	-- invisible from the street
+	local signZ = z + frontDir * 13.3
+	part({ Name = "ShopSignBracket", Size = Vector3.new(0.3, 0.3, 2.4), Position = Vector3.new(x - 3, 13, signZ - frontDir * 1.0), Color = Color3.fromRGB(60, 58, 55), Material = Enum.Material.Metal }).Parent = parent
 	part({ Name = "ShopSign", Size = Vector3.new(3.8, 2.2, 0.4), Position = Vector3.new(x - 3, 11.6, signZ), Color = color, Material = Enum.Material.Wood }).Parent = parent
 end
 

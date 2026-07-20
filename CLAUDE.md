@@ -47,6 +47,19 @@ rojo build default.project.json -o /dev/null
 
 This repo builds **Echoes of Aetheria**, an isekai fantasy RPG — full design doc in `isekai_roblox_storyboard.md`. World geometry is currently procedurally greyboxed from `src/server/World/VillageBuilder.luau`; gameplay code finds world objects via CollectionService tags (`NPC`, `GatherNode`) and attributes (`NpcName`, `ItemId`), never geometry, so greybox can be replaced with real art without code changes.
 
+## Dialogue voices
+
+NPC dialogue is spoken aloud from pre-recorded clips (not Roblox's cloud TTS,
+which needs a published place and bills a quota). `audio/lines/*.mp3` and the
+`VoiceLines.luau` asset-id table are committed, so voices work on a fresh
+clone with no setup.
+
+To *change* dialogue audio you need the local neural TTS toolchain, which is
+gitignored (353 MB model): run `/devops tts-setup` or `zsh scripts/setup-tts.sh`,
+then `python3 scripts/generate-voice-lines.py --force` and
+`python3 scripts/upload-voice-lines.py`. Casting per character lives in the
+`CAST` table at the top of the generator.
+
 ## Notes for Claude
 
 - This project has no automated test runner set up yet. Verify with the commands above, and describe manual Studio playtest steps when a change needs runtime verification.

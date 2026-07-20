@@ -1,6 +1,6 @@
 ---
 name: devops
-argument-hint: "[roblox-setup | roblox | setup | rojo | status]"
+argument-hint: "[roblox-setup | roblox | setup | rojo | tts-setup | tts | voices | status]"
 description: >
   Isekai in an Adventuring World (Roblox)'s DevOps toolbox — commands for
   setting up and verifying this project's build environments. Use when Sara
@@ -39,6 +39,7 @@ Parse the argument after `/devops`:
 | Argument | Command |
 |---|---|
 | `roblox-setup`, `roblox`, `setup`, `rojo` | Roblox toolchain setup — follow `references/roblox-setup.md` |
+| `tts-setup`, `tts`, `voices` | Dialogue voice toolchain — follow `references/tts-setup.md` |
 | `status` | Report current state of everything this skill manages — follow `references/status.md` |
 | *(none)* | List commands, then run the `status` command |
 
@@ -56,6 +57,15 @@ clean `luau-lsp analyze` and a successful `rojo build` of the actual game.
 Full procedure in `references/roblox-setup.md`; audit script at
 `scripts/roblox-setup-check.sh` (run it relative to this skill's base
 directory).
+
+### tts-setup
+
+Installs the local neural TTS (Kokoro) used to generate the spoken dialogue
+lines: `uv`, an mp3 encoder, a python env, and the 353 MB model weights. The
+generated clips and their Roblox asset ids ARE committed, so a fresh clone has
+working voices without this — it's only needed to change or re-record
+dialogue. Full procedure in `references/tts-setup.md`; audit script at
+`scripts/tts-setup-check.sh`.
 
 ### status
 

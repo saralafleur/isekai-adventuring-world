@@ -101,6 +101,12 @@ local function buildRig(persona: Persona, spawnPos: Vector3): Villager?
 	description.HeightScale = persona.heightScale
 	description.WidthScale = persona.widthScale
 	description.BodyTypeScale = 0.15
+	if persona.hairId then
+		description.HairAccessory = tostring(persona.hairId)
+	end
+	if persona.hatId then
+		description.HatAccessory = tostring(persona.hatId)
+	end
 	description.HeadColor = persona.skin
 	description.TorsoColor = persona.skin
 	description.LeftArmColor = persona.skin

@@ -14,6 +14,8 @@ export type Persona = {
 	pantsId: number,
 	heightScale: number,
 	widthScale: number,
+	hairId: number?,
+	hatId: number?,
 	speed: number,
 	weights: { house: number, browse: number, well: number, field: number, watch: number, forge: number },
 	-- dwell/hide time ranges (seconds)
@@ -267,6 +269,27 @@ local Catalog: { Persona } = {
 		dwellMax = 35,
 		hideMin = 25,
 		hideMax = 60,
+	},
+	{
+		name = "Ember the Adventurer",
+		shirt = Color3.fromRGB(96, 128, 88),
+		pants = Color3.fromRGB(60, 50, 45),
+		skin = SKIN_A,
+		shirtId = 2734293067, -- Green Vest & White Shirt
+		pantsId = 11212540085, -- brown boots pants
+		heightScale = 1.0,
+		widthScale = 0.92,
+		hairId = 12559612318, -- long curly red hair
+		hatId = 18200082828, -- steampunk goggles (worn up on the head)
+		speed = 8.5,
+		-- A visiting adventurer: lives at the market, never disappears into a
+		-- house. Browses stalls and the guild, loiters at the well, watches
+		-- the smith.
+		weights = { house = 0, browse = 55, well = 30, field = 0, watch = 15, forge = 0 },
+		dwellMin = 10,
+		dwellMax = 30,
+		hideMin = 10,
+		hideMax = 20,
 	},
 }
 

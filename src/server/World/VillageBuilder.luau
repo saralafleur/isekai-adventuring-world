@@ -201,6 +201,9 @@ function VillageBuilder.build(): Folder
 	local GuildBuilder = require(script.Parent.GuildBuilder)
 	GuildBuilder.build(village)
 
+	local DistrictBuilder = require(script.Parent.DistrictBuilder)
+	DistrictBuilder.build(village)
+
 	-- Dirt path from the cottage door to the plaza
 	local path = Instance.new("Folder")
 	path.Name = "Path"

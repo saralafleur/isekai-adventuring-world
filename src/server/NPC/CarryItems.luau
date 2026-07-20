@@ -75,6 +75,17 @@ local BUILDERS: { [string]: ItemBuilder } = {
 		bloom.CFrame = hand.CFrame * CFrame.new(0, 0.25, 0)
 		return { stems, bloom }
 	end,
+	potion = function(hand)
+		local bottle = makePart(Vector3.new(0.5, 0.9, 0.5), Color3.fromRGB(90, 180, 110), Enum.Material.Glass, hand.CFrame * CFrame.new(0, -0.5, 0))
+		bottle.Transparency = 0.25
+		local cork = makePart(Vector3.new(0.25, 0.3, 0.25), Color3.fromRGB(150, 116, 70), Enum.Material.Wood, hand.CFrame * CFrame.new(0, 0.05, 0))
+		return { bottle, cork }
+	end,
+	book = function(hand)
+		return {
+			makePart(Vector3.new(1.1, 0.35, 1.5), Color3.fromRGB(90, 60, 50), Enum.Material.Leather, hand.CFrame * CFrame.new(0, -0.5, 0.2)),
+		}
+	end,
 	parcel = function(hand)
 		return {
 			makePart(Vector3.new(1, 0.8, 1), Color3.fromRGB(170, 140, 100), Enum.Material.Cardboard, hand.CFrame * CFrame.new(0, -0.55, 0)),

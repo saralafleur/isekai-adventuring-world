@@ -383,6 +383,7 @@ function TownBuilder.build(parentFolder: Instance)
 		width = 38,
 		depth = 26,
 		stories = 3,
+		storyHeight = 10,
 		stoneGround = true,
 		plasterColor = Color3.fromRGB(236, 228, 214),
 		roofColor = Color3.fromRGB(88, 78, 72),
@@ -395,14 +396,14 @@ function TownBuilder.build(parentFolder: Instance)
 		Name = "ClockFace",
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.4, 6, 6),
-		CFrame = CFrame.new(0, 18, 106.2) * CFrame.Angles(0, math.rad(90), 0),
+		CFrame = CFrame.new(0, 26, 106.2) * CFrame.Angles(0, math.rad(90), 0),
 		Color = Color3.fromRGB(240, 234, 216),
 		Material = Enum.Material.SmoothPlastic,
 	}).Parent = hall
 	part({
 		Name = "ClockHand",
 		Size = Vector3.new(0.3, 2.2, 0.2),
-		CFrame = CFrame.new(0, 18.8, 105.9) * CFrame.Angles(0, 0, math.rad(25)),
+		CFrame = CFrame.new(0, 26.8, 105.9) * CFrame.Angles(0, 0, math.rad(25)),
 		Color = Color3.fromRGB(40, 36, 32),
 		Material = Enum.Material.Metal,
 		CanCollide = false,
@@ -413,7 +414,7 @@ function TownBuilder.build(parentFolder: Instance)
 				Name = "CupolaPost",
 				Size = Vector3.new(0.6, 4.4, 0.6),
 				-- Bases embed into the hall roof slope; tops reach the cupola roof
-				Position = Vector3.new(px, 30.6, 120 + pz),
+				Position = Vector3.new(px, 42.6, 120 + pz),
 				Color = BEAM_COLOR,
 				Material = Enum.Material.Wood,
 			}).Parent = hall
@@ -422,7 +423,7 @@ function TownBuilder.build(parentFolder: Instance)
 	part({
 		Name = "CupolaRoof",
 		Size = Vector3.new(6.5, 0.5, 6.5),
-		Position = Vector3.new(0, 33, 120),
+		Position = Vector3.new(0, 45, 120),
 		Color = Color3.fromRGB(88, 78, 72),
 		Material = Enum.Material.RoofShingles,
 	}).Parent = hall
@@ -430,7 +431,7 @@ function TownBuilder.build(parentFolder: Instance)
 		Name = "Bell",
 		Shape = Enum.PartType.Ball,
 		Size = Vector3.new(1.8, 1.8, 1.8),
-		Position = Vector3.new(0, 31.5, 120),
+		Position = Vector3.new(0, 43.5, 120),
 		Color = Color3.fromRGB(196, 164, 88),
 		Material = Enum.Material.Metal,
 		CanCollide = false,
@@ -479,12 +480,12 @@ function TownBuilder.build(parentFolder: Instance)
 	part({ Name = "RecordsShelf", Size = Vector3.new(6, 4.5, 1), Position = Vector3.new(6, 10.25, 131.7), Color = Color3.fromRGB(96, 62, 38), Material = Enum.Material.WoodPlanks }).Parent = hall
 	-- Chandeliers hanging from collar beams high in the open hall
 	for _, z in { 112, 120 } do
-		part({ Name = "HallCollarBeam", Size = Vector3.new(36, 0.5, 0.7), Position = Vector3.new(0, 21.85, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = hall
-		part({ Name = "ChandelierChain", Size = Vector3.new(0.18, 6.4, 0.18), Position = Vector3.new(0, 18.7, z), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
+		part({ Name = "HallCollarBeam", Size = Vector3.new(36, 0.5, 0.7), Position = Vector3.new(0, 30.85, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = hall
+		part({ Name = "ChandelierChain", Size = Vector3.new(0.18, 9.6, 0.18), Position = Vector3.new(0, 26.2, z), Color = Color3.fromRGB(80, 80, 80), Material = Enum.Material.Metal, CanCollide = false }).Parent = hall
 		local chandelier = part({
 			Name = "Chandelier",
 			Size = Vector3.new(1.4, 1.2, 1.4),
-			Position = Vector3.new(0, 15.2, z),
+			Position = Vector3.new(0, 21.6, z),
 			Color = Color3.fromRGB(255, 214, 130),
 			Material = Enum.Material.Neon,
 			CanCollide = false,
@@ -524,8 +525,8 @@ function TownBuilder.build(parentFolder: Instance)
 			name = `Townhouse{index}`,
 			position = Vector3.new(x, 0, z),
 			rotation = rotation,
-			width = 20 + (index * 5 % 2) * 2,
-			depth = 16 + (index * 7 % 2) * 2,
+			width = 30 + (index * 5 % 3) * 3,
+			depth = 24 + (index * 7 % 2) * 3,
 			stories = if index % 3 == 0 then 3 else 2,
 			stoneGround = index % 4 == 0,
 			plasterColor = PLASTER_TINTS[(index - 1) % #PLASTER_TINTS + 1],
@@ -534,46 +535,32 @@ function TownBuilder.build(parentFolder: Instance)
 		})
 	end
 
-	-- Organic placement: houses front onto two gently curving lanes running
-	-- northwest and northeast from the plaza, a few flank the main road north
-	-- of the town hall, and a crescent closes the north end. Rotations vary so
-	-- nothing reads as a grid.
+	-- Organic placement, spread wide: no building stands closer than ~12 studs
+	-- of clear ground to its neighbor. Residential is the NORTH district
+	-- (curving lanes + crescent); shopping runs EAST, industry WEST (see
+	-- DistrictBuilder); the farm hamlet stays SOUTH.
 	local PLOTS = {
-		-- west lane, outer side (facing the lane, roughly east)
-		{ -54, 80, 75 },
-		{ -74, 104, 70 },
-		{ -88, 130, 60 },
-		{ -96, 158, 55 },
-		-- west lane, inner side (facing roughly west)
-		{ -38, 104, 255 },
-		{ -56, 128, 250 },
-		{ -68, 152, 245 },
-		-- east lane, outer side
-		{ 54, 80, -75 },
-		{ 74, 104, -70 },
-		{ 88, 130, -60 },
-		{ 96, 158, -55 },
-		-- east lane, inner side
-		{ 38, 104, 105 },
-		{ 56, 128, 110 },
-		{ 68, 152, 115 },
+		-- northwest lane, outer side
+		{ -56, 96, 65 },
+		{ -84, 132, 55 },
+		{ -98, 172, 45 },
+		-- northeast lane, outer side
+		{ 56, 96, -65 },
+		{ 84, 132, -55 },
+		{ 98, 172, -45 },
 		-- flanking the north road
-		{ -24, 162, 80 },
-		{ 24, 174, -80 },
-		{ -28, 192, 100 },
-		{ 26, 200, -100 },
+		{ -28, 166, 85 },
+		{ 28, 178, -85 },
 		-- north crescent
-		{ -64, 220, 165 },
-		{ -30, 231, 170 },
-		{ 30, 231, 190 },
-		{ 64, 220, 195 },
+		{ -56, 216, 160 },
+		{ 56, 216, 200 },
 	}
 	for _, plot in PLOTS do
 		townhouse(plot[1], plot[2], plot[3])
 	end
 
-	-- Curved dirt lanes the houses front onto (segment heights alternate so
-	-- overlapping joints never share a top plane)
+	-- Curved dirt lanes (segment heights alternate so overlapping joints never
+	-- share a top plane)
 	local function curvedLane(points: { Vector3 }, width: number)
 		for i = 1, #points - 1 do
 			local a, b = points[i], points[i + 1]
@@ -590,32 +577,47 @@ function TownBuilder.build(parentFolder: Instance)
 			}).Parent = town
 		end
 	end
+	-- northwest residential lane
 	curvedLane({
-		Vector3.new(-30, 0, 74),
-		Vector3.new(-40, 0, 86),
-		Vector3.new(-52, 0, 100),
-		Vector3.new(-64, 0, 116),
-		Vector3.new(-76, 0, 136),
-		Vector3.new(-84, 0, 158),
-		Vector3.new(-88, 0, 176),
-	}, 7)
+		Vector3.new(-26, 0, 80),
+		Vector3.new(-40, 0, 98),
+		Vector3.new(-56, 0, 120),
+		Vector3.new(-70, 0, 146),
+		Vector3.new(-78, 0, 174),
+	}, 8)
+	-- northeast residential lane
 	curvedLane({
-		Vector3.new(30, 0, 74),
-		Vector3.new(40, 0, 86),
-		Vector3.new(52, 0, 100),
-		Vector3.new(64, 0, 116),
-		Vector3.new(76, 0, 136),
-		Vector3.new(84, 0, 158),
-		Vector3.new(88, 0, 176),
-	}, 7)
+		Vector3.new(26, 0, 80),
+		Vector3.new(40, 0, 98),
+		Vector3.new(56, 0, 120),
+		Vector3.new(70, 0, 146),
+		Vector3.new(78, 0, 174),
+	}, 8)
+	-- crescent lane behind the hall
 	curvedLane({
-		Vector3.new(-70, 0, 208),
-		Vector3.new(-44, 0, 222),
-		Vector3.new(-16, 0, 230),
-		Vector3.new(16, 0, 230),
-		Vector3.new(44, 0, 222),
-		Vector3.new(70, 0, 208),
+		Vector3.new(-70, 0, 200),
+		Vector3.new(-40, 0, 214),
+		Vector3.new(-14, 0, 220),
+		Vector3.new(14, 0, 220),
+		Vector3.new(40, 0, 214),
+		Vector3.new(70, 0, 200),
 	}, 6)
+	-- shopping street (east) and industrial road (west): the roads start past
+	-- the guild halls' rears; curved connectors skirt the guilds' south sides
+	part({ Name = "ShoppingRoad", Size = Vector3.new(112, 0.2, 12), Position = Vector3.new(124, 0.1, 50), Color = Color3.fromRGB(168, 158, 140), Material = Enum.Material.Cobblestone }).Parent = town
+	part({ Name = "IndustryRoad", Size = Vector3.new(112, 0.2, 12), Position = Vector3.new(-124, 0.1, 50), Color = Color3.fromRGB(160, 150, 135), Material = Enum.Material.Cobblestone }).Parent = town
+	curvedLane({
+		Vector3.new(28, 0, 32),
+		Vector3.new(48, 0, 26),
+		Vector3.new(64, 0, 32),
+		Vector3.new(72, 0, 44),
+	}, 7)
+	curvedLane({
+		Vector3.new(-28, 0, 32),
+		Vector3.new(-48, 0, 26),
+		Vector3.new(-64, 0, 32),
+		Vector3.new(-72, 0, 44),
+	}, 7)
 
 	town.Parent = parentFolder
 	return town

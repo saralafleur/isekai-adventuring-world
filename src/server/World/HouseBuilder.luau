@@ -33,7 +33,8 @@ export type HouseConfig = {
 	stoneGround: boolean?,
 	doorWidth: number?,
 	doorHeight: number?,
-	interior: ("home" | "storage" | "none")?,
+	interior: ("home" | "storage" | "shop" | "none")?,
+	shopWares: string?, -- what a "shop" interior sells (CarryItems kind for browsers)
 	seed: number?,
 }
 
@@ -45,7 +46,7 @@ local DARK_WOOD = Color3.fromRGB(96, 62, 38)
 local FLOOR_WOOD = Color3.fromRGB(133, 100, 67)
 local PARTITION_COLOR = Color3.fromRGB(222, 212, 190)
 local WALL_T = 1
-local STORY_H = 10 -- default: ~9ft ceiling + floor structure
+local STORY_H = 14 -- grand ceilings: interiors ~2.5x character height
 
 local BLANKET_COLORS = {
 	Color3.fromRGB(90, 110, 150),
@@ -237,7 +238,7 @@ type StairInfo = {
 -- Stepped stair run along the west (-X) wall, climbing front (+Z) -> back (-Z).
 local function buildStairs(parent: Instance, halfW: number, halfD: number, baseY: number, storyH: number, beamColor: Color3): StairInfo
 	local runLength = storyH * 1.3
-	local stairW = 3.6
+	local stairW = 4.2
 	local cx = -halfW + 0.7 + stairW / 2
 	local zBottom = math.min(halfD - 1.5, runLength / 2 + 1.5)
 	local zTop = zBottom - runLength
@@ -323,15 +324,15 @@ local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY
 	local rug = RUG_COLORS[seed % #RUG_COLORS + 1]
 	part({
 		Name = "Rug",
-		Size = Vector3.new(6.5, 0.12, 5),
-		Position = Vector3.new(halfW * 0.25, floorY + 0.06, -1),
+		Size = Vector3.new(10, 0.12, 8),
+		Position = Vector3.new(halfW * 0.28, floorY + 0.06, -1),
 		Color = rug,
 		Material = Enum.Material.Fabric,
 		CanCollide = false,
 	}).Parent = parent
 
-	local tx = halfW * 0.25
-	part({ Name = "TableTop", Size = Vector3.new(5, 0.45, 3), Position = Vector3.new(tx, floorY + 2.6, -1), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+	local tx = halfW * 0.3
+	part({ Name = "TableTop", Size = Vector3.new(6.5, 0.5, 4), Position = Vector3.new(tx, floorY + 2.65, -1), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
 	for _, offset in { Vector3.new(-2, 0, -1.2), Vector3.new(2, 0, -1.2), Vector3.new(-2, 0, 1.2), Vector3.new(2, 0, 1.2) } do
 		part({
 			Name = "TableLeg",
@@ -348,8 +349,8 @@ local function livingRoom(parent: Instance, halfW: number, halfD: number, floorY
 
 	local cabX = halfW - 2.2
 	local cabZ = -halfD + 1.7
-	part({ Name = "Cabinet", Size = Vector3.new(3, 4.5, 1.8), Position = Vector3.new(cabX, floorY + 2.25, cabZ), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
-	part({ Name = "CabinetJug", Size = Vector3.new(0.6, 0.9, 0.6), Position = Vector3.new(cabX - 0.5, floorY + 4.95, cabZ), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
+	part({ Name = "Cabinet", Size = Vector3.new(4, 6, 2), Position = Vector3.new(cabX, floorY + 2.25, cabZ), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = parent
+	part({ Name = "CabinetJug", Size = Vector3.new(0.7, 1, 0.7), Position = Vector3.new(cabX - 0.7, floorY + 6.6, cabZ), Color = Color3.fromRGB(160, 110, 70), Material = Enum.Material.SmoothPlastic, CanCollide = false }).Parent = parent
 
 	part({ Name = "WallBench", Size = Vector3.new(1.2, 1.5, 4), Position = Vector3.new(halfW - 1.35, floorY + 0.75, halfD - 3.4), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
 
@@ -360,8 +361,8 @@ end
 
 -- Partition wall along the x = px plane with framed door openings.
 local function partitionWallX(parent: Instance, px: number, z0: number, z1: number, baseY: number, topY: number, doorZs: { number }, beamColor: Color3)
-	local doorW = 3.2
-	local doorH = 7.5
+	local doorW = 4
+	local doorH = 9
 	local openings: { Opening } = {}
 	for _, dz in doorZs do
 		table.insert(openings, { center = dz - z0, width = doorW, y0 = baseY, y1 = baseY + doorH })
@@ -494,7 +495,7 @@ local function hallwayAndBedrooms(
 	beamColor: Color3,
 	seed: number
 )
-	local hallX = hole.holeX1 + 3.4 -- partition plane; walkway between stairwell and it
+	local hallX = hole.holeX1 + 4.2 -- partition plane; walkway between stairwell and it
 	local doorZs = { halfD / 2, -halfD / 2 }
 	partitionWallX(parent, hallX, -halfD + 0.4, halfD - 0.4, baseY, topY, doorZs, beamColor)
 	partitionWallZ(parent, 0, hallX + 0.25, halfW - 0.4, baseY, topY)
@@ -509,12 +510,55 @@ local function hallwayAndBedrooms(
 		CanCollide = false,
 	}).Parent = parent
 	for _, dz in doorZs do
-		sconce(parent, hallX - 0.2, baseY + 6.2, dz + 2.6, -1)
+		sconce(parent, hallX - 0.2, baseY + 7.4, dz + 3, -1)
 	end
 
 	-- Bedrooms: front (z > 0) and back (z < 0), different variants
 	furnishBedroom(parent, hallX + 0.5, halfW - 0.5, 0.3, halfD - 0.5, baseY, seed, halfW)
 	furnishBedroom(parent, hallX + 0.5, halfW - 0.5, -halfD + 0.5, -0.3, baseY, seed + 1, halfW)
+end
+
+-- Ground-floor shop: counter across the back, stocked shelves, display table,
+-- and a BrowseSpot so villagers/travelers come in, chat, and buy.
+local function shopRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number, wares: string, beamColor: Color3)
+	-- counter across the back
+	part({ Name = "ShopCounterBase", Size = Vector3.new(halfW * 1.1, 2.4, 2), Position = Vector3.new(0, floorY + 1.2, -halfD + 4), Color = DARK_WOOD, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "ShopCounterTop", Size = Vector3.new(halfW * 1.1 + 0.4, 0.5, 2.4), Position = Vector3.new(0, floorY + 2.65, -halfD + 4), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+	-- stocked shelves embedded into the back wall
+	for _, shelfY in { 4.6, 6.6, 8.6 } do
+		part({ Name = "ShopShelf", Size = Vector3.new(halfW * 1.3, 0.35, 1), Position = Vector3.new(0, floorY + shelfY, -halfD + 0.4), Color = beamColor, Material = Enum.Material.Wood }).Parent = parent
+		for i = 0, 4 do
+			part({
+				Name = "ShopStock",
+				Size = Vector3.new(0.9, 1, 0.9),
+				Position = Vector3.new(-halfW * 0.55 + i * halfW * 0.27, floorY + shelfY + 0.68, -halfD + 0.4),
+				Color = if i % 2 == 0 then Color3.fromRGB(160, 126, 80) else Color3.fromRGB(120, 130, 160),
+				Material = Enum.Material.SmoothPlastic,
+				CanCollide = false,
+			}).Parent = parent
+		end
+	end
+	-- central display table
+	part({ Name = "DisplayTable", Size = Vector3.new(5, 0.5, 3.5), Position = Vector3.new(halfW * 0.25, floorY + 2.6, 1), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = parent
+	part({ Name = "DisplayTableBase", Size = Vector3.new(4.4, 2.1, 2.9), Position = Vector3.new(halfW * 0.25, floorY + 1.3, 1), Color = DARK_WOOD, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "DisplayGoods", Size = Vector3.new(3.6, 0.7, 2.4), Position = Vector3.new(halfW * 0.25, floorY + 3.2, 1), Color = Color3.fromRGB(190, 160, 100), Material = Enum.Material.Fabric, CanCollide = false }).Parent = parent
+	-- crates near the door
+	for i = 0, 1 do
+		part({ Name = "ShopCrate", Size = Vector3.new(1.8, 1.8, 1.8), Position = Vector3.new(-halfW + 2 + i * 2.1, floorY + 0.9, halfD - 2.2), Color = Color3.fromRGB(160, 126, 80), Material = Enum.Material.WoodPlanks }).Parent = parent
+	end
+	part({
+		Name = "Rug",
+		Size = Vector3.new(8, 0.12, 6),
+		Position = Vector3.new(0, floorY + 0.06, halfD * 0.1),
+		Color = RUG_COLORS[1],
+		Material = Enum.Material.Fabric,
+		CanCollide = false,
+	}).Parent = parent
+	hangingLantern(parent, 0, 0, ceilingY, 1.4, 24)
+	-- browse spot in front of the counter
+	local marker = PartUtil.marker("BrowseSpot", Vector3.new(0, floorY + 0.5, -halfD + 8))
+	marker:SetAttribute("Wares", wares)
+	marker.Parent = parent
 end
 
 local function storageRoom(parent: Instance, halfW: number, halfD: number, floorY: number, ceilingY: number)
@@ -551,8 +595,8 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	local plaster = config.plasterColor or DEFAULT_PLASTER
 	local beamColor = config.beamColor or DEFAULT_BEAM
 	local roofColor = config.roofColor or DEFAULT_ROOF
-	local doorW = config.doorWidth or 4
-	local doorH = math.min(config.doorHeight or 7.5, storyH - 1)
+	local doorW = config.doorWidth or 6
+	local doorH = math.min(config.doorHeight or 10, storyH - 2)
 	local interiorKind = config.interior or "home"
 	local seed = config.seed or 0
 
@@ -593,47 +637,47 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 		local isStone = config.stoneGround == true and s == 1
 		local wallColor = if isStone then STONE_COLOR else plaster
 		local wallMaterial = if isStone then Enum.Material.Cobblestone else Enum.Material.Plaster
-		local winY0 = baseY + 3
-		local winY1 = baseY + 6.8
-		local winCount = math.max(1, math.floor(w / 9))
+		local winY0 = baseY + 4
+		local winY1 = baseY + 10
+		local winCount = math.max(1, math.floor(w / 10))
 		local sideWinCount = math.max(1, math.floor(d / 12))
 
 		local frontOpenings: { Opening } = {}
 		if s == 1 then
 			table.insert(frontOpenings, { center = halfW, width = doorW, y0 = 1, y1 = 1 + doorH })
 			if w >= 16 then
-				table.insert(frontOpenings, { center = halfW / 2.2, width = 3, y0 = winY0, y1 = winY1 })
-				table.insert(frontOpenings, { center = w - halfW / 2.2, width = 3, y0 = winY0, y1 = winY1 })
+				table.insert(frontOpenings, { center = halfW / 2.2, width = 4, y0 = winY0, y1 = winY1 })
+				table.insert(frontOpenings, { center = w - halfW / 2.2, width = 4, y0 = winY0, y1 = winY1 })
 			end
 		else
 			for _, c in spreadCenters(w, winCount) do
-				table.insert(frontOpenings, { center = c, width = 3, y0 = winY0, y1 = winY1 })
+				table.insert(frontOpenings, { center = c, width = 4, y0 = winY0, y1 = winY1 })
 			end
 		end
 		segmentedWall(model, Vector3.new(-halfW, 0, halfD), Vector3.new(halfW, 0, halfD), baseY, frontTopY, frontOpenings, wallColor, wallMaterial)
 		for _, opening in frontOpenings do
 			if opening.width == 3 then
-				windowFrame(model, Vector3.new(-halfW + opening.center, 0, halfD), 3, opening.y0, opening.y1, true, beamColor)
+				windowFrame(model, Vector3.new(-halfW + opening.center, 0, halfD), 4, opening.y0, opening.y1, true, beamColor)
 			end
 		end
 
 		local backOpenings: { Opening } = {}
 		for _, c in spreadCenters(w, winCount) do
-			table.insert(backOpenings, { center = c, width = 3, y0 = winY0, y1 = winY1 })
+			table.insert(backOpenings, { center = c, width = 4, y0 = winY0, y1 = winY1 })
 		end
 		segmentedWall(model, Vector3.new(-halfW, 0, -halfD), Vector3.new(halfW, 0, -halfD), baseY, frontTopY, backOpenings, wallColor, wallMaterial)
 		for _, opening in backOpenings do
-			windowFrame(model, Vector3.new(-halfW + opening.center, 0, -halfD), 3, opening.y0, opening.y1, true, beamColor)
+			windowFrame(model, Vector3.new(-halfW + opening.center, 0, -halfD), 4, opening.y0, opening.y1, true, beamColor)
 		end
 
 		for _, x in { -halfW, halfW } do
 			local sideOpenings: { Opening } = {}
 			for _, c in spreadCenters(d, sideWinCount) do
-				table.insert(sideOpenings, { center = c, width = 3, y0 = winY0, y1 = winY1 })
+				table.insert(sideOpenings, { center = c, width = 4, y0 = winY0, y1 = winY1 })
 			end
 			segmentedWall(model, Vector3.new(x, 0, -halfD), Vector3.new(x, 0, halfD), baseY, topY, sideOpenings, wallColor, wallMaterial)
 			for _, opening in sideOpenings do
-				windowFrame(model, Vector3.new(x, 0, -halfD + opening.center), 3, opening.y0, opening.y1, false, beamColor)
+				windowFrame(model, Vector3.new(x, 0, -halfD + opening.center), 4, opening.y0, opening.y1, false, beamColor)
 			end
 		end
 
@@ -679,7 +723,7 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 	doorStep.Parent = model
 	game:GetService("CollectionService"):AddTag(doorStep, "HouseDoor")
 
-	local rise = math.clamp(d * 0.4, 4, 7)
+	local rise = math.clamp(d * 0.38, 5, 10)
 	local overhang = 1.5
 	local lift = 0.6
 	local angle = math.atan(rise / halfD)
@@ -755,7 +799,11 @@ function HouseBuilder.build(parentFolder: Instance, config: HouseConfig): Model
 					hole = buildStairs(model, halfW, halfD, 1 + (s - 1) * storyH, storyH, beamColor)
 				end
 				if s == 1 then
-					livingRoom(model, halfW, halfD, floorY, ceilingY, seed + s)
+					if interiorKind == "shop" then
+						shopRoom(model, halfW, halfD, floorY, ceilingY, config.shopWares or "parcel", beamColor)
+					else
+						livingRoom(model, halfW, halfD, floorY, ceilingY, seed + s)
+					end
 				elseif hole then
 					hallwayAndBedrooms(model, halfW, halfD, 1 + (s - 1) * storyH, ceilingY, hole, beamColor, seed + s * 2)
 					hangingLantern(model, hole.holeX1 + 2, halfD / 2, ceilingY, 0.9, 14)

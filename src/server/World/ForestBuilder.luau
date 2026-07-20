@@ -9,7 +9,7 @@ local part = PartUtil.part
 local BEAM_COLOR = Color3.fromRGB(74, 52, 34)
 
 -- The settled area trees must stay out of
-local SETTLE_X = 115
+local SETTLE_X = 200
 local SETTLE_Z_MIN = -195
 local SETTLE_Z_MAX = 245
 -- Road corridor half-width (trees keep clear of the north/south road)

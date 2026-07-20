@@ -171,7 +171,7 @@ local function buildAdventurersGuild(guilds: Folder)
 		width = 36,
 		depth = 26,
 		stories = 2,
-		storyHeight = 8,
+		storyHeight = 12,
 		stoneGround = true,
 		plasterColor = Color3.fromRGB(214, 200, 175),
 		roofColor = Color3.fromRGB(70, 62, 58),
@@ -196,8 +196,8 @@ local function buildAdventurersGuild(guilds: Folder)
 		}).Parent = guilds
 	end
 	for _, z in { 46, 64 } do
-		part({ Name = "BannerRod", Size = Vector3.new(2.8, 0.25, 0.25), Position = Vector3.new(-39.2, 15.1, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
-		part({ Name = "Banner", Size = Vector3.new(0.2, 6, 2.2), Position = Vector3.new(-38.6, 12, z), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
+		part({ Name = "BannerRod", Size = Vector3.new(2.8, 0.25, 0.25), Position = Vector3.new(-39.2, 19.1, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
+		part({ Name = "Banner", Size = Vector3.new(0.2, 6, 2.2), Position = Vector3.new(-38.6, 16, z), Color = Color3.fromRGB(160, 40, 40), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
 	end
 
 	-- ---------------- ground floor: tavern hall
@@ -279,33 +279,33 @@ local function buildAdventurersGuild(guilds: Folder)
 		}).Parent = guilds
 	end
 
-	hangingLantern(guilds, -52, 60, 9, 1.4, 20)
-	hangingLantern(guilds, -58, 46, 9, 1.2, 18)
+	hangingLantern(guilds, -52, 60, 13, 1.4, 22)
+	hangingLantern(guilds, -58, 46, 13, 1.2, 20)
 
 	-- Stairs up along the south wall (bottom at east, rising west)
-	stairsWestward(guilds, -43, 40.4, 8)
+	stairsWestward(guilds, -43, 40.4, 12)
 
 	-- ---------------- upper floor: lodging
 	-- Floor plate at y 9 with stairwell hole over the stair top
-	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 29.6), Position = Vector3.new(-52, 8.75, 57.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(10.6, 0.5, 4), Position = Vector3.new(-59.0, 8.75, 40.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	guardRailZ(guilds, 42.8, -54.8, -42.9, 9)
-	guardRailX(guilds, -54.8, 38.7, 42.6, 9)
+	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 29.6), Position = Vector3.new(-52, 12.75, 57.4), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(5.2, 0.5, 4), Position = Vector3.new(-61.7, 12.75, 40.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	guardRailZ(guilds, 42.8, -59.4, -42.9, 13)
+	guardRailX(guilds, -59.4, 38.7, 42.6, 13)
 
 	-- Beds for traveling adventurers
 	local blankets = { Color3.fromRGB(150, 60, 60), Color3.fromRGB(80, 100, 140), Color3.fromRGB(96, 128, 88), Color3.fromRGB(150, 120, 80) }
 	for i = 0, 3 do
-		bed(guilds, -62.2, 68 - i * 7.4, blankets[i + 1], 9, true)
-		part({ Name = "LodgingChest", Size = Vector3.new(1.6, 1.2, 1.2), Position = Vector3.new(-57.6, 9.6, 68 - i * 7.4), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+		bed(guilds, -62.2, 68 - i * 7.4, blankets[i + 1], 13, true)
+		part({ Name = "LodgingChest", Size = Vector3.new(1.6, 1.2, 1.2), Position = Vector3.new(-57.6, 13.6, 68 - i * 7.4), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
 	end
-	part({ Name = "LodgingRug", Size = Vector3.new(4, 0.12, 20), Position = Vector3.new(-54, 9.06, 58), Color = Color3.fromRGB(110, 90, 60), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
+	part({ Name = "LodgingRug", Size = Vector3.new(4, 0.12, 20), Position = Vector3.new(-54, 13.06, 58), Color = Color3.fromRGB(110, 90, 60), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
 
 	-- Collar rafters at the wall top anchor the upstairs lanterns
 	for _, z in { 48, 62 } do
-		part({ Name = "CollarRafter", Size = Vector3.new(24.5, 0.5, 0.7), Position = Vector3.new(-52, 17.15, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
+		part({ Name = "CollarRafter", Size = Vector3.new(24.5, 0.5, 0.7), Position = Vector3.new(-52, 25.15, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
 	end
-	hangingLantern(guilds, -52, 48, 17, 1, 16)
-	hangingLantern(guilds, -52, 62, 17, 1, 16)
+	hangingLantern(guilds, -52, 48, 25, 1, 18)
+	hangingLantern(guilds, -52, 62, 25, 1, 18)
 
 	-- Villager/traveler destinations inside
 	PartUtil.marker("BrowseSpot", Vector3.new(-53, 1.6, 63)).Parent = guilds -- at the bar
@@ -358,7 +358,7 @@ local function buildMerchantsGuild(guilds: Folder)
 		width = 32,
 		depth = 26,
 		stories = 2,
-		storyHeight = 8,
+		storyHeight = 12,
 		plasterColor = Color3.fromRGB(226, 216, 196),
 		roofColor = Color3.fromRGB(60, 90, 120),
 		doorWidth = 6,
@@ -381,8 +381,8 @@ local function buildMerchantsGuild(guilds: Folder)
 		CanCollide = false,
 	}).Parent = guilds
 	for _, z in { 46, 64 } do
-		part({ Name = "BannerRod", Size = Vector3.new(2.8, 0.25, 0.25), Position = Vector3.new(39.2, 15.1, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
-		part({ Name = "Banner", Size = Vector3.new(0.2, 6, 2.2), Position = Vector3.new(38.6, 12, z), Color = Color3.fromRGB(50, 90, 150), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
+		part({ Name = "BannerRod", Size = Vector3.new(2.8, 0.25, 0.25), Position = Vector3.new(39.2, 19.1, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
+		part({ Name = "Banner", Size = Vector3.new(0.2, 6, 2.2), Position = Vector3.new(38.6, 16, z), Color = Color3.fromRGB(50, 90, 150), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
 	end
 
 	-- ---------------- ground floor: trading hall
@@ -440,35 +440,35 @@ local function buildMerchantsGuild(guilds: Folder)
 	part({ Name = "CoinChest", Size = Vector3.new(2.4, 1.6, 1.6), Position = Vector3.new(61, 1.9, 65.5), Color = Color3.fromRGB(96, 66, 40), Material = Enum.Material.Wood }).Parent = guilds
 	part({ Name = "CoinPile", Size = Vector3.new(1.8, 0.5, 1.1), Position = Vector3.new(61, 2.95, 65.5), Color = Color3.fromRGB(230, 190, 90), Material = Enum.Material.Metal, CanCollide = false }).Parent = guilds
 
-	hangingLantern(guilds, 50, 60, 9, 1.4, 20)
-	hangingLantern(guilds, 58, 46, 9, 1.2, 18)
+	hangingLantern(guilds, 50, 60, 13, 1.4, 22)
+	hangingLantern(guilds, 58, 46, 13, 1.2, 20)
 
 	-- Stairs up along the south wall
-	stairsWestward(guilds, 61.5, 41.2, 8)
+	stairsWestward(guilds, 61.5, 41.2, 12)
 
 	-- ---------------- upper floor: offices
-	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 27.4), Position = Vector3.new(52, 8.75, 56.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "FloorPlate", Size = Vector3.new(11.1, 0.5, 3.4), Position = Vector3.new(45.25, 8.75, 41.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	guardRailZ(guilds, 42.9, 50, 62.7, 9)
-	guardRailX(guilds, 50, 39.7, 42.9, 9)
+	part({ Name = "FloorPlate", Size = Vector3.new(24.6, 0.5, 27.4), Position = Vector3.new(52, 12.75, 56.6), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "FloorPlate", Size = Vector3.new(6.0, 0.5, 3.4), Position = Vector3.new(42.7, 12.75, 41.2), Color = FLOOR_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	guardRailZ(guilds, 42.9, 45.3, 62.7, 13)
+	guardRailX(guilds, 45.3, 39.7, 42.9, 13)
 
 	-- Office furnishings
 	for _, z in { 62, 50 } do
-		part({ Name = "OfficeDesk", Size = Vector3.new(3.6, 0.4, 2), Position = Vector3.new(43.5, 11.2, z), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = guilds
+		part({ Name = "OfficeDesk", Size = Vector3.new(3.6, 0.4, 2), Position = Vector3.new(43.5, 15.2, z), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.WoodPlanks }).Parent = guilds
 		for _, offset in { Vector3.new(-1.5, 0, -0.7), Vector3.new(1.5, 0, -0.7), Vector3.new(-1.5, 0, 0.7), Vector3.new(1.5, 0, 0.7) } do
-			part({ Name = "DeskLeg", Size = Vector3.new(0.3, 2, 0.3), Position = Vector3.new(43.5, 10, z) + offset, Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = guilds
+			part({ Name = "DeskLeg", Size = Vector3.new(0.3, 2, 0.3), Position = Vector3.new(43.5, 14, z) + offset, Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = guilds
 		end
-		part({ Name = "OfficeStool", Size = Vector3.new(1.2, 1.4, 1.2), Position = Vector3.new(45.8, 9.8, z), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.Wood }).Parent = guilds
+		part({ Name = "OfficeStool", Size = Vector3.new(1.2, 1.4, 1.2), Position = Vector3.new(45.8, 13.8, z), Color = Color3.fromRGB(110, 78, 48), Material = Enum.Material.Wood }).Parent = guilds
 	end
-	part({ Name = "RecordShelf", Size = Vector3.new(1, 6, 8), Position = Vector3.new(63.9, 12.05, 62), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
-	part({ Name = "Strongbox", Size = Vector3.new(2, 1.6, 1.5), Position = Vector3.new(62.5, 9.85, 46), Color = Color3.fromRGB(70, 68, 66), Material = Enum.Material.Metal }).Parent = guilds
-	part({ Name = "OfficeRug", Size = Vector3.new(14, 0.12, 5), Position = Vector3.new(52, 9.06, 56), Color = Color3.fromRGB(80, 95, 120), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
+	part({ Name = "RecordShelf", Size = Vector3.new(1, 6, 8), Position = Vector3.new(63.9, 16.05, 62), Color = DARK_WOOD, Material = Enum.Material.WoodPlanks }).Parent = guilds
+	part({ Name = "Strongbox", Size = Vector3.new(2, 1.6, 1.5), Position = Vector3.new(62.5, 13.85, 46), Color = Color3.fromRGB(70, 68, 66), Material = Enum.Material.Metal }).Parent = guilds
+	part({ Name = "OfficeRug", Size = Vector3.new(14, 0.12, 5), Position = Vector3.new(52, 13.06, 56), Color = Color3.fromRGB(80, 95, 120), Material = Enum.Material.Fabric, CanCollide = false }).Parent = guilds
 
 	for _, z in { 48, 62 } do
-		part({ Name = "CollarRafter", Size = Vector3.new(24.5, 0.5, 0.7), Position = Vector3.new(52, 17.15, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
+		part({ Name = "CollarRafter", Size = Vector3.new(24.5, 0.5, 0.7), Position = Vector3.new(52, 25.15, z), Color = BEAM_COLOR, Material = Enum.Material.Wood, CanCollide = false }).Parent = guilds
 	end
-	hangingLantern(guilds, 52, 48, 17, 1, 16)
-	hangingLantern(guilds, 52, 62, 17, 1, 16)
+	hangingLantern(guilds, 52, 48, 25, 1, 18)
+	hangingLantern(guilds, 52, 62, 25, 1, 18)
 
 	PartUtil.marker("BrowseSpot", Vector3.new(47, 1.6, 55)).Parent = guilds -- map table
 	PartUtil.marker("BrowseSpot", Vector3.new(60.5, 1.6, 55)).Parent = guilds -- counter

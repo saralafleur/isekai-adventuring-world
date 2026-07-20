@@ -78,6 +78,10 @@ end
 
 local function windowFrame(parent: Instance, center: Vector3, width: number, y0: number, y1: number, alongX: boolean)
 	local frameT = 0.5
+	-- Frame pieces overlap INTO the opening by this much, so their inner faces sit
+	-- in open air and their outer ends are buried in the wall — nothing coplanar
+	-- with the wall panels' cut faces (which z-fights).
+	local inset = 0.2
 	local depth = WALL_THICKNESS + 0.4
 	local h = y1 - y0
 	local cy = (y0 + y1) / 2
@@ -93,20 +97,20 @@ local function windowFrame(parent: Instance, center: Vector3, width: number, y0:
 	end
 
 	if alongX then
-		framePiece(Vector3.new(width + frameT * 2, frameT, depth), Vector3.new(center.X, y1 + frameT / 2, center.Z))
-		framePiece(Vector3.new(width + frameT * 2, frameT, depth), Vector3.new(center.X, y0 - frameT / 2, center.Z))
-		framePiece(Vector3.new(frameT, h, depth), Vector3.new(center.X - width / 2 - frameT / 2, cy, center.Z))
-		framePiece(Vector3.new(frameT, h, depth), Vector3.new(center.X + width / 2 + frameT / 2, cy, center.Z))
+		framePiece(Vector3.new(width + frameT * 2, frameT, depth), Vector3.new(center.X, y1 + frameT / 2 - inset, center.Z))
+		framePiece(Vector3.new(width + frameT * 2, frameT, depth), Vector3.new(center.X, y0 - frameT / 2 + inset, center.Z))
+		framePiece(Vector3.new(frameT, h, depth), Vector3.new(center.X - width / 2 - frameT / 2 + inset, cy, center.Z))
+		framePiece(Vector3.new(frameT, h, depth), Vector3.new(center.X + width / 2 + frameT / 2 - inset, cy, center.Z))
 		-- cross muntins
-		framePiece(Vector3.new(width, 0.2, 0.2), Vector3.new(center.X, cy, center.Z))
-		framePiece(Vector3.new(0.2, h, 0.2), Vector3.new(center.X, cy, center.Z))
+		framePiece(Vector3.new(width, 0.24, 0.24), Vector3.new(center.X, cy, center.Z))
+		framePiece(Vector3.new(0.24, h, 0.24), Vector3.new(center.X, cy, center.Z))
 	else
-		framePiece(Vector3.new(depth, frameT, width + frameT * 2), Vector3.new(center.X, y1 + frameT / 2, center.Z))
-		framePiece(Vector3.new(depth, frameT, width + frameT * 2), Vector3.new(center.X, y0 - frameT / 2, center.Z))
-		framePiece(Vector3.new(depth, h, frameT), Vector3.new(center.X, cy, center.Z - width / 2 - frameT / 2))
-		framePiece(Vector3.new(depth, h, frameT), Vector3.new(center.X, cy, center.Z + width / 2 + frameT / 2))
-		framePiece(Vector3.new(0.2, 0.2, width), Vector3.new(center.X, cy, center.Z))
-		framePiece(Vector3.new(0.2, h, 0.2), Vector3.new(center.X, cy, center.Z))
+		framePiece(Vector3.new(depth, frameT, width + frameT * 2), Vector3.new(center.X, y1 + frameT / 2 - inset, center.Z))
+		framePiece(Vector3.new(depth, frameT, width + frameT * 2), Vector3.new(center.X, y0 - frameT / 2 + inset, center.Z))
+		framePiece(Vector3.new(depth, h, frameT), Vector3.new(center.X, cy, center.Z - width / 2 - frameT / 2 + inset))
+		framePiece(Vector3.new(depth, h, frameT), Vector3.new(center.X, cy, center.Z + width / 2 + frameT / 2 - inset))
+		framePiece(Vector3.new(0.24, 0.24, width), Vector3.new(center.X, cy, center.Z))
+		framePiece(Vector3.new(0.24, h, 0.24), Vector3.new(center.X, cy, center.Z))
 	end
 
 	local glass = part({
@@ -271,10 +275,12 @@ end
 
 local function doorway(parent: Instance)
 	-- Frame around the 6-wide opening in the south wall
+	-- Posts/lintel overlap into the opening so the wall's cut faces are buried
+	-- inside the frame wood (coplanar cut faces z-fight).
 	local z = -28
-	part({ Name = "DoorPostL", Size = Vector3.new(0.8, 8, 1.6), Position = Vector3.new(-3.4, 5, z), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
-	part({ Name = "DoorPostR", Size = Vector3.new(0.8, 8, 1.6), Position = Vector3.new(3.4, 5, z), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
-	part({ Name = "DoorLintel", Size = Vector3.new(7.6, 0.8, 1.6), Position = Vector3.new(0, 9.2, z), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "DoorPostL", Size = Vector3.new(0.8, 8, 1.6), Position = Vector3.new(-3.2, 5, z), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "DoorPostR", Size = Vector3.new(0.8, 8, 1.6), Position = Vector3.new(3.2, 5, z), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
+	part({ Name = "DoorLintel", Size = Vector3.new(7.6, 0.8, 1.6), Position = Vector3.new(0, 9.0, z), Color = BEAM_COLOR, Material = Enum.Material.Wood }).Parent = parent
 	-- Stone doorstep
 	part({ Name = "DoorStep", Size = Vector3.new(7, 0.5, 3), Position = Vector3.new(0, 0.25, z + 1.5), Color = STONE_COLOR, Material = Enum.Material.Slate }).Parent = parent
 

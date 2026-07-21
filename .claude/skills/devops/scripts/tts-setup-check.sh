@@ -41,7 +41,7 @@ if [ -x "$VENV/bin/python" ]; then
     line "kokoro-env" "WRONG" ".venv-tts exists but kokoro-onnx is not importable"
   fi
 else
-  line "kokoro-env" "MISSING" ".venv-tts not created (run: zsh scripts/setup-tts.sh)"
+  line "kokoro-env" "MISSING" ".venv-tts not created (run: zsh tools/voice-tools/scripts/setup-tts.sh)"
 fi
 
 # --- model weights (gitignored: too large for the repo) ---
@@ -49,7 +49,7 @@ for f in kokoro-v1.0.onnx voices-v1.0.bin; do
   if [ -s "$MODELS/$f" ]; then
     line "${f%%.*}" "ok" "$(du -h "$MODELS/$f" | awk '{print $1}')"
   else
-    line "${f%%.*}" "MISSING" "download via scripts/setup-tts.sh"
+    line "${f%%.*}" "MISSING" "download via tools/voice-tools/scripts/setup-tts.sh"
   fi
 done
 
@@ -58,7 +58,7 @@ clip_count=$(ls "$PROJECT_DIR"/audio/lines/*.mp3 2>/dev/null | wc -l | tr -d ' '
 if [ "$clip_count" -gt 0 ]; then
   line "clips" "ok" "$clip_count mp3 files in audio/lines"
 else
-  line "clips" "MISSING" "no generated clips (run scripts/generate-voice-lines.py)"
+  line "clips" "MISSING" "no generated clips (run tools/voice-tools/scripts/generate-voice-lines.py)"
 fi
 
 VOICE_TABLE="$PROJECT_DIR/src/shared/Data/VoiceLines.luau"
@@ -69,7 +69,7 @@ if [ -f "$VOICE_TABLE" ]; then
   if [ "$pending" -eq 0 ] && [ "$uploaded" -gt 0 ]; then
     line "asset-ids" "ok" "$uploaded lines have Roblox asset ids"
   else
-    line "asset-ids" "NEEDED" "$uploaded uploaded, $pending still 0 (run scripts/upload-voice-lines.py)"
+    line "asset-ids" "NEEDED" "$uploaded uploaded, $pending still 0 (run tools/voice-tools/scripts/upload-voice-lines.py)"
   fi
 else
   line "asset-ids" "MISSING" "VoiceLines.luau not generated yet"

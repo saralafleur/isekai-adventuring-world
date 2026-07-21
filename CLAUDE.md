@@ -58,11 +58,15 @@ which needs a published place and bills a quota). `audio/lines/*.mp3` and the
 `VoiceLines.luau` asset-id table are committed, so voices work on a fresh
 clone with no setup.
 
-To *change* dialogue audio you need the local neural TTS toolchain, which is
-gitignored (353 MB model): run `/devops tts-setup` or `zsh scripts/setup-tts.sh`,
-then `python3 scripts/generate-voice-lines.py --force` and
-`python3 scripts/upload-voice-lines.py`. Casting per character lives in the
-`CAST` table at the top of the generator.
+The generator/uploader toolchain lives in a shared repo, vendored here as a
+git submodule at `tools/voice-tools/` (run `git submodule update --init` after
+cloning). To *change* dialogue audio you need the local neural TTS toolchain,
+which is gitignored (353 MB model): run `/devops tts-setup` or
+`zsh tools/voice-tools/scripts/setup-tts.sh`, then
+`python3 tools/voice-tools/scripts/generate-voice-lines.py --force` and
+`python3 tools/voice-tools/scripts/upload-voice-lines.py`. Casting per
+character lives in `voice-cast.json` at the project root — see
+`tools/voice-tools/README.md`.
 
 ## Notes for Claude
 

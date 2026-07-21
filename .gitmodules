@@ -1,0 +1,3 @@
+[submodule "tools/voice-tools"]
+	path = tools/voice-tools
+	url = https://github.com/saralafleur/roblox-voice-tools.git

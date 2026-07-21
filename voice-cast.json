@@ -1,0 +1,20 @@
+{
+  "cast": {
+    "Mira": { "kokoro": "af_heart", "speed": 0.95, "voice": "Samantha", "rate": 168 },
+    "Daren": { "kokoro": "bm_george", "speed": 0.88, "voice": "Daniel", "rate": 148 },
+    "Kael": { "kokoro": "am_puck", "speed": 1.02, "voice": "Junior", "rate": 180 },
+    "Baker Hobb": { "kokoro": "am_santa", "speed": 1.0, "voice": "Ralph", "rate": 190 },
+    "Elder Bram": { "kokoro": "bm_lewis", "speed": 0.82, "voice": "Albert", "rate": 140 },
+    "Tarin": { "kokoro": "am_liam", "speed": 1.1, "voice": "Fred", "rate": 195 },
+    "Lyra": { "kokoro": "af_bella", "speed": 1.0, "voice": "Kathy", "rate": 172 },
+    "Narrator": { "kokoro": "bm_fable", "speed": 0.85, "voice": "Daniel", "rate": 142 }
+  },
+  "fallback": { "kokoro": "af_sarah", "speed": 1.0, "voice": "Samantha", "rate": 175 },
+  "_notes": {
+    "Mira": "mother: warm, unhurried — af_heart is Kokoro's highest-graded voice",
+    "Daren": "father: older British male, slow and deliberate",
+    "Kael": "14 — the youngest-sounding male voice available",
+    "Baker Hobb": "genuinely jolly",
+    "Narrator": "prologue Chronicler: elderly British storyteller, unhurried. Kept distinct from Daren (bm_george) and Elder Bram (bm_lewis) so the narrator never sounds like someone you meet later in the village."
+  }
+}

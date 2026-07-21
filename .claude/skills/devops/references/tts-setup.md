@@ -7,9 +7,9 @@ spoken dialogue, proven by synthesizing a real clip.
 
 | In the repo | Gitignored (install locally) |
 |---|---|
-| `scripts/generate-voice-lines.py` | `.tts-models/` — 353 MB of Kokoro weights |
-| `scripts/upload-voice-lines.py` | `.venv-tts/` — the python env |
-| `scripts/setup-tts.sh` | |
+| `tools/voice-tools/scripts/generate-voice-lines.py` | `.tts-models/` — 353 MB of Kokoro weights |
+| `tools/voice-tools/scripts/upload-voice-lines.py` | `.venv-tts/` — the python env |
+| `tools/voice-tools/scripts/setup-tts.sh` | |
 | `audio/lines/*.mp3` — the generated clips | |
 | `audio/manifest.json` | |
 | `src/shared/Data/VoiceLines.luau` — Roblox asset ids | |
@@ -45,7 +45,7 @@ Confirm before the model download — it's the one large item.
 One idempotent script does all of it:
 
 ```bash
-zsh scripts/setup-tts.sh
+zsh tools/voice-tools/scripts/setup-tts.sh
 ```
 
 It checks prerequisites, creates the venv only if absent, installs the two
@@ -61,7 +61,7 @@ rather than installing them silently.
 2. Regenerate the real dialogue and confirm the engine line reads
    `Kokoro (neural)` rather than the `say` fallback:
    ```bash
-   python3 scripts/generate-voice-lines.py --force
+   python3 tools/voice-tools/scripts/generate-voice-lines.py --force
    ```
 3. Spot-check a clip actually plays:
    ```bash
@@ -76,7 +76,7 @@ Regenerated audio needs re-uploading — the committed asset ids point at the
 ```bash
 export ROBLOX_API_KEY='...'      # create at create.roblox.com/dashboard/credentials
 export ROBLOX_USER_ID='...'      # the number in your roblox.com profile URL
-python3 scripts/upload-voice-lines.py
+python3 tools/voice-tools/scripts/upload-voice-lines.py
 ```
 
 The uploader writes each id into `VoiceLines.luau` as it lands, so an
@@ -85,9 +85,10 @@ existing lines re-uploaded (regenerating audio does not do this automatically).
 
 ## Notes
 
-- **Casting lives in one table**: `CAST` at the top of
-  `generate-voice-lines.py`. Each character has a Kokoro voice and a speed,
-  plus a macOS `say` voice used as fallback when the model isn't installed.
+- **Casting lives in `voice-cast.json`** at the project root. Each character
+  has a Kokoro voice and a speed, plus a macOS `say` voice used as fallback
+  when the model isn't installed. The toolchain itself
+  (`tools/voice-tools/`) is a shared git submodule — see its README.
 - Kokoro ships **54 voices**; list them with:
   ```bash
   .venv-tts/bin/python -c "from kokoro_onnx import Kokoro; \
